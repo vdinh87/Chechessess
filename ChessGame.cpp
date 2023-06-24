@@ -85,15 +85,9 @@ void ChessGame::UpdateBoard()
     BlackPieces = BlackPawns | BlackKnights | BlackBishops | BlackRooks | BlackQueens | BlackKings;
     board = WhitePieces | BlackPieces;
 }
+
 void ChessGame::PrintBoard() const
 {
-    // Convert hexadecimal U64 to binary string
-    std::bitset<64> bitset(board);
-    std::string binaryString = bitset.to_string();
-
-    // Output binary string
-    std::cout << "Binary: " << binaryString << std::endl;    
-
     std::string boardString;
     for( int i = 63; i >= 0; i-- )
     {
@@ -117,6 +111,7 @@ void ChessGame::PrintBoard() const
         else
             boardString += "0 ";
         
+        // new line + reverse
         if( (i % 8) == 0 )
         {
             std::reverse(boardString.begin(), boardString.end());

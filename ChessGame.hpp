@@ -1,6 +1,5 @@
 #pragma once
 #include <cstdint>
-#include <bitset>
 #include <algorithm>
 #include <string>
 typedef uint64_t U64;
