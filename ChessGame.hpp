@@ -1,5 +1,8 @@
 #pragma once
-
+#include <cstdint>
+#include <bitset>
+#include <algorithm>
+#include <string>
 typedef uint64_t U64;
 
 #define set_bit(b, i) ((b) |= (1ULL << i))
@@ -40,7 +43,21 @@ private:
     U64 BlackRooks;
     U64 BlackQueens;
     U64 BlackKings;
+    //board
+    U64 WhitePieces;
+    U64 BlackPieces;
+    U64 board;
+
+    //masking functions
+    bool PawnMask(const U64& otherBoard, bool color) const;
+    bool KnightMask(const U64& otherBoard, bool color) const;
+    bool BishopMask(const U64& otherBoard, bool color) const;
+    bool RookMask(const U64& otherBoard, bool color) const;
+    bool QueenMask(const U64& otherBoard, bool color) const;
+    bool KingMask(const U64& otherBoard, bool color) const;
+    void UpdateBoard();
 public:
     ChessGame(/* args */);
     ~ChessGame();
+    void PrintBoard() const;
 };
