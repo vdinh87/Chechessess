@@ -35,7 +35,7 @@ bool ChessGame::PawnMask(const U64& otherBoard, bool color) const
 }
 
 bool ChessGame::KnightMask(const U64& otherBoard, bool color) const
-{
+{ 
     //white
     if(color)
         return otherBoard & WhiteKnights;
