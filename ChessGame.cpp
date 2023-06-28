@@ -89,23 +89,22 @@ void ChessGame::UpdateBoard()
 void ChessGame::PrintBoard() const
 {
     std::string boardString;
-    for( int i = 63; i >= 0; i-- )
+    for( int i = 63; i >= 0; i-- ) 
     {
-        if( get_bit(board, i) )
+        U64 square = get_bit(board, i);
+        if( square ) // contains piece  000000000000
         {
-            U64 tempBoard = 0ULL;
-            set_bit(tempBoard, i);
-            if( PawnMask(tempBoard, true)   | PawnMask(tempBoard, false) )
+            if( PawnMask(square, true)   | PawnMask(square, false) )
                 boardString += "P ";
-            if( KnightMask(tempBoard, true) | KnightMask(tempBoard, false) )
+            if( KnightMask(square, true) | KnightMask(square, false) )
                 boardString += "N ";
-            if( BishopMask(tempBoard, true) | BishopMask(tempBoard, false) )
+            if( BishopMask(square, true) | BishopMask(square, false) )
                 boardString += "B ";
-            if( RookMask(tempBoard, true)   | RookMask(tempBoard, false) )
+            if( RookMask(square, true)   | RookMask(square, false) )
                 boardString += "R ";
-            if( QueenMask(tempBoard, true)  | QueenMask(tempBoard, false) )
+            if( QueenMask(square, true)  | QueenMask(square, false) )
                 boardString += "Q ";
-            if( KingMask(tempBoard, true)   | KingMask(tempBoard, false) )
+            if( KingMask(square, true)   | KingMask(square, false) )
                 boardString += "K ";
         }
         else
@@ -125,4 +124,7 @@ int main()
 {
     ChessGame cg;
     cg.PrintBoard();
+    U64 bb = 1001ULL; 
+    set_bit(bb,1); 
+    std::cout << bb << std::endl;
 }

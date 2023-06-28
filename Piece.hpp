@@ -4,7 +4,7 @@
 #include <string>
 typedef uint64_t U64;
 
-#define set_bit(b, i) ((b) |= (1ULL << i))
+#define set_bit(b, i) ((b) |= (1ULL << i)) 
 #define get_bit(b, i) ((b) & (1ULL << i))  
 #define clear_bit(b, i) ((b) &= ~(1ULL << i)) 
 #define get_LSB(b) (__builtin_ctzll(b))
