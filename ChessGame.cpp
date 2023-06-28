@@ -24,7 +24,6 @@ ChessGame::~ChessGame()
 }
 
 // Masking functions
-// CHANGE TO USE ENUMS NOT BOOL
 bool ChessGame::PawnMask(const U64& otherBoard, Color color) const
 {
     //white
@@ -92,7 +91,7 @@ void ChessGame::PrintBoard() const
     for( int i = 63; i >= 0; i-- ) 
     {
         U64 square = get_bit(board, i);
-        if( square ) // contains piece  000000000000
+        if( square )
         {
             if( PawnMask(square, white)   | PawnMask(square, black) )
                 boardString += "P ";
@@ -107,6 +106,27 @@ void ChessGame::PrintBoard() const
             if( KingMask(square, white)   | KingMask(square, black) )
                 boardString += "K ";
         }
+        else
+            boardString += "0 ";
+        
+        // new line + reverse
+        if( (i % 8) == 0 )
+        {
+            std::reverse(boardString.begin(), boardString.end());
+            std::cout << boardString << std::endl;
+            boardString.clear();
+        }
+    }   
+}
+
+void PrintBoard(U64 board)
+{
+    std::string boardString;
+    for( int i = 63; i >= 0; i-- ) 
+    {
+        U64 square = get_bit(board, i);
+        if( square )
+            boardString += "1 ";
         else
             boardString += "0 ";
         

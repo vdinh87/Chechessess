@@ -26,12 +26,12 @@ private:
     U64 board;
 
     //masking functions
-    bool PawnMask(const U64& otherBoard, Color color) const;
-    bool KnightMask(const U64& otherBoard, Color color) const;
-    bool BishopMask(const U64& otherBoard, Color color) const;
-    bool RookMask(const U64& otherBoard, Color color) const;
-    bool QueenMask(const U64& otherBoard, Color color) const;
-    bool KingMask(const U64& otherBoard, Color color) const;
+    bool PawnMask   (const U64& otherBoard, Color color) const;
+    bool KnightMask (const U64& otherBoard, Color color) const;
+    bool BishopMask (const U64& otherBoard, Color color) const;
+    bool RookMask   (const U64& otherBoard, Color color) const;
+    bool QueenMask  (const U64& otherBoard, Color color) const;
+    bool KingMask   (const U64& otherBoard, Color color) const;
     void UpdateBoard();
 public:
     ChessGame(/* args */);
