@@ -3,16 +3,9 @@
 class Knight : public Piece
 {
 private:
-    /* data */
+    
 public:
-    Knight(/* args */);
-    ~Knight();
+    Knight(U64 position_);
+    virtual ~Knight();
+    virtual U64 GetAttacks() const; // pure virtual
 };
-
-Knight::Knight(/* args */)
-{
-}
-
-Knight::~Knight()
-{
-}
