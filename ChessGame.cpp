@@ -25,7 +25,7 @@ ChessGame::~ChessGame()
 
 // Masking functions
 // CHANGE TO USE ENUMS NOT BOOL
-bool ChessGame::PawnMask(const U64& otherBoard, bool color) const
+bool ChessGame::PawnMask(const U64& otherBoard, Color color) const
 {
     //white
     if(color)
@@ -34,7 +34,7 @@ bool ChessGame::PawnMask(const U64& otherBoard, bool color) const
     return otherBoard & BlackPawns;
 }
 
-bool ChessGame::KnightMask(const U64& otherBoard, bool color) const
+bool ChessGame::KnightMask(const U64& otherBoard, Color color) const
 { 
     //white
     if(color)
@@ -43,7 +43,7 @@ bool ChessGame::KnightMask(const U64& otherBoard, bool color) const
     return otherBoard & BlackKnights;
 }
 
-bool ChessGame::BishopMask(const U64& otherBoard, bool color) const
+bool ChessGame::BishopMask(const U64& otherBoard, Color color) const
 {
     //white
     if(color)
@@ -52,7 +52,7 @@ bool ChessGame::BishopMask(const U64& otherBoard, bool color) const
     return otherBoard & BlackBishops;
 }
 
-bool ChessGame::RookMask(const U64& otherBoard, bool color) const
+bool ChessGame::RookMask(const U64& otherBoard, Color color) const
 {
     //white
     if(color)
@@ -61,7 +61,7 @@ bool ChessGame::RookMask(const U64& otherBoard, bool color) const
     return otherBoard & BlackRooks;
 }
 
-bool ChessGame::QueenMask(const U64& otherBoard, bool color) const
+bool ChessGame::QueenMask(const U64& otherBoard, Color color) const
 {
     //white
     if(color)
@@ -70,7 +70,7 @@ bool ChessGame::QueenMask(const U64& otherBoard, bool color) const
     return otherBoard & BlackQueens;
 }
 
-bool ChessGame::KingMask(const U64& otherBoard, bool color) const
+bool ChessGame::KingMask(const U64& otherBoard, Color color) const
 {
     //white
     if(color)
@@ -94,17 +94,17 @@ void ChessGame::PrintBoard() const
         U64 square = get_bit(board, i);
         if( square ) // contains piece  000000000000
         {
-            if( PawnMask(square, true)   | PawnMask(square, false) )
+            if( PawnMask(square, white)   | PawnMask(square, black) )
                 boardString += "P ";
-            if( KnightMask(square, true) | KnightMask(square, false) )
+            if( KnightMask(square, white) | KnightMask(square, black) )
                 boardString += "N ";
-            if( BishopMask(square, true) | BishopMask(square, false) )
+            if( BishopMask(square, white) | BishopMask(square, black) )
                 boardString += "B ";
-            if( RookMask(square, true)   | RookMask(square, false) )
+            if( RookMask(square, white)   | RookMask(square, black) )
                 boardString += "R ";
-            if( QueenMask(square, true)  | QueenMask(square, false) )
+            if( QueenMask(square, white)  | QueenMask(square, black) )
                 boardString += "Q ";
-            if( KingMask(square, true)   | KingMask(square, false) )
+            if( KingMask(square, white)   | KingMask(square, black) )
                 boardString += "K ";
         }
         else
@@ -124,7 +124,4 @@ int main()
 {
     ChessGame cg;
     cg.PrintBoard();
-    U64 bb = 1001ULL; 
-    set_bit(bb,1); 
-    std::cout << bb << std::endl;
 }

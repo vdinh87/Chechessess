@@ -21,13 +21,13 @@ enum Square {
 };
 
 // define sides
-enum Side { white, black };
+enum Color { white, black };
 class Piece
 {
 private:
   U64 position;
 public:
-  Piece(U64 position_):position(position_) { }
+  Piece(U64 position_) : position(position_) { }
   virtual ~Piece() = default;
   virtual U64 GetAttacks() const = 0; // pure virtual
 };
