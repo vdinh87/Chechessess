@@ -1,9 +1,10 @@
+#pragma once
 #include "Piece.hpp"
 
 class Knight : public Piece
 {
 private:
-    
+
 public:
     Knight(U64 position_);
     virtual ~Knight();

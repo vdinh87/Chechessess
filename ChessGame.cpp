@@ -1,4 +1,5 @@
 #include "ChessGame.hpp"
+#include "Knight.cpp"
 
 ChessGame::ChessGame(/* args */)
 {
@@ -88,9 +89,10 @@ void ChessGame::UpdateBoard()
 void ChessGame::PrintBoard() const
 {
     std::string boardString;
+    U64 square;
     for( int i = 63; i >= 0; i-- ) 
     {
-        U64 square = get_bit(board, i);
+        square = get_bit(board, i);
         if( square )
         {
             if( PawnMask(square, white)   | PawnMask(square, black) )
@@ -108,7 +110,7 @@ void ChessGame::PrintBoard() const
         }
         else
             boardString += "0 ";
-        
+
         // new line + reverse
         if( (i % 8) == 0 )
         {
@@ -122,14 +124,15 @@ void ChessGame::PrintBoard() const
 void PrintBoard(U64 board)
 {
     std::string boardString;
+    U64 square;
     for( int i = 63; i >= 0; i-- ) 
     {
-        U64 square = get_bit(board, i);
+        square = get_bit(board, i);
         if( square )
             boardString += "1 ";
         else
             boardString += "0 ";
-        
+
         // new line + reverse
         if( (i % 8) == 0 )
         {
@@ -137,11 +140,14 @@ void PrintBoard(U64 board)
             std::cout << boardString << std::endl;
             boardString.clear();
         }
-    }   
+    }
 }
 
 int main()
 {
+    U64 bb = 1ULL;
+    PrintBoard(bb);
+    std::cout << std::endl;
     ChessGame cg;
     cg.PrintBoard();
 }

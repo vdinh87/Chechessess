@@ -4,6 +4,15 @@
 #include <string>
 typedef uint64_t U64;
 
+#define FILE_A 0x0101010101010101ULL
+#define FILE_B 0x0202020202020202ULL
+#define FILE_C 0x0404040404040404ULL
+#define FILE_D 0x0808080808080808ULL
+#define FILE_E 0x1010101010101010ULL
+#define FILE_F 0x2020202020202020ULL
+#define FILE_G 0x4040404040404040ULL
+#define FILE_H 0x8080808080808080ULL
+
 #define set_bit(b, i) ((b) |= (1ULL << i)) 
 #define get_bit(b, i) ((b) & (1ULL << i))  
 #define clear_bit(b, i) ((b) &= ~(1ULL << i)) 
@@ -30,4 +39,6 @@ public:
   Piece(U64 position_) : position(position_) { }
   virtual ~Piece() = default;
   virtual U64 GetAttacks() const = 0; // pure virtual
+  U64 GetPosition() const { return position; }
+  void SetPosition(U64 new_position) { position = new_position; }
 };
