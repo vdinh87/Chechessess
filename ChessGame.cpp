@@ -144,11 +144,14 @@ void PrintBoard(U64 board)
 
 int main()
 {
-    U64 bb = 1ULL;
-    PrintBoard(bb);
-    std::cout << std::endl;
-    ChessGame cg;
-    cg.PrintBoard();
-
+    // U64 bb = 1ULL;
+    // PrintBoard(bb);
+    // std::cout << std::endl;
+    // ChessGame cg;
+    // cg.PrintBoard();
+    
+    U64 occ = 0ULL;
     SlidingPiece sp;
+    
+    std::cout << sp.get_bishop_attacks(a1,occ);
 }

@@ -228,7 +228,7 @@ private:
         0x2520081090008908ULL,
         0x40102000a0a60140ULL,
     };
-
+    
     // init slider pieces attacks
     void init_sliders_attacks(int is_bishop);
     
