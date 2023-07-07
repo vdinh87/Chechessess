@@ -1,5 +1,4 @@
 #include "ChessGame.hpp"
-#include "Magics.cpp"
 
 ChessGame::ChessGame(/* args */)
 {
@@ -114,11 +113,13 @@ void ChessGame::PrintBoard() const
         // new line + reverse
         if( (i % 8) == 0 )
         {
+            boardString += " " + std::to_string(i/8 + 1);
             std::reverse(boardString.begin(), boardString.end());
             std::cout << boardString << std::endl;
             boardString.clear();
         }
-    }   
+    }
+    std::cout << "   a b c d e f g h\n" << std::endl;   
 }
 
 void PrintBoard(U64 board)
@@ -136,54 +137,11 @@ void PrintBoard(U64 board)
         // new line + reverse
         if( (i % 8) == 0 )
         {
+            boardString += " " + std::to_string(i/8 + 1);
             std::reverse(boardString.begin(), boardString.end());
             std::cout << boardString << std::endl;
             boardString.clear();
         }
     }
-}
-
-int main()
-{
-    init_sliders_attacks(bishop);
-    init_sliders_attacks(rook);
-    // U64 bb = 1ULL;
-    // PrintBoard(bb);
-    // std::cout << std::endl;
-    // ChessGame cg;
-    // cg.PrintBoard();
-    
-    // create bishop occupancy bitboard
-    U64 bishop_occupancy = 0ULL;
-    set_bit(bishop_occupancy, g7);
-    set_bit(bishop_occupancy, f6);
-    set_bit(bishop_occupancy, c5);
-    set_bit(bishop_occupancy, b2);
-    set_bit(bishop_occupancy, g1);
-    
-    printf("\n     Bishop occupancy\n");
-    
-    // print bishop occupancy
-    PrintBoard(bishop_occupancy);
-    
-    printf("\n     Bishop attacks\n");
-    
-    // get bishop attacks
-    PrintBoard(get_bishop_attacks(d4, bishop_occupancy));
-    
-    // create rook occupancy
-    U64 rook_occupancy = 0ULL;
-    set_bit(rook_occupancy, d7);
-    set_bit(rook_occupancy, d6);
-    set_bit(rook_occupancy, d3);
-    set_bit(rook_occupancy, a4);
-    set_bit(rook_occupancy, f4);
-    
-    // printf("\n     Rook occupancy\n");
-    
-    // // print rook occupancy
-    // PrintBoard(rook_occupancy);
-    
-    // // get rook attacks
-    // PrintBoard(sp.get_rook_attacks(d4, rook_occupancy));
+    std::cout << "   a b c d e f g h\n" << std::endl;   
 }

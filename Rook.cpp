@@ -1,12 +1,17 @@
 #include "Rook.hpp"
 
-Rook::Rook(U64 position_):
+Rook::Rook(Square position_):
 Piece(position_)
 {
     init_sliders_attacks(rook);
 }
 
-U64 Rook::GetAttacks() const
+Rook::~Rook()
 {
-    get_rook_attacks
+    
+}
+
+U64 Rook::GetAttacks(U64 occupancy_) const
+{
+    return get_rook_attacks(GetPosition(), occupancy_);
 }

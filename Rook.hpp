@@ -2,12 +2,12 @@
 #include "Piece.hpp"
 #include "Magics.cpp"
 
-class Rook : Piece
+class Rook : public Piece
 {
 private:
 
 public:
-    Rook(U64 position_);
+    Rook(Square position_);
     virtual ~Rook();
-    virtual U64 GetAttacks() const;
+    virtual U64 GetAttacks(U64 occupancy_) const;
 };

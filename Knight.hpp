@@ -6,7 +6,7 @@ class Knight : public Piece
 private:
 
 public:
-    Knight(U64 position_);
+    Knight(Square position_);
     virtual ~Knight();
-    virtual U64 GetAttacks() const; // pure virtual
+    virtual U64 GetAttacks(U64 occupany_) const; // pure virtual
 };

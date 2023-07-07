@@ -1,5 +1,6 @@
 #pragma once
 #include "Knight.cpp"
+#include "Rook.cpp"
 
 #include <iostream>
 

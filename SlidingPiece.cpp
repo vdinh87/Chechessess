@@ -3,8 +3,6 @@
 // Public
 SlidingPiece::SlidingPiece(/* args */)
 {
-    init_magics();
-
     // init attack tables
     init_sliders_attacks(bishop);
     init_sliders_attacks(rook);

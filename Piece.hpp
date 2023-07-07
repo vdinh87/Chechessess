@@ -39,7 +39,7 @@ private:
 public:
   Piece(Square position_) : position(position_) { }
   virtual ~Piece() = default;
-  virtual U64 GetAttacks() const = 0; // pure virtual
+  virtual U64 GetAttacks(U64 occupancy_) const = 0; // pure virtual
   U64 GetPosition() const { return position; }
   void SetPosition(Square new_position) { position = new_position; }
 };
