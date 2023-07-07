@@ -3,6 +3,7 @@
 Knight::Knight(U64 position_):
 Piece(position_)
 {
+    
 }
 
 Knight::~Knight()

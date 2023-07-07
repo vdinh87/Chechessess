@@ -1,4 +1,5 @@
 #include "ChessGame.hpp"
+#include "Magics.cpp"
 
 ChessGame::ChessGame(/* args */)
 {
@@ -144,7 +145,6 @@ void PrintBoard(U64 board)
 
 int main()
 {
-    init_magics();
     init_sliders_attacks(bishop);
     init_sliders_attacks(rook);
     // U64 bb = 1ULL;
@@ -152,7 +152,7 @@ int main()
     // std::cout << std::endl;
     // ChessGame cg;
     // cg.PrintBoard();
-
+    
     // create bishop occupancy bitboard
     U64 bishop_occupancy = 0ULL;
     set_bit(bishop_occupancy, g7);
