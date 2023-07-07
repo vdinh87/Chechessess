@@ -17,6 +17,7 @@ typedef uint64_t U64;
 #define get_bit(b, i) ((b) & (1ULL << i))  
 #define clear_bit(b, i) ((b) &= ~(1ULL << i)) 
 #define get_LSB(b) (__builtin_ctzll(b))
+#define pop_bit(bitboard, square) (get_bit(bitboard, square) ? (bitboard ^= (1ULL << square)) : 0)
 
 enum Square {
   a1, b1, c1, d1, e1, f1, g1, h1,

@@ -1,5 +1,4 @@
 #include "ChessGame.hpp"
-#include "Knight.cpp"
 
 ChessGame::ChessGame(/* args */)
 {
@@ -150,4 +149,6 @@ int main()
     std::cout << std::endl;
     ChessGame cg;
     cg.PrintBoard();
+
+    SlidingPiece sp;
 }
