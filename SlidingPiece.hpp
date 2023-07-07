@@ -1,19 +1,14 @@
 #pragma once
-// system headers
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// define bitboard type
 #define U64 unsigned long long
-
-// bits manipulations
 #define get_bit(bitboard, square) (bitboard & (1ULL << square))
 #define set_bit(bitboard, square) (bitboard |= (1ULL << square))
 #define pop_bit(bitboard, square) (get_bit(bitboard, square) ? (bitboard ^= (1ULL << square)) : 0)
 
-// square encoding
-enum {
+enum { // square encoding 
     a8, b8, c8, d8, e8, f8, g8, h8,
     a7, b7, c7, d7, e7, f7, g7, h7,
     a6, b6, c6, d6, e6, f6, g6, h6,
@@ -24,14 +19,12 @@ enum {
     a1, b1, c1, d1, e1, f1, g1, h1, no_sq
 };
 
-// rook & bishop flags
-enum { rook, bishop };
+enum { rook, bishop }; // rook & bishop flags
 
 class SlidingPiece
 {
 private:
-    // rook rellevant occupancy bits
-    int rook_rellevant_bits[64] = {
+    int rook_rellevant_bits[64] = {  // rook rellevant occupancy bits
         12, 11, 11, 11, 11, 11, 11, 12,
         11, 10, 10, 10, 10, 10, 10, 11,
         11, 10, 10, 10, 10, 10, 10, 11,
@@ -42,8 +35,7 @@ private:
         12, 11, 11, 11, 11, 11, 11, 12
     };
 
-    // bishop rellevant occupancy bits
-    int bishop_rellevant_bits[64] = {
+    int bishop_rellevant_bits[64] = { // bishop rellevant occupancy bits
         6, 5, 5, 5, 5, 5, 5, 6,
         5, 5, 5, 5, 5, 5, 5, 5,
         5, 5, 7, 7, 7, 7, 5, 5,
@@ -54,17 +46,13 @@ private:
         6, 5, 5, 5, 5, 5, 5, 6
     };    
 
-    // just a random number
-    unsigned int state = 1804289383;
+    unsigned int state = 1804289383;  // random number
 
-    // 32-bit number pseudo random generator
-    unsigned int generate_random_number();
+    unsigned int generate_random_number(); // 32-bit number pseudo random generator
 
-    // generate random U64 number
-    U64 random_U64()
+    U64 random_U64() // generate random U64 number
     {
-        // init numbers to randomize
-        U64 u1, u2, u3, u4;
+        U64 u1, u2, u3, u4; // init numbers to randomize
         
         // randomize numbers
         u1 = (U64)(generate_random_number()) & 0xFFFF;
@@ -72,15 +60,13 @@ private:
         u3 = (U64)(generate_random_number()) & 0xFFFF;
         u4 = (U64)(generate_random_number()) & 0xFFFF;
         
-        // shuffle bits and return
-        return u1 | (u2 << 16) | (u3 << 32) | (u4 << 48);
+        return u1 | (u2 << 16) | (u3 << 32) | (u4 << 48); // shuffle bits and return
+
     }
 
-    // get random few bits
-    U64 random_fewbits() {
-        return random_U64() & random_U64() & random_U64();
-    }
+    int count_bits(U64 bitboard) { // count bits (Brian Kernighan's way)
 
+<<<<<<< HEAD
     // count bits (Brian Kernighan's way)
     int count_bits(U64 bitboard) {
         // bit count
@@ -98,54 +84,58 @@ private:
         
         // return bit count
         return count;
+=======
+    int count = 0; // bit count
+    
+    // pop bits untill bitboard is empty
+    while (bitboard)
+    {
+        count++;// increment count
+
+        bitboard &= bitboard - 1; // consecutively reset least significant 1st bit
+    }
+    
+    // return bit count
+    return count;
+>>>>>>> 6892cef5007d516a13a2629f884e0269709f89b3
     }
 
     // get index of LS1B in bitboard
     int get_ls1b_index(U64 bitboard) {
-        // make sure bitboard is not empty
-        if (bitboard != 0)
-            // convert trailing zeros before LS1B to ones and count them
-            return count_bits((bitboard & -bitboard) - 1);
-        
-        // otherwise
-        else
-            // return illegal index
-            return -1;
+        if (bitboard != 0) // make sure bitboard is not empty
+            
+            return count_bits((bitboard & -bitboard) - 1); // convert trailing zeros before LS1B to ones and count them
+
+        else // otherwise
+            
+            return -1; // return illegal index
     }
 
     // set occupancies
     U64 set_occupancy(int index, int bits_in_mask, U64 attack_mask)
     {
-        // occupancy map
-        U64 occupancy = 0ULL;
+        U64 occupancy = 0ULL;         // occupancy map
         
         // loop over the range of bits within attack mask
         for (int count = 0; count < bits_in_mask; count++)
         {
-            // get LS1B index of attacks mask
-            int square = get_ls1b_index(attack_mask);
+            int square = get_ls1b_index(attack_mask); // get LS1B index of attacks mask
             
-            // pop LS1B in attack map
-            pop_bit(attack_mask, square);
+            pop_bit(attack_mask, square);// pop LS1B in attack map
             
-            // make sure occupancy is on board
-            if (index & (1 << count))
-                // populate occupancy map
-                occupancy |= (1ULL << square);
+            if (index & (1 << count)) // make sure occupancy is on board
+                occupancy |= (1ULL << square); // populate occupancy map
         }
         
-        // return occupancy map
-        return occupancy;
+        return occupancy; // return occupancy map
     }
 
     // mask bishop attacks
     U64 mask_bishop_attacks(int square)
     {
-        // attack bitboard
-        U64 attacks = 0ULL;
+        U64 attacks = 0ULL; // attack bitboard
         
-        // init files & ranks
-        int f, r;
+        int f, r; // init files & ranks
         
         // init target files & ranks
         int tr = square / 8;
@@ -156,19 +146,16 @@ private:
         for (r = tr + 1, f = tf - 1; r <= 6 && f >= 1; r++, f--) attacks |= (1ULL << (r * 8 + f));
         for (r = tr - 1, f = tf + 1; r >= 1 && f <= 6; r--, f++) attacks |= (1ULL << (r * 8 + f));
         for (r = tr - 1, f = tf - 1; r >= 1 && f >= 1; r--, f--) attacks |= (1ULL << (r * 8 + f));
-        
-        // return attack map for bishop on a given square
-        return attacks;
+
+        return attacks; // return attack map for bishop on a given square
     }
 
     // mask rook attacks
     U64 mask_rook_attacks(int square)
     {
-        // attacks bitboard
-        U64 attacks = 0ULL;
+        U64 attacks = 0ULL; // attacks bitboard
         
-        // init files & ranks
-        int f, r;
+        int f, r; // init files & ranks
         
         // init target files & ranks
         int tr = square / 8;
@@ -179,19 +166,16 @@ private:
         for (r = tr - 1; r >= 1; r--) attacks |= (1ULL << (r * 8 + tf));
         for (f = tf + 1; f <= 6; f++) attacks |= (1ULL << (tr * 8 + f));
         for (f = tf - 1; f >= 1; f--) attacks |= (1ULL << (tr * 8 + f));
-        
-        // return attack map for bishop on a given square
-        return attacks;
+
+        return attacks; // return attack map for bishop on a given square
     }
 
     // bishop attacks
     U64 bishop_attacks_on_the_fly(int square, U64 block)
     {
-        // attack bitboard
-        U64 attacks = 0ULL;
+        U64 attacks = 0ULL; // attack bitboard
         
-        // init files & ranks
-        int f, r;
+        int f, r; // init files & ranks
         
         // init target files & ranks
         int tr = square / 8;
@@ -222,18 +206,15 @@ private:
             if (block & (1ULL << (r * 8 + f))) break;
         }
         
-        // return attack map for bishop on a given square
-        return attacks;
+        return attacks; // return attack map for bishop on a given square
     }
 
     // rook attacks
     U64 rook_attacks_on_the_fly(int square, U64 block)
     {
-        // attacks bitboard
-        U64 attacks = 0ULL;
+        U64 attacks = 0ULL; // attacks bitboard
         
-        // init files & ranks
-        int f, r;
+        int f, r; // init files & ranks
         
         // init target files & ranks
         int tr = square / 8;
@@ -264,8 +245,7 @@ private:
             if (block & (1ULL << (tr * 8 + f))) break;
         }
         
-        // return attack map for bishop on a given square
-        return attacks;
+        return attacks; // return attack map for bishop on a given square
     }
 
 
@@ -276,62 +256,47 @@ private:
 
     // find magic number
     U64 find_magic(int square, int relevant_bits, int bishop) {
-        // define occupancies array
-        U64 occupancies[4096];
+        U64 occupancies[4096]; // define occupancies array
 
-        // define attacks array
-        U64 attacks[4096];
+        U64 attacks[4096]; // define attacks array
 
-        // define used indicies array
-        U64 used_attacks[4096];
+        U64 used_attacks[4096]; // define used indicies array
         
-        // mask piece attack
-        U64 mask_attack = bishop ? mask_bishop_attacks(square) : mask_rook_attacks(square);
+        U64 mask_attack = bishop ? mask_bishop_attacks(square) : mask_rook_attacks(square); // mask piece attack
 
-        // occupancy variations
-        int occupancy_variations = 1 << relevant_bits;
+        int occupancy_variations = 1 << relevant_bits; // occupancy variations
 
         // loop over the number of occupancy variations
         for(int count = 0; count < occupancy_variations; count++) {
-            // init occupancies
-            occupancies[count] = set_occupancy(count, relevant_bits, mask_attack);
+            occupancies[count] = set_occupancy(count, relevant_bits, mask_attack);// init occupancies
             
-            // init attacks
-            attacks[count] = bishop ? bishop_attacks_on_the_fly(square, occupancies[count]) :
-                                    rook_attacks_on_the_fly(square, occupancies[count]);
+            attacks[count] = bishop ? bishop_attacks_on_the_fly(square, occupancies[count]) : 
+                                    rook_attacks_on_the_fly(square, occupancies[count]); // init attacks
         }
 
         // test magic numbers
         for(int random_count = 0; random_count < 100000000; random_count++)
         {
-            // init magic number candidate
-            U64 magic = random_fewbits();
+            U64 magic = random_U64() & random_U64() & random_U64();// init magic number candidate
 
-            // skip testing magic number if inappropriate
-            if(count_bits((mask_attack * magic) & 0xFF00000000000000ULL) < 6) continue;
+            if(count_bits((mask_attack * magic) & 0xFF00000000000000ULL) < 6) continue; // skip testing magic number if inappropriate
 
-            // reset used attacks array
-            memset(used_attacks, 0ULL, sizeof(used_attacks));
+            memset(used_attacks, 0ULL, sizeof(used_attacks));// reset used attacks array
             
-            // init count & fail flag
-            int count, fail;
+            int count, fail; // init count & fail flag
             
             // test magic index
             for (count = 0, fail = 0; !fail && count < occupancy_variations; count++) {
-                // generate magic index
-                int magic_index = (int)((occupancies[count] * magic) >> (64 - relevant_bits));
+                int magic_index = (int)((occupancies[count] * magic) >> (64 - relevant_bits));// generate magic index
             
                 // if got free index
                 if(used_attacks[magic_index] == 0ULL)
-                    // assign corresponding attack map
-                    used_attacks[magic_index] = attacks[count];
+                    used_attacks[magic_index] = attacks[count]; // assign corresponding attack map
 
-                // otherwise fail on  collision
-                else if(used_attacks[magic_index] != attacks[count]) fail = 1;
+                else if(used_attacks[magic_index] != attacks[count]) fail = 1; // otherwise fail on  collision
             }
-            
-            // return magic if it works
-            if(!fail) return magic;
+
+            if(!fail) return magic; // return magic if it works
         }
         
         // on fail
@@ -517,14 +482,11 @@ private:
             bishop_masks[square] = mask_bishop_attacks(square);
             rook_masks[square] = mask_rook_attacks(square);
             
-            // init current mask
-            U64 mask = is_bishop ? mask_bishop_attacks(square) : mask_rook_attacks(square);
+            U64 mask = is_bishop ? mask_bishop_attacks(square) : mask_rook_attacks(square); // init current mask
             
-            // count attack mask bits
-            int bit_count = count_bits(mask);
+            int bit_count = count_bits(mask);// count attack mask bits
             
-            // occupancy variations count
-            int occupancy_variations = 1 << bit_count;
+            int occupancy_variations = 1 << bit_count;// occupancy variations count
             
             // loop over occupancy variations
             for (int count = 0; count < occupancy_variations; count++)
@@ -555,10 +517,15 @@ private:
 public:
     SlidingPiece();
     ~SlidingPiece();
+<<<<<<< HEAD
     // lookup bishop attacks
     U64 get_bishop_attacks(int square, U64 occupancy);
     // lookup rook attacks
     U64 get_rook_attacks(int square, U64 occupancy);
+=======
+    U64 get_bishop_attacks(int square, U64 occupancy); // lookup bishop attacks
+    U64 get_rook_attacks(int square, U64 occupancy); // lookup rook attacks 
+>>>>>>> 6892cef5007d516a13a2629f884e0269709f89b3
 };
 
 
@@ -599,7 +566,7 @@ public:
 //     printf("\n     Rook occupancy\n");
     
 //     // print rook occupancy
-//     print_bitboard(rook_occupancy);
+//     print_bitboard(rook_occupancy); DOESNT EXIST it's in game class.
     
 //     // get rook attacks
 //     print_bitboard(get_rook_attacks(d4, rook_occupancy));
