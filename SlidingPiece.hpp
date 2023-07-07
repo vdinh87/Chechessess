@@ -83,21 +83,21 @@ private:
 
     // count bits (Brian Kernighan's way)
     int count_bits(U64 bitboard) {
-    // bit count
-    int count = 0;
-    
-    // pop bits untill bitboard is empty
-    while (bitboard)
-    {
-        // increment count
-        count++;
+        // bit count
+        int count = 0;
         
-        // consecutively reset least significant 1st bit
-        bitboard &= bitboard - 1;
-    }
-    
-    // return bit count
-    return count;
+        // pop bits untill bitboard is empty
+        while (bitboard)
+        {
+            // increment count
+            count++;
+            
+            // consecutively reset least significant 1st bit
+            bitboard &= bitboard - 1;
+        }
+        
+        // return bit count
+        return count;
     }
 
     // get index of LS1B in bitboard
@@ -557,7 +557,7 @@ public:
     ~SlidingPiece();
     // lookup bishop attacks
     U64 get_bishop_attacks(int square, U64 occupancy);
-    // lookup rook attacks 
+    // lookup rook attacks
     U64 get_rook_attacks(int square, U64 occupancy);
 };
 
