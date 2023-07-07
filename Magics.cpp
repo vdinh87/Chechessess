@@ -44,38 +44,6 @@ int bishop_rellevant_bits[64] = {
     6, 5, 5, 5, 5, 5, 5, 6
 };
 
-// print bitboard
-void print_bitboard(U64 bitboard)
-{
-    printf("\n");
-    
-    // loop over board ranks
-    for (int rank = 0; rank < 8; rank++)
-    {
-        // loop over board files
-        for (int file = 0; file < 8; file++)
-        {
-            // init board square
-            int square = rank * 8 + file;
-            
-            // print ranks
-            if (!file)
-                printf("  %d ", 8 - rank);
-            
-            // print bit indexed by board square
-            printf(" %d", get_bit(bitboard, square) ? 1 : 0);
-        }
-        
-        printf("\n");
-    }
-    
-    // print files
-    printf("\n     a b c d e f g h\n\n");
-    
-    // print bitboard as decimal
-    printf("     bitboard: %llud\n\n", bitboard);
-}
-
 // just a random number
 unsigned int state = 1804289383;
 
