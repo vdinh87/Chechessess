@@ -1,5 +1,5 @@
 #pragma once
-#include "SlidingPiece.cpp"
+#include "Magics.cpp"
 #include "Knight.cpp"
 
 #include <iostream>

@@ -144,14 +144,46 @@ void PrintBoard(U64 board)
 
 int main()
 {
+    init_magics();
+    init_sliders_attacks(bishop);
+    init_sliders_attacks(rook);
     // U64 bb = 1ULL;
     // PrintBoard(bb);
     // std::cout << std::endl;
     // ChessGame cg;
     // cg.PrintBoard();
+
+    // create bishop occupancy bitboard
+    U64 bishop_occupancy = 0ULL;
+    set_bit(bishop_occupancy, g7);
+    set_bit(bishop_occupancy, f6);
+    set_bit(bishop_occupancy, c5);
+    set_bit(bishop_occupancy, b2);
+    set_bit(bishop_occupancy, g1);
     
-    U64 occ = 0ULL;
-    SlidingPiece sp;
+    printf("\n     Bishop occupancy\n");
     
-    std::cout << sp.get_bishop_attacks(a1,occ);
+    // print bishop occupancy
+    PrintBoard(bishop_occupancy);
+    
+    printf("\n     Bishop attacks\n");
+    
+    // get bishop attacks
+    PrintBoard(get_bishop_attacks(d4, bishop_occupancy));
+    
+    // create rook occupancy
+    U64 rook_occupancy = 0ULL;
+    set_bit(rook_occupancy, d7);
+    set_bit(rook_occupancy, d6);
+    set_bit(rook_occupancy, d3);
+    set_bit(rook_occupancy, a4);
+    set_bit(rook_occupancy, f4);
+    
+    // printf("\n     Rook occupancy\n");
+    
+    // // print rook occupancy
+    // PrintBoard(rook_occupancy);
+    
+    // // get rook attacks
+    // PrintBoard(sp.get_rook_attacks(d4, rook_occupancy));
 }
