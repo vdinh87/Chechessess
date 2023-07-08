@@ -14,7 +14,8 @@ U64 Knight::GetAttacks(U64 occupancy_) const
 {//Will get the possible attack locations for knights.
     U64 attacks, knights = 0ULL;
     set_bit( knights, GetPosition() ); 
-    attacks = ( (knights & ( FILE_G | FILE_H)) ? 0ULL: (knights >> 6) | (knights << 10)) ;
+    attacks = ( ((knights & ( FILE_G | FILE_H)) ? 0ULL: (knights >> 6) | (knights << 10)) |
+                ((knights & ( FILE_A | FILE_B)) ? 0ULL: (knights >> 10) | (knights << 6)) );
     // attacks = (((knights >> 6) | (knights << 10)) & ~(FILE_G | FILE_H)) |
     //     (((knights >> 10) | (knights << 6)) & ~(FILE_A | FILE_B)) |
     //     (((knights >> 15) | (knights << 17)) & ~FILE_H) |
