@@ -9,8 +9,6 @@ int main()
     cg.PrintBoard();
 
     U64 occ = 0ULL;
-    Rook rk = Rook(d4);
-    PrintBoard( rk.GetAttacks(occ) );
-    Knight kn = Knight(e4);
+    Knight kn = Knight(h5);
     PrintBoard( kn.GetAttacks(occ) );
 }

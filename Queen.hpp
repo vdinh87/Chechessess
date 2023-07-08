@@ -9,5 +9,5 @@ private:
 public:
     Queen(Square position_);
     virtual ~Queen();
-    virtual U64 GetAttacks(U64 occupancy_) const;// pure virtual
+    virtual U64 GetAttacks(U64 occupancy_) const; // pure virtual
 };
