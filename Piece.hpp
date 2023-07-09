@@ -36,8 +36,13 @@ class Piece
 {
 private:
   Square position;
+  Color color;
 public:
-  Piece(Square position_) : position(position_) { }
+  Piece(Square position_, Color color_) : 
+  position(position_),
+  color(color_) 
+  { 
+  }
   virtual ~Piece() = default;
   virtual U64 GetAttacks(U64 occupancy_) const = 0; // pure virtual
   U64 GetPosition() const { return position; }

@@ -7,7 +7,7 @@ class Rook : public Piece
 private:
 
 public:
-    Rook(Square position_);
+    Rook(Square position_, Color color_);
     virtual ~Rook();
     virtual U64 GetAttacks(U64 occupancy_) const;
 };

@@ -7,7 +7,7 @@ class Queen : public Piece
 private:
 
 public:
-    Queen(Square position_);
+    Queen(Square position_, Color color_);
     virtual ~Queen();
     virtual U64 GetAttacks(U64 occupancy_) const; // pure virtual
 };

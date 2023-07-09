@@ -1,6 +1,7 @@
 #include "Queen.hpp"
 
-Queen::Queen(Square position_) : Piece(position_)
+Queen::Queen(Square position_, Color color_) : 
+Piece(position_, color_)
 {
     init_sliders_attacks(bishop);
     init_sliders_attacks(rook);

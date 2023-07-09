@@ -1,6 +1,7 @@
 #include "Bishop.hpp"
 
-Bishop::Bishop(Square position_) : Piece(position_)
+Bishop::Bishop(Square position_, Color color_) : 
+Piece(position_, color_)
 {
     init_sliders_attacks(bishop);
 }

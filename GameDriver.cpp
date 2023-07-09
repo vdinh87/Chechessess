@@ -9,7 +9,6 @@ int main()
     cg.PrintBoard();
 
     U64 occ = 0ULL;
-    Knight kn = Knight(g5);
+    Knight kn = Knight(g5, white);
     PrintBoard( kn.GetAttacks(occ) );
-    Bishop b = Bishop(e3);
 }
