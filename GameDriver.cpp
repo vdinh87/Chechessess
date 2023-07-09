@@ -11,4 +11,5 @@ int main()
     U64 occ = 0ULL;
     Knight kn = Knight(g5);
     PrintBoard( kn.GetAttacks(occ) );
+    Bishop b = Bishop(e3);
 }
