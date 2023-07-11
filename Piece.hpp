@@ -44,8 +44,8 @@ public:
   { 
   }
   virtual ~Piece() = default;
-  Color GetColor() const { return color; }
   virtual U64 GetAttacks(U64 occupancy_) const = 0; // pure virtual
   U64 GetPosition() const { return position; }
+  Color GetColor() const { return color; }
   void SetPosition(Square new_position) { position = new_position; }
 };
