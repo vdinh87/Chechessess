@@ -6,10 +6,6 @@ Piece(position_, color_)
     
 }
 
-Knight::~Knight()
-{
-}
-
 U64 Knight::GetAttacks(U64 occupancy_) const
 {//Will get the possible attack locations for knights.
     U64 attacks, knights = 0ULL;

@@ -19,10 +19,6 @@ ChessGame::ChessGame(/* args */)
     UpdateBoard();
 }
 
-ChessGame::~ChessGame()
-{
-}
-
 // Masking functions
 bool ChessGame::PawnMask(const U64& otherBoard, Color color) const
 {

@@ -19,6 +19,8 @@ public:
     U64 South(U64 & other_board) const;
     U64 SouthWest(U64 & other_board) const;
     U64 SouthEast(U64 & other_board) const;
+    U64 East(U64 & other_board) const;
+    U64 West(U64 & other_board) const;
 };
 
 

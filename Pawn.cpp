@@ -32,3 +32,10 @@ U64 Pawn::GetAttacks(U64 occupancy_) const
     
     return attacks;
 }
+
+void Pawn::SetPosition(Square new_position) 
+{ 
+    position = new_position;
+    if( !has_moved )
+        has_moved = true;
+}

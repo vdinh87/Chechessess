@@ -34,7 +34,7 @@ enum Square {
 enum Color { white, black };
 class Piece
 {
-private:
+protected:
   Square position;
   Color color;
 public:
@@ -45,7 +45,7 @@ public:
   }
   virtual ~Piece() = default;
   virtual U64 GetAttacks(U64 occupancy_) const = 0; // pure virtual
-  U64 GetPosition() const { return position; }
-  Color GetColor() const { return color; }
-  void SetPosition(Square new_position) { position = new_position; }
+  virtual U64 GetPosition() const { return position; }
+  virtual Color GetColor() const { return color; }
+  virtual void SetPosition(Square new_position) { position = new_position; }
 };

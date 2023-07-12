@@ -8,6 +8,6 @@ private:
 
 public:
     Rook(Square position_, Color color_);
-    virtual ~Rook();
+    virtual ~Rook() = default;
     virtual U64 GetAttacks(U64 occupancy_) const;
 };

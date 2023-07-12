@@ -8,6 +8,6 @@ private:
 
 public:
     Queen(Square position_, Color color_);
-    virtual ~Queen();
+    virtual ~Queen() = default;
     virtual U64 GetAttacks(U64 occupancy_) const; // pure virtual
 };

@@ -13,4 +13,5 @@ public:
     Pawn(Square position_, Color color_);
     virtual ~Pawn() = default;
     virtual U64 GetAttacks(U64 occupancy_) const;
+    virtual void SetPosition(Square new_position);
 };

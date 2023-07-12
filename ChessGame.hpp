@@ -37,6 +37,6 @@ private:
     void UpdateBoard();
 public:
     ChessGame(/* args */);
-    ~ChessGame();
+    ~ChessGame() = default;
     void PrintBoard() const;
 };

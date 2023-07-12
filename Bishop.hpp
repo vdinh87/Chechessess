@@ -8,7 +8,7 @@ private:
 
 public:
     Bishop(Square position_, Color color_);
-    virtual ~Bishop();
+    virtual ~Bishop() = default;
     virtual U64 GetAttacks(U64 occupancy_) const;// pure virtual
 };
 

@@ -7,6 +7,6 @@ private:
 
 public:
     Knight(Square position_, Color color_);
-    virtual ~Knight();
+    virtual ~Knight() = default;
     virtual U64 GetAttacks(U64 occupany_) const; // pure virtual
 };
