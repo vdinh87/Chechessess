@@ -14,6 +14,8 @@ U64 Pawn::GetAttacks(U64 occupancy_) const
     if( GetColor() == white )
     {
         attacks = ( North(pawn) | NorthWest(pawn) | NorthEast(pawn) );
+
+        // Initial 2 square move
         if( !has_moved )
             attacks |= pawn << 16;
     }
@@ -22,6 +24,8 @@ U64 Pawn::GetAttacks(U64 occupancy_) const
     if ( GetColor() == black)
     {
         attacks = ( South(pawn) | SouthWest(pawn) | SouthEast(pawn) );
+
+        // Initial 2 square move
         if( !has_moved )
             attacks |= pawn >> 16;
     }

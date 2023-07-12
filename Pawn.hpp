@@ -1,6 +1,6 @@
 #pragma once
 #include "Piece.hpp"
-#include "SingleMovePiece.hpp"
+#include "SingleMovePiece.cpp"
 #define RANK_7 0x00FF000000000000ULL
 #define RANK_2 0x000000000000FF00ULL
 
