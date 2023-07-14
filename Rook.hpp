@@ -9,7 +9,7 @@ private:
 public:
     Rook(Square position_, Color color_);
     virtual ~Rook() = default;
-    virtual void SetPosition(Square new_position);
     bool GetHasMoved() const;
     virtual U64 GetAttacks(U64 occupancy_) const;
+    virtual void SetPosition(Square new_position);
 };

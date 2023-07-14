@@ -15,3 +15,10 @@ U64 Rook::GetAttacks(U64 occupancy_) const
 {
     return get_rook_attacks(GetPosition(), occupancy_);
 }
+
+void Rook::SetPosition(Square new_position) 
+{ 
+    position = new_position;
+    if( !has_moved )
+        has_moved = true;
+}

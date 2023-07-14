@@ -45,7 +45,13 @@ U64 SingleMovePiece::SouthEast(U64 & other_board) const
 U64 SingleMovePiece::East(U64 & other_board) const
 {
     if( ~(other_board & FILE_H) )
-        return other_board >> 7;
+        return other_board << 1;
     return 0ULL;
 }
 
+U64 SingleMovePiece::West(U64 & other_board) const
+{
+    if( ~(other_board & FILE_A) )
+        return other_board >> 1;
+    return 0ULL;
+}

@@ -1,7 +1,10 @@
 #pragma once
 #include "Knight.cpp"
-#include "Rook.cpp"
 #include "Pawn.cpp"
+#include "King.cpp"
+// #include "Rook.cpp"
+// #include "Bishop.cpp"
+#include "Queen.cpp"
 
 #include <iostream>
 
