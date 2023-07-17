@@ -1,37 +1,10 @@
 #include "SlidingPiece.hpp"
 
+#include <iostream>
 // Public
-SlidingPiece::SlidingPiece(/* args */)
+SlidingPiece::SlidingPiece()
 {
-    // init attack tables
-    init_sliders_attacks(bishop);
-    init_sliders_attacks(rook);
-}
-
-SlidingPiece::~SlidingPiece()
-{
-}
-
-U64 SlidingPiece::get_bishop_attacks(int square, U64 occupancy)
-{       
-    // calculate magic index
-    occupancy &= bishop_masks[square];
-    occupancy *=  bishop_magics[square];
-    occupancy >>= 64 - bishop_rellevant_bits[square];
-    
-    // return rellevant attacks
-    return bishop_attacks[square][occupancy];  
-}
-
-U64 SlidingPiece::get_rook_attacks(int square, U64 occupancy) 
-{        
-    // calculate magic index
-    occupancy &= rook_masks[square];
-    occupancy *=  rook_magics[square];
-    occupancy >>= 64 - rook_rellevant_bits[square];
-
-    // return rellevant attacks
-    return rook_attacks[square][occupancy];
+    std::cout << "Constructor";
 }
 
 //Private
@@ -252,97 +225,10 @@ U64 SlidingPiece::rook_attacks_on_the_fly(int square, U64 block)
     return attacks;
 }
 
-/**************************************\
-        Generating magic numbers
-        
-\**************************************/
-
-// find magic number
-U64 SlidingPiece::find_magic(int square, int relevant_bits, int bishop) 
-{
-    // define occupancies array
-    U64 occupancies[4096];
-
-    // define attacks array
-    U64 attacks[4096];
-
-    // define used indicies array
-    U64 used_attacks[4096];
-    
-    // mask piece attack
-    U64 mask_attack = bishop ? mask_bishop_attacks(square) : mask_rook_attacks(square);
-
-    // occupancy variations
-    int occupancy_variations = 1 << relevant_bits;
-
-    // loop over the number of occupancy variations
-    for(int count = 0; count < occupancy_variations; count++) {
-        // init occupancies
-        occupancies[count] = set_occupancy(count, relevant_bits, mask_attack);
-        
-        // init attacks
-        attacks[count] = bishop ? bishop_attacks_on_the_fly(square, occupancies[count]) :
-                                rook_attacks_on_the_fly(square, occupancies[count]);
-    }
-
-    // test magic numbers
-    for(int random_count = 0; random_count < 100000000; random_count++)
-    {
-        // init magic number candidate
-        U64 magic = random_fewbits();
-
-        // skip testing magic number if inappropriate
-        if(count_bits((mask_attack * magic) & 0xFF00000000000000ULL) < 6) continue;
-
-        // reset used attacks array
-        memset(used_attacks, 0ULL, sizeof(used_attacks));
-        
-        // init count & fail flag
-        int count, fail;
-        
-        // test magic index
-        for (count = 0, fail = 0; !fail && count < occupancy_variations; count++) {
-            // generate magic index
-            int magic_index = (int)((occupancies[count] * magic) >> (64 - relevant_bits));
-        
-            // if got free index
-            if(used_attacks[magic_index] == 0ULL)
-                // assign corresponding attack map
-                used_attacks[magic_index] = attacks[count];
-
-            // otherwise fail on  collision
-            else if(used_attacks[magic_index] != attacks[count]) fail = 1;
-        }
-        
-        // return magic if it works
-        if(!fail) return magic;
-    }
-    
-    // on fail
-    printf("***Failed***\n");
-    return 0ULL;
-}
-
-void SlidingPiece::init_magics()
-{
-    printf("const U64 rook_magics[64] = {\n");
-    
-    // loop over 64 board squares
-    for(int square = 0; square < 64; square++)
-        printf("    0x%llxULL,\n", find_magic(square, rook_rellevant_bits[square], 0));
-    
-    printf("};\n\nconst U64 bishop_magics[64] = {\n");
-    
-    // loop over 64 board squares
-    for(int square = 0; square < 64; square++)
-        printf("    0x%llxULL,\n", find_magic(square, bishop_rellevant_bits[square], 1));
-    
-    printf("};\n\n");
-}
-
 // init slider pieces attacks
 void SlidingPiece::init_sliders_attacks(int is_bishop)
 {
+    std::cout << "Initialized";
     // loop over 64 board squares
     for (int square = 0; square < 64; square++)
     {
@@ -381,4 +267,64 @@ void SlidingPiece::init_sliders_attacks(int is_bishop)
             }
         }
     }
+}
+
+U64 SlidingPiece::get_bishop_attacks(int square, U64 occupancy)
+{       
+    // calculate magic index
+    occupancy &= bishop_masks[square];
+    occupancy *=  bishop_magics[square];
+    occupancy >>= 64 - bishop_rellevant_bits[square];
+    
+    // return rellevant attacks
+    return bishop_attacks[square][occupancy];  
+}
+
+U64 SlidingPiece::get_rook_attacks(int square, U64 occupancy) 
+{        
+    // calculate magic index
+    occupancy &= rook_masks[square];
+    occupancy *=  rook_magics[square];
+    occupancy >>= 64 - rook_rellevant_bits[square];
+
+    // return rellevant attacks
+    return rook_attacks[square][occupancy];
+}
+
+void print_bitboard(U64 bitboard)
+{
+    printf("\n");
+    
+    // loop over board ranks
+    for (int rank = 0; rank < 8; rank++)
+    {
+        // loop over board files
+        for (int file = 0; file < 8; file++)
+        {
+            // init board square
+            int square = rank * 8 + file;
+            
+            // print ranks
+            if (!file)
+                printf("  %d ", 8 - rank);
+            
+            // print bit indexed by board square
+            printf(" %d", get_bit(bitboard, square) ? 1 : 0);
+        }
+        
+        printf("\n");
+    }
+    
+    // print files
+    printf("\n     a b c d e f g h\n\n");
+    
+    // print bitboard as decimal
+    printf("     bitboard: %llud\n\n", bitboard);
+}
+
+int main()
+{
+    U64 occ = 0ULL;
+    SlidingPiece sp;
+    // std::cout << sp.get_bishop_attacks(15, occ);
 }

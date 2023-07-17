@@ -3,7 +3,7 @@
 #include "Piece.hpp"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 
 // rook & bishop flags
 enum { rook, bishop };
@@ -67,18 +67,6 @@ private:
 
     // rook attacks
     U64 rook_attacks_on_the_fly(int square, U64 block);
-
-
-    /**************************************\
-            Generating magic numbers
-            
-    \**************************************/
-
-    // find magic number
-    U64 find_magic(int square, int relevant_bits, int bishop);
-
-    // init magics
-    void init_magics();
 
     /**************************************\
             Initializing attack table
@@ -234,7 +222,7 @@ private:
     
 public:
     SlidingPiece();
-    ~SlidingPiece();
+    ~SlidingPiece() = default;
     // lookup bishop attacks
     U64 get_bishop_attacks(int square, U64 occupancy);
     // lookup rook attacks

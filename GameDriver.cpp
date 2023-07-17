@@ -2,7 +2,7 @@
 
 int main()
 {
-    // ChessGame cg;
+    ChessGame cg;
     // cg.PrintBoard();
     U64 occ = 0ULL;
     Knight kn = Knight(g5, black);
