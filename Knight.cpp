@@ -6,7 +6,7 @@ Piece(position_, color_)
     
 }
 
-U64 Knight::GetAttacks(U64 occupancy_) const
+U64 Knight::GetAttacks(const U64 occupancy_) const
 {//Will get the possible attack locations for knights.
     U64 attacks, knights = 0ULL;
     set_bit( knights, position );

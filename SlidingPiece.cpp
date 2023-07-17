@@ -1,4 +1,5 @@
-#include "SlidingPiece.hpp"
+ #include "SlidingPiece.hpp"
+ #include <iostream>
 
 // Public
 SlidingPiece::SlidingPiece(/* args */)
@@ -381,4 +382,11 @@ void SlidingPiece::init_sliders_attacks(int is_bishop)
             }
         }
     }
+}
+
+int main(){
+    SlidingPiece sp;
+    U64 occupancy_ = 0ULL;
+
+    std::cout << sp.get_bishop_attacks(3, occupancy_) << std::endl;
 }

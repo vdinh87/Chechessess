@@ -9,10 +9,11 @@ class Pawn : public Piece, public SingleMovePiece
 {
 private:
     bool has_moved = false;
+    U64 FilterBlocks(const U64 occupancy_) const;
 public:
     Pawn(Square position_, Color color_);
     virtual ~Pawn() = default;
     virtual bool GetHasMoved() const;
-    virtual U64 GetAttacks(U64 occupancy_) const;
+    virtual U64 GetAttacks(const U64 occupancy_) const;
     virtual void SetPosition(Square new_position);
 };

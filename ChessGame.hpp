@@ -37,6 +37,13 @@ private:
     bool RookMask   (const U64& otherBoard, Color color) const;
     bool QueenMask  (const U64& otherBoard, Color color) const;
     bool KingMask   (const U64& otherBoard, Color color) const;
+
+    //filter functions
+    U64 FilterAllMoves(const U64& otherBoard, Color color) const;
+    U64 FilterCheck(const U64& otherBoard, Color color) const;
+    U64 FilterTeam(const U64& otherBoard, Color color) const;
+    
+
     void UpdateBoard();
 public:
     ChessGame(/* args */);
