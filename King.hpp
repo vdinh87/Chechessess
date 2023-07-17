@@ -11,8 +11,10 @@ class King : public Piece, public SingleMovePiece
 {
 private:
     bool has_moved = false;
-    Square castling_square_right;
-    Square castling_square_left; // Figure out ULL
+    /*
+    Square castling_square_right = 64ULL;
+    Square castling_square_left = 4ULL; // Figure out ULL
+    */
 public:
     King(Square position_, Color color_);
     virtual ~King() = default;

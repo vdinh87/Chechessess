@@ -1,4 +1,5 @@
-#include "SlidingPiece.hpp"
+ #include "SlidingPiece.hpp"
+ #include <iostream>
 
 #include <iostream>
 // Public
@@ -269,62 +270,9 @@ void SlidingPiece::init_sliders_attacks(int is_bishop)
     }
 }
 
-U64 SlidingPiece::get_bishop_attacks(int square, U64 occupancy)
-{       
-    // calculate magic index
-    occupancy &= bishop_masks[square];
-    occupancy *=  bishop_magics[square];
-    occupancy >>= 64 - bishop_rellevant_bits[square];
-    
-    // return rellevant attacks
-    return bishop_attacks[square][occupancy];  
-}
-
-U64 SlidingPiece::get_rook_attacks(int square, U64 occupancy) 
-{        
-    // calculate magic index
-    occupancy &= rook_masks[square];
-    occupancy *=  rook_magics[square];
-    occupancy >>= 64 - rook_rellevant_bits[square];
-
-    // return rellevant attacks
-    return rook_attacks[square][occupancy];
-}
-
-void print_bitboard(U64 bitboard)
-{
-    printf("\n");
-    
-    // loop over board ranks
-    for (int rank = 0; rank < 8; rank++)
-    {
-        // loop over board files
-        for (int file = 0; file < 8; file++)
-        {
-            // init board square
-            int square = rank * 8 + file;
-            
-            // print ranks
-            if (!file)
-                printf("  %d ", 8 - rank);
-            
-            // print bit indexed by board square
-            printf(" %d", get_bit(bitboard, square) ? 1 : 0);
-        }
-        
-        printf("\n");
-    }
-    
-    // print files
-    printf("\n     a b c d e f g h\n\n");
-    
-    // print bitboard as decimal
-    printf("     bitboard: %llud\n\n", bitboard);
-}
-
-int main()
-{
-    U64 occ = 0ULL;
+int main(){
     SlidingPiece sp;
-    // std::cout << sp.get_bishop_attacks(15, occ);
+    U64 occupancy_ = 0ULL;
+
+    std::cout << sp.get_bishop_attacks(3, occupancy_) << std::endl;
 }

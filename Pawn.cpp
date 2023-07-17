@@ -10,7 +10,7 @@ bool Pawn::GetHasMoved() const
     return has_moved;
 }
 
-U64 Pawn::GetAttacks(U64 occupancy_) const
+U64 Pawn::GetAttacks(const U64 occupancy_) const
 {
     U64 attacks, pawn = 0ULL;
     set_bit( pawn, position );
