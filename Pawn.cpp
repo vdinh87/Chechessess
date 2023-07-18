@@ -40,7 +40,7 @@ U64 Pawn::GetAttacks(const U64 occupancy_) const
 
 U64 Pawn::FilterBlocks(const U64 occupancy_) const
 {
-    return (GetAttacks() & ~occupancy_);
+    return (GetAttacks(occupancy_) & ~occupancy_);
 }
 
 void Pawn::SetPosition(Square new_position) 
