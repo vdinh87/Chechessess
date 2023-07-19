@@ -3,4 +3,5 @@
 int main()
 {
     ChessGame cg;
+    cg.PrintBoard();
 }

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdexcept>
+
 typedef uint64_t U64;
 
 #define FILE_A 0x0101010101010101ULL

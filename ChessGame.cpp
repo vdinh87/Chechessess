@@ -25,6 +25,7 @@ void ChessGame::InitMagics() const
     init_sliders_attacks(0);
     init_sliders_attacks(1);
 }
+
 // Masking functions
 bool ChessGame::PawnMask(const U64& otherBoard, Color color) const
 {
@@ -202,7 +203,6 @@ void ChessGame::PrintBoard() const
     }
     std::cout << "   a b c d e f g h\n" << std::endl;   
 }
-
 
 void PrintBoard(U64 board)
 {
