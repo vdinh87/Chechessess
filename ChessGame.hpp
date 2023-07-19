@@ -4,21 +4,9 @@
 class ChessGame
 {
 private:
-    // white
-    U64 WhitePawns;
-    U64 WhiteKnights;
-    U64 WhiteBishops;
-    U64 WhiteRooks;
-    U64 WhiteQueens;
-    U64 WhiteKings;
-    // black
-    U64 BlackPawns;
-    U64 BlackKnights;
-    U64 BlackBishops;
-    U64 BlackRooks;
-    U64 BlackQueens;
-    U64 BlackKings;
     //board
+    std::vector<U64> WhitePiecesArray;
+    std::vector<U64> BlackPiecesArray;
     U64 WhitePieces;
     U64 BlackPieces;
     U64 board;
@@ -56,3 +44,4 @@ public:
     U64 GetAttacks(Square square_, const U64 occupancy_) const;
     void PrintBoard() const;
 };
+

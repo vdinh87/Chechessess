@@ -2,20 +2,26 @@
 
 ChessGame::ChessGame(/* args */)
 {
-    // white
-    WhitePawns   = 0x000000000000FF00ULL;
-    WhiteKnights = 0x0000000000000042ULL;
-    WhiteBishops = 0x0000000000000024ULL;
-    WhiteRooks   = 0x0000000000000081ULL;
-    WhiteQueens  = 0x0000000000000008ULL;
-    WhiteKings   = 0x0000000000000010ULL;
-    // black
-    BlackPawns   = 0x00FF000000000000ULL;
-    BlackKnights = 0x4200000000000000ULL;
-    BlackBishops = 0x2400000000000000ULL;
-    BlackRooks   = 0x8100000000000000ULL;
-    BlackQueens  = 0x0800000000000000ULL;
-    BlackKings   = 0x1000000000000000ULL;
+    // { Pawn, Knight, Bishop, Rook, Queen, King }
+    WhitePiecesArray = 
+    { 
+        0x000000000000FF00ULL, 
+        0x0000000000000042ULL, 
+        0x0000000000000024ULL, 
+        0x0000000000000081ULL, 
+        0x0000000000000008ULL, 
+        0x0000000000000010ULL 
+    };
+    
+    BlackPiecesArray = 
+    {
+        0x00FF000000000000ULL,
+        0x4200000000000000ULL,
+        0x2400000000000000ULL,
+        0x8100000000000000ULL,
+        0x0800000000000000ULL,
+        0x1000000000000000ULL
+    };
     InitMagics();
     UpdateBoard();
 }
@@ -31,54 +37,54 @@ bool ChessGame::PawnMask(const U64& otherBoard, Color color) const
 {
     //white
     if(color)
-        return otherBoard & WhitePawns;
+        return otherBoard & WhitePiecesArray.at(Pawn);
     //black
-    return otherBoard & BlackPawns;
+    return otherBoard & BlackPiecesArray.at(Pawn);
 }
 
 bool ChessGame::KnightMask(const U64& otherBoard, Color color) const
 { 
     //white
     if(color)
-        return otherBoard & WhiteKnights;
+        return otherBoard & WhitePiecesArray.at(Knight);
     //black
-    return otherBoard & BlackKnights;
+    return otherBoard & BlackPiecesArray.at(Knight);
 }
 
 bool ChessGame::BishopMask(const U64& otherBoard, Color color) const
 {
     //white
     if(color)
-        return otherBoard & WhiteBishops;
+        return otherBoard & WhitePiecesArray.at(Bishop);
     //black
-    return otherBoard & BlackBishops;
+    return otherBoard & BlackPiecesArray.at(Bishop);
 }
 
 bool ChessGame::RookMask(const U64& otherBoard, Color color) const
 {
     //white
     if(color)
-        return otherBoard & WhiteRooks;
+        return otherBoard & WhitePiecesArray.at(Rook);
     //black
-    return otherBoard & BlackRooks;
+    return otherBoard & BlackPiecesArray.at(Rook);
 }
 
 bool ChessGame::QueenMask(const U64& otherBoard, Color color) const
 {
     //white
     if(color)
-        return otherBoard & WhiteQueens;
+        return otherBoard & WhitePiecesArray.at(Queen);
     //black
-    return otherBoard & BlackQueens;
+    return otherBoard & BlackPiecesArray.at(Queen);
 }
 
 bool ChessGame::KingMask(const U64& otherBoard, Color color) const
 {
     //white
     if(color)
-        return otherBoard & WhiteKings;
+        return otherBoard & WhitePiecesArray.at(King);
     //black
-    return otherBoard & BlackKings;
+    return otherBoard & BlackPiecesArray.at(King);
 }
 
 /* ATTACK FUNCTIONS */
@@ -149,10 +155,55 @@ U64 ChessGame::GetKingAttacks(U64 king, const U64 occupancy_) const
     return attacks;
 }
 
+U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_) const
+{
+    U64 attacks, piece = 0ULL;
+    set_bit(piece, square_);
+
+    std::vector<U64> PieceType;
+    for( size_t i = 0; i < WhitePiecesArray.size(); i++)
+        PieceType.push_back( WhitePiecesArray.at(i) | BlackPiecesArray.at(i) );
+
+    int which_function;
+    for( size_t i = 0; i < PieceType.size(); i++)
+    {
+        if( piece & PieceType.at(i) )
+            which_function = i;
+    }
+
+    switch (which_function)
+    {
+    case 0:
+        attacks = GetPawnAttacks(piece, board);
+        break;
+    case 1:
+        attacks = GetKnightAttacks(piece, board);
+        break;
+    case 2:
+        attacks = GetBishopAttacks(piece, board);
+        break;
+    case 3:
+        attacks = GetRookAttacks(piece, board);
+        break;
+    case 4:
+        attacks = GetQueenAttacks(piece, board);
+        break;
+    case 5:
+        attacks = GetKingAttacks(piece, board);
+        break;
+    default:
+        break;
+    }
+
+    return attacks;
+}
+
 void ChessGame::UpdateBoard()
 {
-    WhitePieces = WhitePawns | WhiteKnights | WhiteBishops | WhiteRooks | WhiteQueens | WhiteKings;
-    BlackPieces = BlackPawns | BlackKnights | BlackBishops | BlackRooks | BlackQueens | BlackKings;
+    WhitePieces = WhitePiecesArray.at(Pawn) | WhitePiecesArray.at(Knight) | WhitePiecesArray.at(Bishop) | 
+                  WhitePiecesArray.at(Rook) | WhitePiecesArray.at(Queen) | WhitePiecesArray.at(King);
+    BlackPieces = BlackPiecesArray.at(Pawn) | BlackPiecesArray.at(Knight) | BlackPiecesArray.at(Bishop) | 
+                  BlackPiecesArray.at(Rook) | BlackPiecesArray.at(Queen) | BlackPiecesArray.at(King);
     board = WhitePieces | BlackPieces;
 }
 
