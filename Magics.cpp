@@ -12,10 +12,7 @@
 \**************************************/
 
 // system headers
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "Piece.hpp"
+#include "Definitions.hpp"
 
 // rook & bishop flags
 enum { rook, bishop };
