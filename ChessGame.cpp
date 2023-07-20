@@ -163,13 +163,12 @@ bool ChessGame::InCheck(Color color_of_king) const
         for (int piece_type = Pawn; piece_type <= Queen; piece_type++)
         {
             U64 attacking_piece = BlackPiecesArray[piece_type];
-            while (attacking_piece != 0)
+            while (attacking_piece != 0) // does all except king
             {
-                int square_index = get_LSB(attacking_piece) /* find the index of the least significant set bit in attacking_piece */;
-                std::cout << "Type" << piece_type << "   Square Index: " << square_index;
-                Square square = static_cast<Square>(square_index);
-                attacks |= GetAttacks(square);
-                attacking_piece &= attacking_piece - 1; // Clear the least significant set bit
+                int square_index = get_LSB(attacking_piece);
+                Square square = static_cast<Square>(square_index - 1);
+                attacks |= GetAttacks(square); // may cause seg fault
+                attacking_piece &= attacking_piece - 1;
             }
         }
     }
@@ -182,10 +181,10 @@ bool ChessGame::InCheck(Color color_of_king) const
             U64 attacking_piece = WhitePiecesArray[piece_type];
             while (attacking_piece != 0)
             {
-                int square_index = get_LSB(attacking_piece) /* find the index of the least significant set bit in attacking_piece */;
-                std::cout << "Type" << piece_type << "   Square Index: " << square_index;
-                // attacks |= GetAttacks(static_cast<Square>(square_index));
-                attacking_piece &= attacking_piece - 1; // Clear the least significant set bit
+                int square_index = get_LSB(attacking_piece);
+                Square square = static_cast<Square>(square_index - 1);
+                attacks |= GetAttacks(square); 
+                attacking_piece &= attacking_piece - 1;
             }
         }
     }
