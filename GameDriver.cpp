@@ -5,7 +5,9 @@ int main()
     U64 occ = 0ULL;
     std::vector<U64> v = { occ };
     ChessGame cg;
+    cg.Move(d8, d4);
     cg.Move(e1, e3);
     cg.PrintBoard();
-    PrintBoard( cg.GetAttacks(e3) );    
+    std::cout << "CheckStatus: "<< cg.InCheck(white) << "\n";
+    //PrintBoard( cg.InCheck(white) );    
 }

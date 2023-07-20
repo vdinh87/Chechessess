@@ -3,28 +3,26 @@
 ChessGame::ChessGame(/* args */)
 {
     // { Pawn, Knight, Bishop, Rook, Queen, King }
-    WhitePiecesArray = 
-    { 
-        0x000000000000FF00ULL, 
-        0x0000000000000042ULL, 
-        0x0000000000000024ULL, 
-        0x0000000000000081ULL, 
-        0x0000000000000008ULL, 
-        0x0000000000000010ULL 
-    };
-    
-    BlackPiecesArray = 
-    {
-        0x00FF000000000000ULL,
-        0x4200000000000000ULL,
-        0x2400000000000000ULL,
-        0x8100000000000000ULL,
-        0x0800000000000000ULL,
-        0x1000000000000000ULL
-    };
+    WhitePiecesArray =
+        {
+            0x000000000000FF00ULL,
+            0x0000000000000042ULL,
+            0x0000000000000024ULL,
+            0x0000000000000081ULL,
+            0x0000000000000008ULL,
+            0x0000000000000010ULL};
 
-    for( size_t i = 0; i < WhitePiecesArray.size(); i++)
-        PieceTypeArray.push_back( WhitePiecesArray[i] | BlackPiecesArray[i] );
+    BlackPiecesArray =
+        {
+            0x00FF000000000000ULL,
+            0x4200000000000000ULL,
+            0x2400000000000000ULL,
+            0x8100000000000000ULL,
+            0x0800000000000000ULL,
+            0x1000000000000000ULL};
+
+    for (size_t i = 0; i < WhitePiecesArray.size(); i++)
+        PieceTypeArray.push_back(WhitePiecesArray[i] | BlackPiecesArray[i]);
 
     InitMagics();
     UpdateBoard();
@@ -36,11 +34,11 @@ void ChessGame::InitMagics() const
     init_sliders_attacks(1);
 }
 
-U64 ChessGame::Mask(Piece piece, Color color, const U64& other_board) const
+U64 ChessGame::Mask(Piece piece, Color color, const U64 &other_board) const
 {
-    if(color)
+    if (color)
         return other_board & WhitePiecesArray[piece];
-    //black
+    // black
     return other_board & BlackPiecesArray[piece];
 }
 /* ATTACK FUNCTIONS */
@@ -48,40 +46,38 @@ U64 ChessGame::GetPawnAttacks(U64 pawn, const U64 occupancy_) const
 {
     U64 attacks = 0ULL;
 
-    //white-side moves
-    if( GetColor(pawn) == white )
+    // white-side moves
+    if (GetColor(pawn) == white)
     {
-        attacks = ( North(pawn) | NorthWest(pawn) | NorthEast(pawn) );
+        attacks = (North(pawn) | NorthWest(pawn) | NorthEast(pawn));
 
         // Initial 2 square move
-        if( pawn & RANK_2 )
+        if (pawn & RANK_2)
             attacks |= pawn << 16;
     }
 
-    //black-side moves
-    if ( GetColor(pawn) == black)
+    // black-side moves
+    if (GetColor(pawn) == black)
     {
-        attacks = ( South(pawn) | SouthWest(pawn) | SouthEast(pawn) );
+        attacks = (South(pawn) | SouthWest(pawn) | SouthEast(pawn));
 
         // Initial 2 square move
-        if( pawn & RANK_7 )
+        if (pawn & RANK_7)
             attacks |= pawn >> 16;
     }
-    
+
     return attacks;
 }
 
 U64 ChessGame::GetKnightAttacks(U64 knight, const U64 occupancy_) const
 {
     U64 attacks = 0ULL;
-    attacks = ( 
-                ((knight & (FILE_G | FILE_H)) ? 0ULL : (knight >> 6) | (knight << 10)) | 
-                (( knight & (FILE_A | FILE_B)) ? 0ULL : (knight >> 10) | (knight << 6)) |
-                (( knight & FILE_H) ? 0ULL : (knight >> 15 | knight << 17)) |
-                (( knight & FILE_A) ? 0ULL : (knight >> 17 | knight << 15)) 
-                );
+    attacks = (((knight & (FILE_G | FILE_H)) ? 0ULL : (knight >> 6) | (knight << 10)) |
+               ((knight & (FILE_A | FILE_B)) ? 0ULL : (knight >> 10) | (knight << 6)) |
+               ((knight & FILE_H) ? 0ULL : (knight >> 15 | knight << 17)) |
+               ((knight & FILE_A) ? 0ULL : (knight >> 17 | knight << 15)));
 
-    return attacks;   //Queried with U64 attacks = Knightattacks[from] & targets;
+    return attacks; // Queried with U64 attacks = Knightattacks[from] & targets;
 }
 
 U64 ChessGame::GetBishopAttacks(U64 bishop, const U64 occupancy_) const
@@ -102,11 +98,9 @@ U64 ChessGame::GetQueenAttacks(U64 queen, const U64 occupancy_) const
 U64 ChessGame::GetKingAttacks(U64 king, const U64 occupancy_) const
 {
     U64 attacks = 0ULL;
-    attacks = ( 
-                North(king) | NorthEast(king) | NorthWest(king) | 
-                South(king) | SouthEast(king) | SouthWest(king) |
-                East(king) | West(king)   
-                );
+    attacks = (North(king) | NorthEast(king) | NorthWest(king) |
+               South(king) | SouthEast(king) | SouthWest(king) |
+               East(king) | West(king));
 
     return attacks;
 }
@@ -117,9 +111,9 @@ U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_) const
     set_bit(piece, square_);
 
     int which_function = -1;
-    for( size_t i = 0; i < PieceTypeArray.size(); i++)
+    for (size_t i = 0; i < PieceTypeArray.size(); i++)
     {
-        if( piece & PieceTypeArray[i] )
+        if (piece & PieceTypeArray[i])
             which_function = i;
     }
 
@@ -152,40 +146,71 @@ U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_) const
 
 U64 ChessGame::GetAttacks(Square square_) const
 {
-   return GetAttacks(square_, board);
+    return GetAttacks(square_, board);
 }
 
 // Checking functions
 bool ChessGame::InCheck(Color color_of_king) const
 {
-    U64 king;
-    if( color_of_king == white)
+    U64 king = 0ULL;
+    U64 attacking_piece = 0ULL;
+    U64 attacks = 0ULL;
+
+    if (color_of_king == white)
     {
         king = WhitePiecesArray[King];
-    }
-    //black
-    king = BlackPiecesArray[King];
 
+        for (int piece_type = Pawn; piece_type <= Queen; piece_type++)
+        {
+            U64 attacking_piece = BlackPiecesArray[piece_type];
+            while (attacking_piece != 0)
+            {
+                int square_index = get_LSB(attacking_piece) /* find the index of the least significant set bit in attacking_piece */;
+                std::cout << "Type" << piece_type << "   Square Index: " << square_index;
+                Square square = static_cast<Square>(square_index);
+                attacks |= GetAttacks(square);
+                attacking_piece &= attacking_piece - 1; // Clear the least significant set bit
+            }
+        }
+    }
+    else if (color_of_king == black)
+    {
+        king = BlackPiecesArray[King];
+
+        for (int piece_type = Pawn; piece_type <= Queen; piece_type++)
+        {
+            U64 attacking_piece = WhitePiecesArray[piece_type];
+            while (attacking_piece != 0)
+            {
+                int square_index = get_LSB(attacking_piece) /* find the index of the least significant set bit in attacking_piece */;
+                std::cout << "Type" << piece_type << "   Square Index: " << square_index;
+                // attacks |= GetAttacks(static_cast<Square>(square_index));
+                attacking_piece &= attacking_piece - 1; // Clear the least significant set bit
+            }
+        }
+    }
+
+    return (king & attacks) != 0;
 }
 
 void ChessGame::UpdateBoard()
 {
-    WhitePieces = WhitePiecesArray[Pawn] | WhitePiecesArray[Knight] | WhitePiecesArray[Bishop] | 
+    WhitePieces = WhitePiecesArray[Pawn] | WhitePiecesArray[Knight] | WhitePiecesArray[Bishop] |
                   WhitePiecesArray[Rook] | WhitePiecesArray[Queen] | WhitePiecesArray[King];
-    BlackPieces = BlackPiecesArray[Pawn] | BlackPiecesArray[Knight] | BlackPiecesArray[Bishop] | 
+    BlackPieces = BlackPiecesArray[Pawn] | BlackPiecesArray[Knight] | BlackPiecesArray[Bishop] |
                   BlackPiecesArray[Rook] | BlackPiecesArray[Queen] | BlackPiecesArray[King];
-    for( size_t i = 0; i < PieceTypeArray.size(); i++)
-        PieceTypeArray[i] = ( WhitePiecesArray[i] | BlackPiecesArray[i] );
+    for (size_t i = 0; i < PieceTypeArray.size(); i++)
+        PieceTypeArray[i] = (WhitePiecesArray[i] | BlackPiecesArray[i]);
     board = WhitePieces | BlackPieces;
 }
 
 // Utility functions
-Color ChessGame::GetColor(U64 piece) const 
+Color ChessGame::GetColor(U64 piece) const
 {
-    if( (piece & WhitePieces) && (piece & BlackPieces) )
+    if ((piece & WhitePieces) && (piece & BlackPieces))
         throw std::invalid_argument("Inputted board, not piece.");
 
-    if( piece & WhitePieces )
+    if (piece & WhitePieces)
         return white;
     return black;
 }
@@ -195,9 +220,9 @@ Piece ChessGame::GetPieceType(U64 unknown_piece) const
     Piece p;
     for (size_t i = 0; i < PieceTypeArray.size(); i++)
     {
-        if( unknown_piece & PieceTypeArray[i] )
+        if (unknown_piece & PieceTypeArray[i])
             p = static_cast<Piece>(i);
-    }   
+    }
     return p;
 }
 
@@ -205,51 +230,52 @@ void ChessGame::PrintBoard() const
 {
     std::string boardString;
     U64 square;
-    for( int i = 63; i >= 0; i-- ) 
+    for (int i = 63; i >= 0; i--)
     {
         square = get_bit(board, i);
-        if( square )
+        if (square)
         {
-            if( Mask(Pawn, white, square)   | Mask(Pawn, black, square) )
+            if (Mask(Pawn, white, square) | Mask(Pawn, black, square))
                 boardString += "P ";
-            if( Mask(Knight, white, square) | Mask(Knight, black, square) )
+            if (Mask(Knight, white, square) | Mask(Knight, black, square))
                 boardString += "N ";
-            if( Mask(Bishop, white, square) | Mask(Bishop, black, square) )
+            if (Mask(Bishop, white, square) | Mask(Bishop, black, square))
                 boardString += "B ";
-            if( Mask(Rook, white, square)   | Mask(Rook, black, square) )
+            if (Mask(Rook, white, square) | Mask(Rook, black, square))
                 boardString += "R ";
-            if( Mask(Queen, white, square)  | Mask(Queen, black, square) )
+            if (Mask(Queen, white, square) | Mask(Queen, black, square))
                 boardString += "Q ";
-            if( Mask(King, white, square)   | Mask(King, black, square) )
+            if (Mask(King, white, square) | Mask(King, black, square))
                 boardString += "K ";
         }
         else
             boardString += "0 ";
 
         // new line + reverse
-        if( (i % 8) == 0 )
+        if ((i % 8) == 0)
         {
-            boardString += " " + std::to_string(i/8 + 1);
+            boardString += " " + std::to_string(i / 8 + 1);
             std::reverse(boardString.begin(), boardString.end());
             std::cout << boardString << std::endl;
             boardString.clear();
         }
     }
-    std::cout << "   a b c d e f g h\n" << std::endl;   
+    std::cout << "   a b c d e f g h\n"
+              << std::endl;
 }
 
 void ChessGame::Move(Square from_sq, Square to_sq)
 {
-    U64 from = 0ULL; 
+    U64 from = 0ULL;
     set_bit(from, from_sq);
 
-    if( !(from & board) )
+    if (!(from & board))
         return;
-    
+
     Color from_color = GetColor(from);
     Piece its_piece = GetPieceType(from);
 
-    if( from_color == white )
+    if (from_color == white)
     {
         set_bit(WhitePiecesArray[its_piece], to_sq);
         clear_bit(WhitePiecesArray[its_piece], from_sq);
@@ -267,22 +293,23 @@ void PrintBoard(U64 board)
 {
     std::string boardString;
     U64 square;
-    for( int i = 63; i >= 0; i-- ) 
+    for (int i = 63; i >= 0; i--)
     {
         square = get_bit(board, i);
-        if( square )
+        if (square)
             boardString += "1 ";
         else
             boardString += "0 ";
 
         // new line + reverse
-        if( (i % 8) == 0 )
+        if ((i % 8) == 0)
         {
-            boardString += " " + std::to_string(i/8 + 1);
+            boardString += " " + std::to_string(i / 8 + 1);
             std::reverse(boardString.begin(), boardString.end());
             std::cout << boardString << std::endl;
             boardString.clear();
         }
     }
-    std::cout << "   a b c d e f g h\n" << std::endl;   
+    std::cout << "   a b c d e f g h\n"
+              << std::endl;
 }
