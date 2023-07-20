@@ -22,6 +22,10 @@ ChessGame::ChessGame(/* args */)
         0x0800000000000000ULL,
         0x1000000000000000ULL
     };
+
+    for( size_t i = 0; i < WhitePiecesArray.size(); i++)
+        PieceTypeArray.push_back( WhitePiecesArray[i] | BlackPiecesArray[i] );
+
     InitMagics();
     UpdateBoard();
 }
@@ -32,61 +36,13 @@ void ChessGame::InitMagics() const
     init_sliders_attacks(1);
 }
 
-// Masking functions
-bool ChessGame::PawnMask(const U64& otherBoard, Color color) const
+U64 ChessGame::Mask(Piece piece, Color color, const U64& other_board) const
 {
-    //white
     if(color)
-        return otherBoard & WhitePiecesArray.at(Pawn);
+        return other_board & WhitePiecesArray[piece];
     //black
-    return otherBoard & BlackPiecesArray.at(Pawn);
+    return other_board & BlackPiecesArray[piece];
 }
-
-bool ChessGame::KnightMask(const U64& otherBoard, Color color) const
-{ 
-    //white
-    if(color)
-        return otherBoard & WhitePiecesArray.at(Knight);
-    //black
-    return otherBoard & BlackPiecesArray.at(Knight);
-}
-
-bool ChessGame::BishopMask(const U64& otherBoard, Color color) const
-{
-    //white
-    if(color)
-        return otherBoard & WhitePiecesArray.at(Bishop);
-    //black
-    return otherBoard & BlackPiecesArray.at(Bishop);
-}
-
-bool ChessGame::RookMask(const U64& otherBoard, Color color) const
-{
-    //white
-    if(color)
-        return otherBoard & WhitePiecesArray.at(Rook);
-    //black
-    return otherBoard & BlackPiecesArray.at(Rook);
-}
-
-bool ChessGame::QueenMask(const U64& otherBoard, Color color) const
-{
-    //white
-    if(color)
-        return otherBoard & WhitePiecesArray.at(Queen);
-    //black
-    return otherBoard & BlackPiecesArray.at(Queen);
-}
-
-bool ChessGame::KingMask(const U64& otherBoard, Color color) const
-{
-    //white
-    if(color)
-        return otherBoard & WhitePiecesArray.at(King);
-    //black
-    return otherBoard & BlackPiecesArray.at(King);
-}
-
 /* ATTACK FUNCTIONS */
 U64 ChessGame::GetPawnAttacks(U64 pawn, const U64 occupancy_) const
 {
@@ -160,14 +116,10 @@ U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_) const
     U64 attacks, piece = 0ULL;
     set_bit(piece, square_);
 
-    std::vector<U64> PieceType;
-    for( size_t i = 0; i < WhitePiecesArray.size(); i++)
-        PieceType.push_back( WhitePiecesArray.at(i) | BlackPiecesArray.at(i) );
-
-    int which_function;
-    for( size_t i = 0; i < PieceType.size(); i++)
+    int which_function = -1;
+    for( size_t i = 0; i < PieceTypeArray.size(); i++)
     {
-        if( piece & PieceType.at(i) )
+        if( piece & PieceTypeArray[i] )
             which_function = i;
     }
 
@@ -191,19 +143,26 @@ U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_) const
     case 5:
         attacks = GetKingAttacks(piece, board);
         break;
-    default:
+    case -1:
         break;
     }
 
     return attacks;
 }
 
+U64 ChessGame::GetAttacks(Square square_) const
+{
+   return GetAttacks(square_, board);
+}
+
 void ChessGame::UpdateBoard()
 {
-    WhitePieces = WhitePiecesArray.at(Pawn) | WhitePiecesArray.at(Knight) | WhitePiecesArray.at(Bishop) | 
-                  WhitePiecesArray.at(Rook) | WhitePiecesArray.at(Queen) | WhitePiecesArray.at(King);
-    BlackPieces = BlackPiecesArray.at(Pawn) | BlackPiecesArray.at(Knight) | BlackPiecesArray.at(Bishop) | 
-                  BlackPiecesArray.at(Rook) | BlackPiecesArray.at(Queen) | BlackPiecesArray.at(King);
+    WhitePieces = WhitePiecesArray[Pawn] | WhitePiecesArray[Knight] | WhitePiecesArray[Bishop] | 
+                  WhitePiecesArray[Rook] | WhitePiecesArray[Queen] | WhitePiecesArray[King];
+    BlackPieces = BlackPiecesArray[Pawn] | BlackPiecesArray[Knight] | BlackPiecesArray[Bishop] | 
+                  BlackPiecesArray[Rook] | BlackPiecesArray[Queen] | BlackPiecesArray[King];
+    for( size_t i = 0; i < PieceTypeArray.size(); i++)
+        PieceTypeArray[i] = ( WhitePiecesArray[i] | BlackPiecesArray[i] );
     board = WhitePieces | BlackPieces;
 }
 
@@ -218,6 +177,17 @@ Color ChessGame::GetColor(U64 piece) const
     return black;
 }
 
+Piece ChessGame::GetPieceType(U64 unknown_piece) const
+{
+    Piece p;
+    for (size_t i = 0; i < PieceTypeArray.size(); i++)
+    {
+        if( unknown_piece & PieceTypeArray[i] )
+            p = static_cast<Piece>(i);
+    }   
+    return p;
+}
+
 void ChessGame::PrintBoard() const
 {
     std::string boardString;
@@ -227,17 +197,17 @@ void ChessGame::PrintBoard() const
         square = get_bit(board, i);
         if( square )
         {
-            if( PawnMask(square, white)   | PawnMask(square, black) )
+            if( Mask(Pawn, white, square)   | Mask(Pawn, black, square) )
                 boardString += "P ";
-            if( KnightMask(square, white) | KnightMask(square, black) )
+            if( Mask(Knight, white, square) | Mask(Knight, black, square) )
                 boardString += "N ";
-            if( BishopMask(square, white) | BishopMask(square, black) )
+            if( Mask(Bishop, white, square) | Mask(Bishop, black, square) )
                 boardString += "B ";
-            if( RookMask(square, white)   | RookMask(square, black) )
+            if( Mask(Rook, white, square)   | Mask(Rook, black, square) )
                 boardString += "R ";
-            if( QueenMask(square, white)  | QueenMask(square, black) )
+            if( Mask(Queen, white, square)  | Mask(Queen, black, square) )
                 boardString += "Q ";
-            if( KingMask(square, white)   | KingMask(square, black) )
+            if( Mask(King, white, square)   | Mask(King, black, square) )
                 boardString += "K ";
         }
         else
@@ -253,6 +223,31 @@ void ChessGame::PrintBoard() const
         }
     }
     std::cout << "   a b c d e f g h\n" << std::endl;   
+}
+
+void ChessGame::Move(Square from_sq, Square to_sq)
+{
+    U64 from = 0ULL; 
+    set_bit(from, from_sq);
+
+    if( !(from & board) )
+        return;
+    
+    Color from_color = GetColor(from);
+    Piece its_piece = GetPieceType(from);
+
+    if( from_color == white )
+    {
+        set_bit(WhitePiecesArray[its_piece], to_sq);
+        clear_bit(WhitePiecesArray[its_piece], from_sq);
+    }
+    else
+    {
+        set_bit(BlackPiecesArray[its_piece], to_sq);
+        clear_bit(BlackPiecesArray[its_piece], from_sq);
+    }
+
+    UpdateBoard();
 }
 
 void PrintBoard(U64 board)
