@@ -155,6 +155,19 @@ U64 ChessGame::GetAttacks(Square square_) const
    return GetAttacks(square_, board);
 }
 
+// Checking functions
+bool ChessGame::InCheck(Color color_of_king) const
+{
+    U64 king;
+    if( color_of_king == white)
+    {
+        king = WhitePiecesArray[King];
+    }
+    //black
+    king = BlackPiecesArray[King];
+
+}
+
 void ChessGame::UpdateBoard()
 {
     WhitePieces = WhitePiecesArray[Pawn] | WhitePiecesArray[Knight] | WhitePiecesArray[Bishop] | 

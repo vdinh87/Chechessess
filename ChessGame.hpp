@@ -28,7 +28,8 @@ private:
     U64 FilterAllMoves(const U64& otherBoard, Color color) const;
     U64 FilterCheck(const U64& otherBoard, Color color) const;
     U64 FilterTeam(const U64& otherBoard, Color color) const;
-    
+    bool InCheck(Color color_of_king) const;
+
     //Utility functions
     Color GetColor(U64 piece) const;
     Piece GetPieceType(U64 unknown_piece) const;
