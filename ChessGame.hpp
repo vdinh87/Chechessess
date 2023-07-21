@@ -33,8 +33,8 @@ private:
     Color GetColor(U64 piece) const;
     Piece GetPieceType(U64 unknown_piece) const;
     void UpdateBoard();
-public:
     bool InCheck(Color color_of_king) const;
+public:
     ChessGame();
     ~ChessGame() = default;
     U64 GetAttacks(Square square_, const U64 occupancy_) const;
