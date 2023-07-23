@@ -1,5 +1,31 @@
 #include "ChessGame.hpp"
 
+//PrintBoard with a g
+void PrintGoard(U64 board)
+{
+    std::string boardString;
+    U64 square;
+    for (int i = 63; i >= 0; i--)
+    {
+        square = get_bit(board, i);
+        if (square)
+            boardString += "1 ";
+        else
+            boardString += "0 ";
+
+        // new line + reverse
+        if ((i % 8) == 0)
+        {
+            boardString += " " + std::to_string(i / 8 + 1);
+            std::reverse(boardString.begin(), boardString.end());
+            std::cout << boardString << std::endl;
+            boardString.clear();
+        }
+    }
+    std::cout << "   a b c d e f g h\n"
+              << std::endl;
+}
+
 ChessGame::ChessGame(/* args */)
 {
     // { Pawn, Knight, Bishop, Rook, Queen, King }
@@ -42,10 +68,10 @@ U64 ChessGame::Mask(Piece piece, Color color, const U64 &other_board) const
     return other_board & BlackPiecesArray[piece];
 }
 /* ATTACK FUNCTIONS */
-U64 ChessGame::GetPawnAttacks(U64 pawn, const U64 occupancy_) const
+U64 ChessGame::GetPawnAttacks(Square square_, const U64 occupancy_) const
 {
-    U64 attacks = 0ULL;
-
+    U64 attacks, pawn = 0ULL;
+    set_bit(pawn, square_);
     // white-side moves
     if (GetColor(pawn) == white)
     {
@@ -69,9 +95,10 @@ U64 ChessGame::GetPawnAttacks(U64 pawn, const U64 occupancy_) const
     return attacks;
 }
 
-U64 ChessGame::GetKnightAttacks(U64 knight, const U64 occupancy_) const
+U64 ChessGame::GetKnightAttacks(Square square_, const U64 occupancy_) const
 {
-    U64 attacks = 0ULL;
+    U64 attacks, knight = 0ULL;
+    set_bit(knight, square_);
     attacks = (((knight & (FILE_G | FILE_H)) ? 0ULL : (knight >> 6) | (knight << 10)) |
                ((knight & (FILE_A | FILE_B)) ? 0ULL : (knight >> 10) | (knight << 6)) |
                ((knight & FILE_H) ? 0ULL : (knight >> 15 | knight << 17)) |
@@ -80,24 +107,25 @@ U64 ChessGame::GetKnightAttacks(U64 knight, const U64 occupancy_) const
     return attacks; // Queried with U64 attacks = Knightattacks[from] & targets;
 }
 
-U64 ChessGame::GetBishopAttacks(U64 bishop, const U64 occupancy_) const
+U64 ChessGame::GetBishopAttacks(Square square_, const U64 occupancy_) const
 {
-    return get_bishop_attacks(bishop, occupancy_);
+    return get_bishop_attacks(square_, occupancy_);
 }
 
-U64 ChessGame::GetRookAttacks(U64 rook, const U64 occupancy_) const
+U64 ChessGame::GetRookAttacks(Square square_, const U64 occupancy_) const
 {
-    return get_rook_attacks(rook, occupancy_);
+    return get_rook_attacks(square_, occupancy_);
 }
 
-U64 ChessGame::GetQueenAttacks(U64 queen, const U64 occupancy_) const
+U64 ChessGame::GetQueenAttacks(Square square_, const U64 occupancy_) const
 {
-    return get_bishop_attacks(queen, occupancy_) | get_rook_attacks(queen, occupancy_);
+    return get_bishop_attacks(square_, occupancy_) | get_rook_attacks(square_, occupancy_);
 }
 
-U64 ChessGame::GetKingAttacks(U64 king, const U64 occupancy_) const
+U64 ChessGame::GetKingAttacks(Square square_, const U64 occupancy_) const
 {
-    U64 attacks = 0ULL;
+    U64 attacks, king = 0ULL;
+    set_bit(king, square_);
     attacks = (North(king) | NorthEast(king) | NorthWest(king) |
                South(king) | SouthEast(king) | SouthWest(king) |
                East(king) | West(king));
@@ -105,66 +133,29 @@ U64 ChessGame::GetKingAttacks(U64 king, const U64 occupancy_) const
     return attacks;
 }
 
-void PrintGoard(U64 board)
+U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_function) const
 {
-    std::string boardString;
-    U64 square;
-    for (int i = 63; i >= 0; i--)
-    {
-        square = get_bit(board, i);
-        if (square)
-            boardString += "1 ";
-        else
-            boardString += "0 ";
-
-        // new line + reverse
-        if ((i % 8) == 0)
-        {
-            boardString += " " + std::to_string(i / 8 + 1);
-            std::reverse(boardString.begin(), boardString.end());
-            std::cout << boardString << std::endl;
-            boardString.clear();
-        }
-    }
-    std::cout << "   a b c d e f g h\n"
-              << std::endl;
-}
-
-U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_) const
-{
-    U64 attacks, piece = 0ULL;
-    set_bit(piece, square_);
-
-    std::cout <<"PieceStart\n";
-    PrintGoard();
-    std::cout <<"PieceEnd\n";
-
-    int which_function = -1;
-    for (size_t i = 0; i < PieceTypeArray.size(); i++)
-    {
-        if (piece & PieceTypeArray[i])
-            which_function = i;
-    }
-
+    U64 attacks = 0ULL;
+    
     switch (which_function)
     {
     case 0:
-        attacks = GetPawnAttacks(piece, board);
+        attacks = GetPawnAttacks(square_, board);
         break;
     case 1:
-        attacks = GetKnightAttacks(piece, board);
+        attacks = GetKnightAttacks(square_, board);
         break;
     case 2:
-        attacks = GetBishopAttacks(piece, board);
+        attacks = GetBishopAttacks(square_, board);
         break;
     case 3:
-        attacks = GetRookAttacks(piece, board);
+        attacks = GetRookAttacks(square_, board);
         break;
     case 4:
-        attacks = GetQueenAttacks(piece, board);
+        attacks = GetQueenAttacks(square_, board);
         break;
     case 5:
-        attacks = GetKingAttacks(piece, board);
+        attacks = GetKingAttacks(square_, board);
         break;
     case -1:
         break;
@@ -175,63 +166,42 @@ U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_) const
 
 U64 ChessGame::GetAttacks(Square square_) const
 {
-    return GetAttacks(square_, board);
+    U64 piece = 0ULL;
+    set_bit(piece, square_);
+
+    int which_function = -1;
+    for (size_t i = 0; i < PieceTypeArray.size(); i++)
+    {
+        if (piece & PieceTypeArray[i])
+            which_function = i;
+    }
+    
+    return GetAttacks( square_, board, which_function );
 }
 
 // Checking functions
 bool ChessGame::InCheck(Color color_of_king)
 {
-
-    U64 king = 0ULL;
-    U64 attacking_piece = 0ULL;
-
-    if (color_of_king == white)
-    {
+    U64 attacks, king = 0ULL;
+    if( color_of_king == white )
         king = WhitePiecesArray[King];
-
-        for (int piece_type = Pawn; piece_type <= Queen; piece_type++)
-        {
-
-            clear_bit(WhitePiecesArray[King], king_square); //cleared king
-            BlackPiecesArray[piece_type] |= (1ULL << king_square);
-            /*
-                        std::cout<<"PRINTIN PIECES START \n";
-                        PrintGoard(BlackPiecesArray[piece_type]);
-                        PrintGoard(BlackPiecesArray[King]);
-                        std::cout<<"PRINTING PIECES ENDD n\n";
-            */
-            U64 attacks = GetAttacks(king_square, 0ULL); // Note: Pass 0ULL as occupancy since GetAttacks doesn't use it.
-
-            clear_bit(BlackPiecesArray[piece_type], king_square); // cleared thing
-            WhitePiecesArray[King] |= (1ULL << king_square);
-
-            std::cout<<"startingprinting \n\n";
-            PrintGoard(attacks);
-            PrintGoard(attacking_piece);
-            std::cout<<"ENDINGprinting \n\n";
-
-            if (attacks & BlackPiecesArray[piece_type])
-                return true;
-        }
-    }
     else
-    {
         king = BlackPiecesArray[King];
-
-        for (Piece piece_type = Pawn; piece_type <= King; piece_type = static_cast<Piece>(piece_type + 1))
-        {
-            Square king_square = static_cast<Square>(get_LSB(king));
-            U64 attacks = GetAttacks(king_square, 0ULL); // Note: Pass 0ULL as occupancy since GetAttacks doesn't use it.
-            attacking_piece = attacks & WhitePiecesArray[piece_type];
-
-            PrintGoard(attacks);
-            PrintGoard(attacking_piece);
-
-            if (attacking_piece)
-                return true;
-        }
+    
+    Square king_square = static_cast<Square>(get_LSB(king));
+    U64 temp_board = board;    
+    U64 opposite_piece = 0ULL;
+    for( int i = Pawn; i <= Queen; i++ )
+    {
+        attacks = GetAttacks( king_square, temp_board, i);
+        if( color_of_king == white )
+            opposite_piece = BlackPiecesArray[i];
+        else
+            opposite_piece = WhitePiecesArray[i];
+        
+        if( attacks & opposite_piece )
+            return true;
     }
-
     return false;
 }
 
