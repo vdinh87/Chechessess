@@ -159,7 +159,7 @@ bool ChessGame::InCheck(Color color_of_king) const
     if (color_of_king == white)
     {
         king = WhitePiecesArray[King];
-
+        
         for (int piece_type = Pawn; piece_type <= Queen; piece_type++)
         {
             U64 attacking_piece = BlackPiecesArray[piece_type];
