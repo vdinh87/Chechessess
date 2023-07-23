@@ -105,10 +105,39 @@ U64 ChessGame::GetKingAttacks(U64 king, const U64 occupancy_) const
     return attacks;
 }
 
+void PrintGoard(U64 board)
+{
+    std::string boardString;
+    U64 square;
+    for (int i = 63; i >= 0; i--)
+    {
+        square = get_bit(board, i);
+        if (square)
+            boardString += "1 ";
+        else
+            boardString += "0 ";
+
+        // new line + reverse
+        if ((i % 8) == 0)
+        {
+            boardString += " " + std::to_string(i / 8 + 1);
+            std::reverse(boardString.begin(), boardString.end());
+            std::cout << boardString << std::endl;
+            boardString.clear();
+        }
+    }
+    std::cout << "   a b c d e f g h\n"
+              << std::endl;
+}
+
 U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_) const
 {
     U64 attacks, piece = 0ULL;
     set_bit(piece, square_);
+
+    std::cout <<"PieceStart\n";
+    PrintGoard();
+    std::cout <<"PieceEnd\n";
 
     int which_function = -1;
     for (size_t i = 0; i < PieceTypeArray.size(); i++)
@@ -150,46 +179,60 @@ U64 ChessGame::GetAttacks(Square square_) const
 }
 
 // Checking functions
-bool ChessGame::InCheck(Color color_of_king) const
+bool ChessGame::InCheck(Color color_of_king)
 {
+
     U64 king = 0ULL;
     U64 attacking_piece = 0ULL;
-    U64 attacks = 0ULL;
 
     if (color_of_king == white)
     {
         king = WhitePiecesArray[King];
-        
+
         for (int piece_type = Pawn; piece_type <= Queen; piece_type++)
         {
-            U64 attacking_piece = BlackPiecesArray[piece_type];
-            while (attacking_piece != 0) // does all except king
-            {
-                int square_index = get_LSB(attacking_piece);
-                Square square = static_cast<Square>(square_index - 1);
-                attacks |= GetAttacks(square); // may cause seg fault
-                attacking_piece &= attacking_piece - 1;
-            }
+
+            clear_bit(WhitePiecesArray[King], king_square); //cleared king
+            BlackPiecesArray[piece_type] |= (1ULL << king_square);
+            /*
+                        std::cout<<"PRINTIN PIECES START \n";
+                        PrintGoard(BlackPiecesArray[piece_type]);
+                        PrintGoard(BlackPiecesArray[King]);
+                        std::cout<<"PRINTING PIECES ENDD n\n";
+            */
+            U64 attacks = GetAttacks(king_square, 0ULL); // Note: Pass 0ULL as occupancy since GetAttacks doesn't use it.
+
+            clear_bit(BlackPiecesArray[piece_type], king_square); // cleared thing
+            WhitePiecesArray[King] |= (1ULL << king_square);
+
+            std::cout<<"startingprinting \n\n";
+            PrintGoard(attacks);
+            PrintGoard(attacking_piece);
+            std::cout<<"ENDINGprinting \n\n";
+
+            if (attacks & BlackPiecesArray[piece_type])
+                return true;
         }
     }
-    else if (color_of_king == black)
+    else
     {
         king = BlackPiecesArray[King];
 
-        for (int piece_type = Pawn; piece_type <= Queen; piece_type++)
+        for (Piece piece_type = Pawn; piece_type <= King; piece_type = static_cast<Piece>(piece_type + 1))
         {
-            U64 attacking_piece = WhitePiecesArray[piece_type];
-            while (attacking_piece != 0)
-            {
-                int square_index = get_LSB(attacking_piece);
-                Square square = static_cast<Square>(square_index - 1);
-                attacks |= GetAttacks(square); 
-                attacking_piece &= attacking_piece - 1;
-            }
+            Square king_square = static_cast<Square>(get_LSB(king));
+            U64 attacks = GetAttacks(king_square, 0ULL); // Note: Pass 0ULL as occupancy since GetAttacks doesn't use it.
+            attacking_piece = attacks & WhitePiecesArray[piece_type];
+
+            PrintGoard(attacks);
+            PrintGoard(attacking_piece);
+
+            if (attacking_piece)
+                return true;
         }
     }
 
-    return (king & attacks) != 0;
+    return false;
 }
 
 void ChessGame::UpdateBoard()
@@ -288,27 +331,3 @@ void ChessGame::Move(Square from_sq, Square to_sq)
     UpdateBoard();
 }
 
-void PrintBoard(U64 board)
-{
-    std::string boardString;
-    U64 square;
-    for (int i = 63; i >= 0; i--)
-    {
-        square = get_bit(board, i);
-        if (square)
-            boardString += "1 ";
-        else
-            boardString += "0 ";
-
-        // new line + reverse
-        if ((i % 8) == 0)
-        {
-            boardString += " " + std::to_string(i / 8 + 1);
-            std::reverse(boardString.begin(), boardString.end());
-            std::cout << boardString << std::endl;
-            boardString.clear();
-        }
-    }
-    std::cout << "   a b c d e f g h\n"
-              << std::endl;
-}
