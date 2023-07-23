@@ -6,10 +6,11 @@ int main()
     std::vector<U64> v = { occ };
     ChessGame cg;
     //move king to middle of board
-    cg.Move(e1, e4);
+    // cg.Move(d2, e5);
     //move piece to checking position
-    cg.Move(h8, a4);
+
+    cg.Move(g1, d8);
 
     cg.PrintBoard();
-    std::cout << "CheckStatus: \n"<< cg.InCheck(white) << "\n";
+    PrintGoard(cg.GetAttacks(d8));
 }

@@ -279,21 +279,28 @@ void ChessGame::PrintBoard() const
 void ChessGame::Move(Square from_sq, Square to_sq)
 {
     U64 from = 0ULL;
+    U64 to = 0ULL;
     set_bit(from, from_sq);
+    set_bit(to, to_sq);
 
     if (!(from & board))
         return;
 
+    
+
     Color from_color = GetColor(from);
     Piece its_piece = GetPieceType(from);
+    Piece to_piece = GetPieceType(to);
 
     if (from_color == white)
     {
+        clear_bit(BlackPiecesArray[to_piece], to_sq);
         set_bit(WhitePiecesArray[its_piece], to_sq);
         clear_bit(WhitePiecesArray[its_piece], from_sq);
     }
     else
     {
+        clear_bit(WhitePiecesArray[to_piece], to_sq);
         set_bit(BlackPiecesArray[its_piece], to_sq);
         clear_bit(BlackPiecesArray[its_piece], from_sq);
     }
