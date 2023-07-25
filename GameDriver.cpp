@@ -8,9 +8,11 @@ int main()
     //move king to middle of board
     // cg.Move(d2, e5);
     //move piece to checking position
-
-    cg.Move(g1, d8);
-
+    cg.Move(e1, e4);
+    cg.Move(c8, c6);
+    cg.Move(d8, d4);
+    cg.Move(g8, f6);
+    cg.Move(d1, f4);
     cg.PrintBoard();
-    PrintGoard(cg.GetAttacks(d8));
+    PrintGoard( cg.InCheck(white) );
 }

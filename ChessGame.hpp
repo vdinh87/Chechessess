@@ -25,18 +25,18 @@ private:
     U64 GetKingAttacks   (Square square, const U64 occupancy_) const;
 
     //checking
-    bool InCheck(Color color_of_king);
 
     //filter functions
     U64 FilterAllMoves(const U64& otherBoard, Color color) const;
     U64 FilterCheck(const U64& otherBoard, Color color) const;
-    U64 FilterTeam(const U64& otherBoard, Color color) const;
+    U64 FilterTeam(const U64& moveset, Color color) const;
 
     //Utility functions
     Color GetColor(U64 piece) const;
     Piece GetPieceType(U64 unknown_piece) const;
     void UpdateBoard();
 public:
+    U64 InCheck(Color color_of_king);
     ChessGame();
     ~ChessGame() = default;
     U64 GetAttacks(Square square_, const U64 occupancy_, int which_function = -1) const; // make private as some point, change Square to u64

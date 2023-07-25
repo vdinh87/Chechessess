@@ -161,6 +161,10 @@ U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_functi
         break;
     }
 
+    // Filter out ally pieces from attack
+    U64 piece = 0ULL;
+    Color piece_color = ( set_bit(piece, square_) & WhitePieces ) ? white : black; 
+    attacks = FilterTeam(attacks, piece_color);
     return attacks;
 }
 
@@ -175,14 +179,14 @@ U64 ChessGame::GetAttacks(Square square_) const
         if (piece & PieceTypeArray[i])
             which_function = i;
     }
-    
+        
     return GetAttacks( square_, board, which_function );
 }
 
 // Checking functions
-bool ChessGame::InCheck(Color color_of_king)
+U64 ChessGame::InCheck(Color color_of_king)
 {
-    U64 attacks, king = 0ULL;
+    U64 attacks, king, checking_pieces = 0ULL;
     if( color_of_king == white )
         king = WhitePiecesArray[King];
     else
@@ -200,9 +204,20 @@ bool ChessGame::InCheck(Color color_of_king)
             opposite_piece = WhitePiecesArray[i];
         
         if( attacks & opposite_piece )
-            return true;
+            checking_pieces |= (attacks & opposite_piece);
     }
-    return false;
+    return checking_pieces;
+}
+
+//Filter functions
+U64 ChessGame::FilterTeam(const U64& moveset, Color color) const
+{
+    U64 filtered_moveset = 0ULL;
+    if( color == white )
+        filtered_moveset = moveset & ~WhitePieces;
+    else 
+        filtered_moveset = moveset & ~BlackPieces;
+    return filtered_moveset;
 }
 
 void ChessGame::UpdateBoard()
@@ -283,26 +298,25 @@ void ChessGame::Move(Square from_sq, Square to_sq)
     set_bit(from, from_sq);
     set_bit(to, to_sq);
 
-    if (!(from & board))
+    //no piece on board or parameters are same square
+    if ( !(from & board) || (from_sq == to_sq) ) 
         return;
 
-    
-
     Color from_color = GetColor(from);
-    Piece its_piece = GetPieceType(from);
+    Piece from_piece = GetPieceType(from);
     Piece to_piece = GetPieceType(to);
 
     if (from_color == white)
     {
         clear_bit(BlackPiecesArray[to_piece], to_sq);
-        set_bit(WhitePiecesArray[its_piece], to_sq);
-        clear_bit(WhitePiecesArray[its_piece], from_sq);
+        set_bit(WhitePiecesArray[from_piece], to_sq);
+        clear_bit(WhitePiecesArray[from_piece], from_sq);
     }
     else
     {
         clear_bit(WhitePiecesArray[to_piece], to_sq);
-        set_bit(BlackPiecesArray[its_piece], to_sq);
-        clear_bit(BlackPiecesArray[its_piece], from_sq);
+        set_bit(BlackPiecesArray[from_piece], to_sq);
+        clear_bit(BlackPiecesArray[from_piece], from_sq);
     }
 
     UpdateBoard();
