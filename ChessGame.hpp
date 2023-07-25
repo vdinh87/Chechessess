@@ -34,6 +34,7 @@ private:
     //Utility functions
     Color GetColor(U64 piece) const;
     Piece GetPieceType(U64 unknown_piece) const;
+    bool isSlider(const Square square_) const;
     void UpdateBoard();
 public:
     U64 InCheck(Color color_of_king);

@@ -220,6 +220,8 @@ U64 ChessGame::FilterTeam(const U64& moveset, Color color) const
     return filtered_moveset;
 }
 
+
+
 void ChessGame::UpdateBoard()
 {
     WhitePieces = WhitePiecesArray[Pawn] | WhitePiecesArray[Knight] | WhitePiecesArray[Bishop] |
@@ -253,7 +255,18 @@ Piece ChessGame::GetPieceType(U64 unknown_piece) const
     return p;
 }
 
-void ChessGame::PrintBoard() const
+bool ChessGame::isSlider(const Square square_) const
+{
+    U64 slider_pieces = WhitePiecesArray[Queen] | WhitePiecesArray[Bishop] | WhitePiecesArray[Rook] | 
+                        BlackPiecesArray[Queen] | BlackPiecesArray[Bishop] | BlackPiecesArray[Rook];
+    U64 board = 0ULL;
+    set_bit(board, square_);
+
+    if (board & slider_pieces)
+        return true;
+}
+
+    void ChessGame::PrintBoard() const
 {
     std::string boardString;
     U64 square;
