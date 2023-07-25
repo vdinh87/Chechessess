@@ -8,7 +8,8 @@ int main()
     //move king to middle of board
     // cg.Move(d2, e5);
     //move piece to checking position
+    
+    cg.Move( d8, d5);
     cg.PrintBoard();
-
-    // std::cout << "Slider status: " << cg.isSlider(d8) << std::endl;
+    PrintGoard( cg.GetAttacks(e1) );
 }
