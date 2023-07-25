@@ -161,16 +161,13 @@ U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_functi
         break;
     }
 
-    // Filter out ally pieces from attack
-    U64 piece = 0ULL;
-    Color piece_color = ( set_bit(piece, square_) & WhitePieces ) ? white : black; 
-    attacks = FilterTeam(attacks, piece_color);
+   
     return attacks;
 }
 
 U64 ChessGame::GetAttacks(Square square_) const
 {
-    U64 piece = 0ULL;
+    U64 attacks, piece = 0ULL;
     set_bit(piece, square_);
 
     int which_function = -1;
@@ -180,7 +177,12 @@ U64 ChessGame::GetAttacks(Square square_) const
             which_function = i;
     }
         
-    return GetAttacks( square_, board, which_function );
+    attacks = GetAttacks( square_, board, which_function );
+
+    // Filter out ally pieces from attack
+    Color piece_color = ( set_bit(piece, square_) & WhitePieces ) ? white : black; 
+    attacks = GetFilteredAttacks(attacks, piece_color);
+    return attacks;
 }
 
 // Checking functions
@@ -210,6 +212,19 @@ U64 ChessGame::InCheck(Color color_of_king)
 }
 
 //Filter functions
+U64 ChessGame::GetFilteredAttacks(const U64& moveset, Color color) const
+{
+    return FilterTeam(moveset, color);
+    // return FilterTeam(moveset, color) & FilterCheck(moveset, color);
+}
+
+U64 ChessGame::FilterCheck(const U64& moveset, Color color) const
+{
+    
+    return 0ULL;
+    //WHEN FINISHED UNCOMMENT GetFilteredAttacks()
+}
+
 U64 ChessGame::FilterTeam(const U64& moveset, Color color) const
 {
     U64 filtered_moveset = 0ULL;
