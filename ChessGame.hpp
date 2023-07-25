@@ -35,7 +35,7 @@ private:
     //Utility functions
     Color GetColor(U64 piece) const;
     Piece GetPieceType(U64 unknown_piece) const;
-    bool isSlider(const Square square_) const;
+    bool isSlider(const U64 board_) const;
     void UpdateBoard();
 public:
     U64 GetFilteredAttacks(const U64& moveset, Color color) const;

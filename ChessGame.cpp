@@ -218,14 +218,42 @@ U64 ChessGame::GetFilteredAttacks(const U64& moveset, Color color) const
     // return FilterTeam(moveset, color) & FilterCheck(moveset, color);
 }
 
-U64 ChessGame::FilterCheck(const U64& moveset, Color color) const
-{
-    
-    return 0ULL;
-    //WHEN FINISHED UNCOMMENT GetFilteredAttacks()
+U64 ChessGame::FilterCheck(const U64 &otherBoard, Color color) const {
+    // U64 checkers = InCheck(color);
+    // bool two_or_more_checkers = false;
+    // U64 checkers2 = checkers;
+
+    // for (int i = 0; i < 2 && checkers2; ++i) //getting number of checkers2
+    // {
+    //     if (i == 1)
+    //         two_or_more_checkers = true;
+    //     U64 lsb = get_LSB(checkers2);
+    //     checkers2 &= (checkers2 - 1);
+    // }
+
+    // U64 capture_mask = ~0ULL;
+    // U64 push_mask = ~0ULL;
+
+    // if (two_or_more_checkers)
+    // {
+    //     // return king getattacks (Specific to color)
+    //     push_mask = 0ULL;
+    // } else {
+    //     capture_mask = checkers;
+    //     // If it's checker is a slider, find rays to king set push_mask = opponent_slider_rays_to_square(king_square, board); .. If it's not a slider set it to nothing.
+    //     if (isSlider(checkers))
+    //         push_mask = getrays(king_square, board);
+
+    // }
+
+    // U64 moves = getALLAttacks(color) & (push_mask | capture_mask);
+
+    // GetFilteredAttacks()
+
+    // return moves;
 }
 
-U64 ChessGame::FilterTeam(const U64& moveset, Color color) const
+U64 ChessGame::FilterTeam(const U64 &moveset, Color color) const
 {
     U64 filtered_moveset = 0ULL;
     if( color == white )
@@ -270,14 +298,12 @@ Piece ChessGame::GetPieceType(U64 unknown_piece) const
     return p;
 }
 
-bool ChessGame::isSlider(const Square square_) const
+bool ChessGame::isSlider(const U64 board_) const
 {
     U64 slider_pieces = WhitePiecesArray[Queen] | WhitePiecesArray[Bishop] | WhitePiecesArray[Rook] | 
                         BlackPiecesArray[Queen] | BlackPiecesArray[Bishop] | BlackPiecesArray[Rook];
-    U64 board = 0ULL;
-    set_bit(board, square_);
 
-    if (board & slider_pieces)
+    if (board_ & slider_pieces)
         return true;
 }
 
