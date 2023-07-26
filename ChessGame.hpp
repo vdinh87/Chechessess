@@ -26,7 +26,7 @@ private:
     U64 GetAttacks(Square square_, const U64 occupancy_, int which_function = -1) const;
 
     //checking
-    U64 InCheck(Color color_of_king);
+    U64 InCheck(Color color_of_king) const;
 
     //filter functions
     U64 FilterCheck(const U64& moveset, Color color) const;

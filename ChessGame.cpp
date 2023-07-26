@@ -160,7 +160,6 @@ U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_functi
     case -1:
         break;
     }
-
    
     return attacks;
 }
@@ -186,7 +185,7 @@ U64 ChessGame::GetAttacks(Square square_) const
 }
 
 // Checking functions
-U64 ChessGame::InCheck(Color color_of_king)
+U64 ChessGame::InCheck(Color color_of_king) const
 {
     U64 attacks, king, checking_pieces = 0ULL;
     if( color_of_king == white )
@@ -220,8 +219,17 @@ U64 ChessGame::GetFilteredAttacks(const U64& moveset, Color color) const
 
 U64 ChessGame::FilterCheck(const U64& moveset, Color color) const
 {
+    U64 ray, king = 0ULL;
+    U64 checker = InCheck(color);
+
+    if( color == white )
+        king = WhitePiecesArray[King];
+    else
+        king = BlackPiecesArray[King];
     
-    return 0ULL;
+    Square king_sq = static_cast<Square>( get_LSB(king) );
+    Square checker_sq = static_cast<Square>( get_LSB(king) );
+
     //WHEN FINISHED UNCOMMENT GetFilteredAttacks()
 }
 

@@ -72,6 +72,13 @@ U64 NorthEast(U64 & other_board)
   return 0ULL;
 }
 
+U64 East(U64 & other_board)
+{
+  if( ~(other_board & FILE_H) )
+      return other_board << 1;
+  return 0ULL;
+}
+
 U64 South(U64 & other_board)
 {
   if( ~(other_board & RANK_1) )
@@ -90,13 +97,6 @@ U64 SouthEast(U64 & other_board)
 {
   if( ~(other_board & RANK_1) | ~(other_board & FILE_H) )
       return other_board >> 7;
-  return 0ULL;
-}
-
-U64 East(U64 & other_board)
-{
-  if( ~(other_board & FILE_H) )
-      return other_board << 1;
   return 0ULL;
 }
 
