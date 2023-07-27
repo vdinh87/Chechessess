@@ -278,7 +278,7 @@ U64 ChessGame::FilterCheck(const U64& moveset, Color color) const
         // If it's checker is a slider, find rays to king set block_mask = opponent_slider_rays_to_square(king_sq, board); .. If it's not a slider set it to nothing.
         block_mask = 0ULL;
         if (isSlider(checkers))
-            block_mask = GetRay(king_sq, board);
+            block_mask = GetRay(king_sq, static_cast<Square>(get_LSB(checkers)) );
     }
 
     GetFilteredAttacks(moveset, color);
