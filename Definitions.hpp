@@ -161,8 +161,9 @@ double GetDistance(Square from, Square to)
   return distance;
 }
 
-U64 GetRay(U64 from, U64 to, int distance)
+U64 GetRay(U64 from, U64 to)
 {
+  int distance = GetDistance(from, to);
   U64 ray = from;
   //uses direction enum
   for( int dir = NW; dir <= W; dir++ ) 
