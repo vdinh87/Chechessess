@@ -335,6 +335,7 @@ bool ChessGame::isSlider(const U64 board_) const
 
     if (board_ & slider_pieces)
         return true;
+    return false;
 }
 
 void ChessGame::PrintBoard() const
@@ -382,8 +383,10 @@ void ChessGame::Move(Square from_sq, Square to_sq)
     set_bit(from, from_sq);
     set_bit(to, to_sq);
 
+    U64 ally_pieces = GetColor(from) == white ? WhitePieces : BlackPieces;
+
     //no piece on board or parameters are same square
-    if ( !(from & board) || (from_sq == to_sq) ) 
+    if ( !(from & board) || (from_sq == to_sq) || (to_sq & ally_pieces) ) 
         return;
 
     Color from_color = GetColor(from);

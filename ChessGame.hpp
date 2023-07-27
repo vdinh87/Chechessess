@@ -26,7 +26,6 @@ private:
     U64 GetAttacks(Square square_, const U64 occupancy_, int which_function = -1) const;
 
     //checking
-    U64 InCheck(Color color_of_king) const;
 
     //filter functions
     U64 FilterTeam(const U64& moveset, Color color) const;
@@ -37,6 +36,7 @@ private:
     bool isSlider(const U64 board_) const;
     void UpdateBoard();
 public:
+    U64 InCheck(Color color_of_king) const;
     U64 FilterCheck(const U64& moveset, Color color) const;
     U64 GetFilteredAttacks(const U64& moveset, Color color) const;
     ChessGame();
