@@ -220,22 +220,7 @@ U64 ChessGame::GetFilteredAttacks(const U64& moveset, Color color) const
 
 U64 ChessGame::FilterCheck(const U64& moveset, Color color) const
 {
-    U64 king = 0ULL;
-    U64 checker = InCheck(color);
-
-    if( color == white )
-        king = WhitePiecesArray[King];
-    else
-        king = BlackPiecesArray[King];
     
-    Square king_sq = static_cast<Square>( get_LSB(king) );
-    Square checker_sq = static_cast<Square>( get_LSB(checker) );
-
-    int distance = GetDistance(checker_sq, king_sq);
-    U64 ray = GetRay(king, checker, distance);
-    PrintGoard(ray);
-
-    return 0ULL;
 }
 
 U64 ChessGame::FilterTeam(const U64& moveset, Color color) const
