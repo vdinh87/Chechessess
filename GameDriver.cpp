@@ -16,5 +16,5 @@ int main()
     cg.PrintBoard();
     // PrintGoard(cg.GetAttacks(d4));
     cg.FilterCheck( cg.GetAttacks(q), white);
-    
+    PrintGoard( GetRay(d4,d8) );
 }

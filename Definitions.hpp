@@ -152,17 +152,22 @@ U64 GoInDirection(Direction direction, U64 & other_board)
 
 // inclusive to the to parameter
 // Ex: a1 -> c1 = 2 units
-double GetDistance(Square from, Square to) 
+double GetDistance(Square from_sq, Square to_sq) 
 {
-  double distance = std::abs( (double)(from - to) / 8);
+  double distance = std::abs( (double)(from_sq - to_sq) / 8);
   if( distance < 1 ) // if decimal
     distance = distance * 8;
   distance = std::round(distance);
   return distance;
 }
 
-U64 GetRay(U64 from, U64 to, int distance)
+U64 GetRay(Square from_sq, Square to_sq)
 {
+  U64 from = 0ULL;
+  U64 to = 0ULL;
+  set_bit(from, from_sq);
+  set_bit(to, to_sq);
+  int distance = GetDistance(from_sq, to_sq);
   U64 ray = from;
   //uses direction enum
   for( int dir = NW; dir <= W; dir++ ) 
