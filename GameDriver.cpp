@@ -9,9 +9,12 @@ int main()
     // cg.Move(d2, e5);
     //move piece to checking position
     
-    // cg.Move( d8, d5);
+    //b6, d6, f6, a4, f4
+    Square q = f5;
+    cg.Move(e1, d4);
+    cg.Move(d8, q);
     cg.PrintBoard();
-    PrintGoard( cg.GetAttacks(e1) );
-    bool b = a1 < b2;
-    std::cout << b;
+    // PrintGoard(cg.GetAttacks(d4));
+    cg.FilterCheck( cg.GetAttacks(q), white);
+    
 }

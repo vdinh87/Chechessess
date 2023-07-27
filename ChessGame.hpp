@@ -29,7 +29,6 @@ private:
     U64 InCheck(Color color_of_king) const;
 
     //filter functions
-    U64 FilterCheck(const U64& moveset, Color color) const;
     U64 FilterTeam(const U64& moveset, Color color) const;
 
     //Utility functions
@@ -38,6 +37,7 @@ private:
     bool isSlider(const U64 board_) const;
     void UpdateBoard();
 public:
+    U64 FilterCheck(const U64& moveset, Color color) const;
     U64 GetFilteredAttacks(const U64& moveset, Color color) const;
     ChessGame();
     ~ChessGame() = default;

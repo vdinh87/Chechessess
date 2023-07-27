@@ -213,13 +213,14 @@ U64 ChessGame::InCheck(Color color_of_king) const
 //Filter functions
 U64 ChessGame::GetFilteredAttacks(const U64& moveset, Color color) const
 {
-    return FilterTeam(moveset, color);
-    // return FilterTeam(moveset, color) & FilterCheck(moveset, color);
+    U64 filtered_attacks = FilterTeam(moveset, color);
+    // filtered_attacks = FilterCheck(filtered_attacks, color);
+    return filtered_attacks;
 }
 
 U64 ChessGame::FilterCheck(const U64& moveset, Color color) const
 {
-    U64 ray, king = 0ULL;
+    U64 king = 0ULL;
     U64 checker = InCheck(color);
 
     if( color == white )
@@ -228,12 +229,16 @@ U64 ChessGame::FilterCheck(const U64& moveset, Color color) const
         king = BlackPiecesArray[King];
     
     Square king_sq = static_cast<Square>( get_LSB(king) );
-    Square checker_sq = static_cast<Square>( get_LSB(king) );
+    Square checker_sq = static_cast<Square>( get_LSB(checker) );
 
-    //WHEN FINISHED UNCOMMENT GetFilteredAttacks()
+    int distance = GetDistance(checker_sq, king_sq);
+    U64 ray = GetRay(king, checker, distance);
+    PrintGoard(ray);
+
+    return 0ULL;
 }
 
-U64 ChessGame::FilterTeam(const U64 &moveset, Color color) const
+U64 ChessGame::FilterTeam(const U64& moveset, Color color) const
 {
     U64 filtered_moveset = 0ULL;
     if( color == white )
@@ -242,8 +247,6 @@ U64 ChessGame::FilterTeam(const U64 &moveset, Color color) const
         filtered_moveset = moveset & ~BlackPieces;
     return filtered_moveset;
 }
-
-
 
 void ChessGame::UpdateBoard()
 {
@@ -278,16 +281,8 @@ Piece ChessGame::GetPieceType(U64 unknown_piece) const
     return p;
 }
 
-bool ChessGame::isSlider(const U64 board_) const
-{
-    U64 slider_pieces = WhitePiecesArray[Queen] | WhitePiecesArray[Bishop] | WhitePiecesArray[Rook] | 
-                        BlackPiecesArray[Queen] | BlackPiecesArray[Bishop] | BlackPiecesArray[Rook];
 
-    if (board_ & slider_pieces)
-        return true;
-}
-
-    void ChessGame::PrintBoard() const
+void ChessGame::PrintBoard() const
 {
     std::string boardString;
     U64 square;

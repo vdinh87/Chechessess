@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
+#include <cmath>
 #include <stdexcept>
 
 typedef uint64_t U64;
@@ -50,6 +51,11 @@ enum Piece { Pawn, Knight, Bishop, Rook, Queen, King };
 
 // define sides
 enum Color { white, black };
+
+enum Direction { 
+  NW, N, NE, E,
+  SW, S, SE, W
+};
 
 U64 North(U64 & other_board)
 {
@@ -105,4 +111,74 @@ U64 West(U64 & other_board)
   if( ~(other_board & FILE_A) )
       return other_board >> 1;
   return 0ULL;
+}
+
+U64 GoInDirection(Direction direction, U64 & other_board)
+{
+  U64 board = 0ULL;
+  switch (direction)
+  {
+  case NW:
+    board = NorthWest(other_board);
+    break;
+  case N:
+    board = North(other_board);
+    break;
+  case NE:
+    board = NorthEast(other_board);
+    break;
+  case E:
+    board = East(other_board);
+    break;
+  case SW:
+    board = SouthWest(other_board);
+    break;
+  case S:
+    board = South(other_board);
+    break;
+  case SE:
+    board = SouthEast(other_board);
+    break;
+  case W:
+    board = West(other_board);
+    break;
+  
+  default:
+    break;
+  }
+
+  return board;
+}
+
+// inclusive to the to parameter
+// Ex: a1 -> c1 = 2 units
+double GetDistance(Square from, Square to) 
+{
+  double distance = std::abs( (double)(from - to) / 8);
+  if( distance < 1 ) // if decimal
+    distance = distance * 8;
+  distance = std::round(distance);
+  return distance;
+}
+
+U64 GetRay(U64 from, U64 to, int distance)
+{
+  U64 ray = from;
+  //uses direction enum
+  for( int dir = NW; dir <= W; dir++ ) 
+  {   
+    // form ray
+    for( int steps = 0; steps < distance; steps++ )
+      ray = ray | GoInDirection( (Direction)dir, ray );
+
+    // Check if to_square is in ray
+    if( to & ray )
+      break;
+    else
+      ray = from;     
+  }
+
+  // Clean up ray
+  ray = (ray & ~from) & (ray & ~to);
+  return ray;
 }
