@@ -11,7 +11,7 @@ int main()
     
     //b6, d6, f6, a4, f4
     Square q = f5;
-    cg.Move(e1, d1);
+    cg.Move(e1, g7);
     // cg.Move(d8, q);
     cg.PrintBoard();
 }
