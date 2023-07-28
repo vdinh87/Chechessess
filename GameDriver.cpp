@@ -10,8 +10,14 @@ int main()
     //move piece to checking position
     
     //b6, d6, f6, a4, f4
-    Square q = f5;
-    cg.Move(e1, g7);
+
+    Square dest = d3;
+
+    cg.Move(e1, dest); // King
+    cg.Move(d8, f5); // Queen
     // cg.Move(d8, q);
     cg.PrintBoard();
+
+    // cg.GetAttacks(d3);
+    PrintGoard(cg.GetAttacks(dest)); //Once it's done debugging
 }
