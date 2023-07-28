@@ -214,12 +214,14 @@ U64 ChessGame::InCheck(Color color_of_king) const
 U64 ChessGame::GetFilteredAttacks(const U64& moveset, Color color) const
 {
     U64 filtered_attacks = FilterTeam(moveset, color);
-    // filtered_attacks = FilterCheck(filtered_attacks, color);
+    filtered_attacks = FilterCheck(filtered_attacks, color);
     return filtered_attacks;
 }
 
 U64 ChessGame::FilterCheck(const U64& moveset, Color color) const
 {
+    U64 capture_mask = ~0ULL;
+    U64 block_mask = ~0ULL;
 
     U64 checkers = InCheck(color);
     bool two_or_more_checkers = false;
@@ -241,34 +243,35 @@ U64 ChessGame::FilterCheck(const U64& moveset, Color color) const
         checkers2 &= (checkers2 - 1);
     }
 
-    U64 capture_mask = ~0ULL;
-    U64 block_mask = ~0ULL;
+    bool is_king = moveset & FilterTeam(GetAttacks(king_sq, 0ULL, King), color); // may need to be updated as we add filters
 
-    if (two_or_more_checkers) 
+
+
+
+    if (two_or_more_checkers || is_king) 
     { //Only king moves allowed.
-        if (moveset & FilterTeam(GetAttacks(king_sq), color) )
-        {  //If it's a king gets evade_attacks.  Condition may need changing as we add filters.
-            U64 checker_attacks = 0ULL;
-            for (const Square &square : checker_locations)
-            {
-                checker_attacks |= GetAttacks(square);
-            }
-            return moveset & ~checker_attacks;
+        U64 checker_attacks = 0ULL;
+        for (const Square &square : checker_locations)
+        {
+            U64 checkerboard = 0ULL;
+            set_bit(checkerboard, square);
+            Piece type = GetPieceType(checkerboard);
+            checker_attacks = GetAttacks(square, 0ULL, type) | checker_attacks;
         }
-        return 0ULL;
+
+        return moveset & ~checker_attacks;
     }
     else
     {
         capture_mask = checkers;
-        // If it's checker is a slider, find rays to king set block_mask = opponent_slider_rays_to_square(king_sq, board); .. If it's not a slider set it to nothing.
         block_mask = 0ULL;
         if (isSlider(checkers))
             block_mask = GetRay(king_sq, static_cast<Square>(get_LSB(checkers)) );
     }
 
-    GetFilteredAttacks(moveset, color);
     return moveset & (block_mask | capture_mask);
 }
+
 
 U64 ChessGame::FilterTeam(const U64& moveset, Color color) const
 {
