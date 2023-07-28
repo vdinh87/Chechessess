@@ -220,7 +220,6 @@ U64 ChessGame::GetFilteredAttacks(const U64& moveset, Color color) const
 
 U64 ChessGame::FilterCheck(const U64& moveset, Color color) const
 {
-
     U64 checkers = InCheck(color);
     bool two_or_more_checkers = false;
     U64 checkers2 = checkers;
