@@ -178,9 +178,8 @@ U64 ChessGame::GetAttacks(Square square_) const
         
     attacks = GetAttacks( square_, board, which_function );
 
-    // Filter out ally pieces from attack
-    Color piece_color = ( set_bit(piece, square_) & WhitePieces ) ? white : black; 
-    attacks = GetFilteredAttacks(attacks, piece_color);
+    attacks = FilterTeam(attacks, piece);
+    attacks = FilterCheck(attacks, piece);
     return attacks;
 }
 
@@ -211,15 +210,20 @@ U64 ChessGame::InCheck(Color color_of_king) const
 }
 
 //Filter functions
-U64 ChessGame::GetFilteredAttacks(const U64& moveset, Color color) const
+U64 ChessGame::FilterTeam(const U64& moveset, const U64& piece) const
 {
-    U64 filtered_attacks = FilterTeam(moveset, color);
-    filtered_attacks = FilterCheck(filtered_attacks, color);
-    return filtered_attacks;
+    Color color = GetColor(piece);
+    U64 filtered_moveset = 0ULL;
+    if( color == white )
+        filtered_moveset = moveset & ~WhitePieces;
+    else 
+        filtered_moveset = moveset & ~BlackPieces;
+    return filtered_moveset;
 }
-
-U64 ChessGame::FilterCheck(const U64& moveset, Color color) const
+    
+U64 ChessGame::FilterCheck(const U64& moveset, const U64& piece) const
 {
+    Color color = GetColor(piece);
     U64 capture_mask = ~0ULL;
     U64 block_mask = ~0ULL;
 
@@ -243,12 +247,10 @@ U64 ChessGame::FilterCheck(const U64& moveset, Color color) const
         checkers2 &= (checkers2 - 1);
     }
 
-    bool is_king = moveset & FilterTeam(GetAttacks(king_sq, 0ULL, King), color); // may need to be updated as we add filters
+    // may need to be updated as we add filters
+    bool is_king = moveset & FilterTeam(GetAttacks(king_sq, 0ULL, King), color); 
 
-
-
-
-    if (two_or_more_checkers || is_king) 
+    if (two_or_more_checkers || is_king)
     { //Only king moves allowed.
         U64 checker_attacks = 0ULL;
         for (const Square &square : checker_locations)
@@ -270,17 +272,6 @@ U64 ChessGame::FilterCheck(const U64& moveset, Color color) const
     }
 
     return moveset & (block_mask | capture_mask);
-}
-
-
-U64 ChessGame::FilterTeam(const U64& moveset, Color color) const
-{
-    U64 filtered_moveset = 0ULL;
-    if( color == white )
-        filtered_moveset = moveset & ~WhitePieces;
-    else 
-        filtered_moveset = moveset & ~BlackPieces;
-    return filtered_moveset;
 }
 
 void ChessGame::UpdateBoard()

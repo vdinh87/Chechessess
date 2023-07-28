@@ -15,9 +15,14 @@ int main()
 
     cg.Move(e1, dest); // King
     cg.Move(d8, f5); // Queen
+    cg.Move(h1, h5); // Rook
+    cg.Move(f1, f3); // Rook
     // cg.Move(d8, q);
     cg.PrintBoard();
 
     // cg.GetAttacks(d3);
-    PrintGoard(cg.GetAttacks(dest)); //Once it's done debugging
+    std::cout << "Bishop moves: \n";
+    PrintGoard(cg.GetAttacks(f3)); //Once it's done debugging
+    std::cout << "Rook moves: \n";
+    PrintGoard(cg.GetAttacks(h5)); //Once it's done debugging
 }

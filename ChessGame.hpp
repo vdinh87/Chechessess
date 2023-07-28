@@ -28,7 +28,8 @@ private:
     //checking
 
     //filter functions
-    U64 FilterTeam(const U64& moveset, Color color) const;
+    U64 FilterTeam(const U64& moveset, const U64& piece) const;
+    U64 FilterCheck(const U64& moveset, const U64& piece) const;
 
     //Utility functions
     Color GetColor(U64 piece) const;
@@ -37,7 +38,6 @@ private:
     void UpdateBoard();
 public:
     U64 InCheck(Color color_of_king) const;
-    U64 FilterCheck(const U64& moveset, Color color) const;
     U64 GetFilteredAttacks(const U64& moveset, Color color) const;
     ChessGame();
     ~ChessGame() = default;
