@@ -11,18 +11,15 @@ int main()
     
     //b6, d6, f6, a4, f4
 
-    Square dest = d3;
+    Square dest = e3;
 
     cg.Move(e1, dest); // King
     cg.Move(d8, f5); // Queen
-    cg.Move(h1, h5); // Rook
-    cg.Move(f1, f3); // Rook
+
     // cg.Move(d8, q);
     cg.PrintBoard();
 
-    // cg.GetAttacks(d3);
-    std::cout << "Bishop moves: \n";
-    PrintGoard(cg.GetAttacks(f3)); //Once it's done debugging
-    std::cout << "Rook moves: \n";
-    PrintGoard(cg.GetAttacks(h5)); //Once it's done debugging
+    // cg.GetAttacks(d3); yes
+    std::cout << "King moves: \n";
+    PrintGoard(cg.GetAttacks(dest)); 
 }

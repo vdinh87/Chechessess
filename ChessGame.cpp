@@ -248,7 +248,8 @@ U64 ChessGame::FilterCheck(const U64& moveset, const U64& piece) const
     }
 
     // may need to be updated as we add filters
-    bool is_king = moveset & FilterTeam(GetAttacks(king_sq, 0ULL, King), color); 
+    bool is_king = piece & PieceTypeArray[King];
+
 
     if (two_or_more_checkers || is_king)
     { //Only king moves allowed.
