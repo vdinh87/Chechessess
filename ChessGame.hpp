@@ -26,19 +26,22 @@ private:
     U64 GetAttacks(Square square_, const U64 occupancy_, int which_function = -1) const;
 
     //checking
+    U64 InCheck(const U64& occupancy_, Color color_of_king) const;
+    U64 InCheck(const U64& occupancy_, Color color_of_king, const U64& king) const;
 
     //filter functions
-    U64 FilterTeam(const U64& moveset, const U64& piece) const;
-    U64 FilterCheck(const U64& moveset, const U64& piece) const;
+    U64 FilterTeam  (const U64& moveset, const U64& piece) const;
+    U64 FilterCheck (const U64& moveset, const U64& piece) const;
+    U64 FilterPin   (const U64& moveset, const U64& piece) const;
+    U64 FilterLegalKingMoves (const U64& moveset, const U64& piece) const;
 
     //Utility functions
     Color GetColor(U64 piece) const;
     Piece GetPieceType(U64 unknown_piece) const;
-    bool isSlider(const U64 board_) const;
+    bool IsSlider(const U64 board_) const;
     void UpdateBoard();
+
 public:
-    U64 InCheck(Color color_of_king) const;
-    U64 GetFilteredAttacks(const U64& moveset, Color color) const;
     ChessGame();
     ~ChessGame() = default;
     U64 GetAttacks(Square square_) const;

@@ -140,22 +140,22 @@ U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_functi
     switch (which_function)
     {
     case 0:
-        attacks = GetPawnAttacks(square_, board);
+        attacks = GetPawnAttacks(square_, occupancy_);
         break;
     case 1:
-        attacks = GetKnightAttacks(square_, board);
+        attacks = GetKnightAttacks(square_, occupancy_);
         break;
     case 2:
-        attacks = GetBishopAttacks(square_, board);
+        attacks = GetBishopAttacks(square_, occupancy_);
         break;
     case 3:
-        attacks = GetRookAttacks(square_, board);
+        attacks = GetRookAttacks(square_, occupancy_);
         break;
     case 4:
-        attacks = GetQueenAttacks(square_, board);
+        attacks = GetQueenAttacks(square_, occupancy_);
         break;
     case 5:
-        attacks = GetKingAttacks(square_, board);
+        attacks = GetKingAttacks(square_, occupancy_);
         break;
     case -1:
         break;
@@ -168,6 +168,8 @@ U64 ChessGame::GetAttacks(Square square_) const
 {
     U64 attacks, piece = 0ULL;
     set_bit(piece, square_);
+    if( !(piece & board) )
+        throw std::invalid_argument("No piece on square");
 
     int which_function = -1;
     for (size_t i = 0; i < PieceTypeArray.size(); i++)
@@ -179,12 +181,18 @@ U64 ChessGame::GetAttacks(Square square_) const
     attacks = GetAttacks( square_, board, which_function );
 
     attacks = FilterTeam(attacks, piece);
+
     attacks = FilterCheck(attacks, piece);
+    if( GetPieceType(piece) == King) 
+        attacks = attacks & FilterLegalKingMoves(attacks, piece);
+    else
+        attacks = attacks & FilterPin(attacks, piece);
+
     return attacks;
 }
 
 // Checking functions
-U64 ChessGame::InCheck(Color color_of_king) const
+U64 ChessGame::InCheck(const U64& occupany_, Color color_of_king) const
 {
     U64 attacks, king, checking_pieces = 0ULL;
     if( color_of_king == white )
@@ -192,12 +200,31 @@ U64 ChessGame::InCheck(Color color_of_king) const
     else
         king = BlackPiecesArray[King];
     
-    Square king_sq = static_cast<Square>(get_LSB(king));
-    U64 temp_board = board;    
+    Square king_sq = GetSquare(king);
     U64 opposite_piece = 0ULL;
-    for( int i = Pawn; i <= Queen; i++ )
+    for( int i = Pawn; i <= King; i++ )
     {
-        attacks = GetAttacks( king_sq, temp_board, i);
+        attacks = GetAttacks( king_sq, occupany_, i);
+        if( color_of_king == white )
+            opposite_piece = BlackPiecesArray[i];
+        else
+            opposite_piece = WhitePiecesArray[i];
+        
+        if( attacks & opposite_piece )
+            checking_pieces |= (attacks & opposite_piece);
+    }
+    return checking_pieces;
+}
+
+U64 ChessGame::InCheck(const U64& occupany_, Color color_of_king, const U64& king) const
+{
+    U64 attacks, checking_pieces = 0ULL;
+    
+    Square king_sq = GetSquare(king);
+    U64 opposite_piece = 0ULL;
+    for( int i = Pawn; i <= King; i++ )
+    {
+        attacks = GetAttacks( king_sq, occupany_, i);
         if( color_of_king == white )
             opposite_piece = BlackPiecesArray[i];
         else
@@ -224,19 +251,14 @@ U64 ChessGame::FilterTeam(const U64& moveset, const U64& piece) const
 U64 ChessGame::FilterCheck(const U64& moveset, const U64& piece) const
 {
     Color color = GetColor(piece);
+    Square king_sq = color ? GetSquare(BlackPiecesArray[King]) : GetSquare(WhitePiecesArray[King]);
     U64 capture_mask = ~0ULL;
     U64 block_mask = ~0ULL;
 
-    U64 checkers = InCheck(color);
+    U64 checkers = InCheck(board, color);
     bool two_or_more_checkers = false;
     U64 checkers2 = checkers;
     std::vector<Square> checker_locations;
-    Square king_sq;
-
-    if (color == white)
-        king_sq = static_cast<Square>(get_LSB(WhitePiecesArray[King]));
-    else
-        king_sq = static_cast<Square>(get_LSB(BlackPiecesArray[King]));
 
     for (int i = 0; checkers2; i++)
     {
@@ -249,7 +271,6 @@ U64 ChessGame::FilterCheck(const U64& moveset, const U64& piece) const
 
     // may need to be updated as we add filters
     bool is_king = piece & PieceTypeArray[King];
-
 
     if (two_or_more_checkers || is_king)
     { //Only king moves allowed.
@@ -268,11 +289,72 @@ U64 ChessGame::FilterCheck(const U64& moveset, const U64& piece) const
     {
         capture_mask = checkers;
         block_mask = 0ULL;
-        if (isSlider(checkers))
-            block_mask = GetRay(king_sq, static_cast<Square>(get_LSB(checkers)) );
+        if (IsSlider(checkers))
+            block_mask = GetRay(king_sq, GetSquare(checkers) );
     }
-
+    if( !checkers )
+        return moveset;
     return moveset & (block_mask | capture_mask);
+}
+
+U64 ChessGame::FilterPin(const U64& moveset, const U64& piece) const
+{
+    if( GetPieceType(piece) == King )
+        throw std::invalid_argument("King cannot be pinned");
+    U64 tempBoard = board;
+    // Take piece off board
+    clear_bit( tempBoard, GetSquare(piece) );
+
+    U64 checker = InCheck( tempBoard, GetColor(piece) );   
+    // not pinned
+    if( !checker )
+        return moveset;
+
+    // Two checkers => no moves
+    U64 two_checkers = checker;
+    clear_bit( two_checkers, GetSquare(checker) );
+    if( two_checkers )
+        return 0ULL;
+
+    // Pinned
+    U64 king = GetColor(piece) ? BlackPiecesArray[King] : WhitePiecesArray[King];
+
+    U64 pin_moves = GetRay( GetSquare(checker), GetSquare(king) );
+
+    // Piece isn't in pin ray
+    if( !(piece & pin_moves))
+        return moveset;
+
+    // Checker is attackable
+    if( moveset & checker)
+        set_bit( pin_moves, GetSquare(checker) );
+
+    return pin_moves;
+}
+
+U64 ChessGame::FilterLegalKingMoves (const U64& moveset, const U64& piece) const
+{
+    if( GetPieceType(piece) != King )
+        throw std::invalid_argument("Can't filter legal king moves: Not a king");
+    U64 illegal_moveset = 0ULL;
+    U64 moveset_ = moveset;
+
+    while(moveset_)
+    {
+        int lsb = get_ls1b_index(moveset_);
+        U64 temp_king = 0ULL;
+        set_bit(temp_king, lsb);
+
+        U64 temp_board = board;
+        clear_bit(temp_board, GetSquare(piece));
+        set_bit(temp_board, lsb);
+
+        if( InCheck(temp_board, GetColor(piece), temp_king) )
+            set_bit(illegal_moveset, lsb);
+
+        moveset_ &= moveset_ - 1;
+    }
+    return moveset & ~illegal_moveset;
 }
 
 void ChessGame::UpdateBoard()
@@ -308,7 +390,7 @@ Piece ChessGame::GetPieceType(U64 unknown_piece) const
     return p;
 }
 
-bool ChessGame::isSlider(const U64 board_) const
+bool ChessGame::IsSlider(const U64 board_) const
 {
     U64 slider_pieces = WhitePiecesArray[Queen] | WhitePiecesArray[Bishop] | WhitePiecesArray[Rook] | 
                         BlackPiecesArray[Queen] | BlackPiecesArray[Bishop] | BlackPiecesArray[Rook];
@@ -388,4 +470,3 @@ void ChessGame::Move(Square from_sq, Square to_sq)
 
     UpdateBoard();
 }
-

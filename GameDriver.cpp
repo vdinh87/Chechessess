@@ -2,7 +2,7 @@
 
 int main()
 {
-    U64 occ = 0ULL;
+    U64 occ, test = 0ULL;
     std::vector<U64> v = { occ };
     ChessGame cg;
     //move king to middle of board
@@ -11,15 +11,14 @@ int main()
     
     //b6, d6, f6, a4, f4
 
-    Square dest = e3;
+    Square dest = f4;
+
 
     cg.Move(e1, dest); // King
-    cg.Move(d8, f5); // Queen
-
-    // cg.Move(d8, q);
+    cg.Move(e8, f6); // Queen
+    // cg.Move(f1, f4);
+    // cg.Move(h8, e5);
     cg.PrintBoard();
-
-    // cg.GetAttacks(d3); yes
-    std::cout << "King moves: \n";
-    PrintGoard(cg.GetAttacks(dest)); 
+    std::cout << "Piece moves: \n";
+    PrintGoard(cg.GetAttacks(f6));
 }

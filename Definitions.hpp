@@ -161,6 +161,7 @@ double GetDistance(Square from_sq, Square to_sq)
   return distance;
 }
 
+//Doesn't include from square and to square
 U64 GetRay(Square from_sq, Square to_sq)
 {
   U64 from = 0ULL;
@@ -187,3 +188,9 @@ U64 GetRay(Square from_sq, Square to_sq)
   ray = (ray & ~from) & (ray & ~to);
   return ray;
 }
+
+Square GetSquare(const U64& bitboard)
+{
+  return static_cast<Square>( get_LSB(bitboard) );
+}
+
