@@ -24,9 +24,10 @@ private:
     U64 GetQueenAttacks  (Square square, const U64 occupancy_) const;
     U64 GetKingAttacks   (Square square, const U64 occupancy_) const;
     U64 GetAttacks(Square square_, const U64 occupancy_, int which_function = -1) const;
+    U64 GetCastling(Color color) const;
 
     //checking
-    U64 InCheck(const U64& occupancy_, Color color_of_king) const;
+    U64 InCheck(const U64& occupancy_, Color color_of_king, int offset) const;
     U64 InCheck(const U64& occupancy_, Color color_of_king, const U64& king) const;
 
     //filter functions
@@ -40,6 +41,10 @@ private:
     Piece GetPieceType(U64 unknown_piece) const;
     bool IsSlider(const U64 board_) const;
     void UpdateBoard();
+
+    //Special move functions
+    void Castle(Square from_sq, Square to_sq, U64 valid_moves);
+
 
 public:
     ChessGame();

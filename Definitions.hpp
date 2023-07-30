@@ -189,8 +189,7 @@ U64 GetRay(Square from_sq, Square to_sq)
   return ray;
 }
 
-Square GetSquare(const U64& bitboard)
+Square GetSquare(const U64 &bitboard)
 {
-  return static_cast<Square>( get_LSB(bitboard) );
+  return static_cast<Square>(get_LSB(bitboard));
 }
-

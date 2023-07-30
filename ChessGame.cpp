@@ -130,6 +130,10 @@ U64 ChessGame::GetKingAttacks(Square square_, const U64 occupancy_) const
                South(king) | SouthEast(king) | SouthWest(king) |
                East(king) | West(king));
 
+    bool has_moved = false; // won't be needed when it's a private member or something
+    if (has_moved)          // this way it doesn't have to do the function every single time it just checks one byte
+        attacks = attacks | GetCastling(GetColor(king));
+
     return attacks;
 }
 
@@ -179,9 +183,7 @@ U64 ChessGame::GetAttacks(Square square_) const
     }
         
     attacks = GetAttacks( square_, board, which_function );
-
     attacks = FilterTeam(attacks, piece);
-
     attacks = FilterCheck(attacks, piece);
     if( GetPieceType(piece) == King) 
         attacks = attacks & FilterLegalKingMoves(attacks, piece);
@@ -191,16 +193,44 @@ U64 ChessGame::GetAttacks(Square square_) const
     return attacks;
 }
 
+U64 ChessGame::GetCastling(Color color) const
+{
+    bool kingmoved, rookmoved = false;
+    U64 valid_moves = 0ULL;
+    U64 king = 0ULL;
+
+    if (color == white)
+        king = WhitePiecesArray[King];
+    else
+        king = BlackPiecesArray[King];
+    Square king_sq = static_cast<Square>(get_LSB(king));
+
+    if (!(kingmoved) && !(rookmoved) &&
+        !(get_bit(board, king_sq - 1)) && !(get_bit(board, king_sq - 2)) && // Makes sure it's empty
+        (InCheck(board, white, -1) == 0ULL) && (InCheck(board, white, -2) == 0ULL))       // Checking
+    {
+        set_bit(valid_moves, king_sq - 2);
+    }
+    if (!(kingmoved) && !(rookmoved) &&
+        !(get_bit(board, king_sq + 1)) && !(get_bit(board, king_sq + 2)) && // Makes sure it's empty
+        (InCheck(board, white, 1) == 0ULL) && (InCheck(board, white, 2) == 0ULL))         // Checking
+    {
+        set_bit(valid_moves, king_sq + 2);
+    }
+
+    return valid_moves;
+}
+
 // Checking functions
-U64 ChessGame::InCheck(const U64& occupany_, Color color_of_king) const
+U64 ChessGame::InCheck(const U64& occupany_, Color color_of_king, int offset) const
 {
     U64 attacks, king, checking_pieces = 0ULL;
     if( color_of_king == white )
         king = WhitePiecesArray[King];
     else
         king = BlackPiecesArray[King];
-    
-    Square king_sq = GetSquare(king);
+
+    Square king_sq = static_cast<Square>(get_LSB(king) + offset);
     U64 opposite_piece = 0ULL;
     for( int i = Pawn; i <= King; i++ )
     {
@@ -219,8 +249,8 @@ U64 ChessGame::InCheck(const U64& occupany_, Color color_of_king) const
 U64 ChessGame::InCheck(const U64& occupany_, Color color_of_king, const U64& king) const
 {
     U64 attacks, checking_pieces = 0ULL;
-    
-    Square king_sq = GetSquare(king);
+
+    Square king_sq = static_cast<Square>(get_LSB(king));
     U64 opposite_piece = 0ULL;
     for( int i = Pawn; i <= King; i++ )
     {
@@ -255,7 +285,7 @@ U64 ChessGame::FilterCheck(const U64& moveset, const U64& piece) const
     U64 capture_mask = ~0ULL;
     U64 block_mask = ~0ULL;
 
-    U64 checkers = InCheck(board, color);
+    U64 checkers = InCheck(board, color, 0);
     bool two_or_more_checkers = false;
     U64 checkers2 = checkers;
     std::vector<Square> checker_locations;
@@ -305,7 +335,7 @@ U64 ChessGame::FilterPin(const U64& moveset, const U64& piece) const
     // Take piece off board
     clear_bit( tempBoard, GetSquare(piece) );
 
-    U64 checker = InCheck( tempBoard, GetColor(piece) );   
+    U64 checker = InCheck( tempBoard, GetColor(piece), 0 );   
     // not pinned
     if( !checker )
         return moveset;
@@ -447,8 +477,8 @@ void ChessGame::Move(Square from_sq, Square to_sq)
 
     U64 ally_pieces = GetColor(from) == white ? WhitePieces : BlackPieces;
 
-    //no piece on board or parameters are same square
-    if ( !(from & board) || (from_sq == to_sq) || (to & ally_pieces) ) 
+    // no piece on board or parameters are same square
+    if (!(from & board) || (from_sq == to_sq) || (to & ally_pieces))
         return;
 
     Color from_color = GetColor(from);
@@ -457,15 +487,72 @@ void ChessGame::Move(Square from_sq, Square to_sq)
 
     if (from_color == white)
     {
-        clear_bit(BlackPiecesArray[to_piece], to_sq);
-        set_bit(WhitePiecesArray[from_piece], to_sq);
-        clear_bit(WhitePiecesArray[from_piece], from_sq);
+
+        if ((from_piece == King) && (GetCastling(from_color) != 0) &&
+            ((to_sq == c1) || (to_sq == c8) || (to_sq == g1) || (to_sq == g8)))
+            Castle(from_sq, to_sq, GetCastling(from_color));
+        else
+        {
+            clear_bit(BlackPiecesArray[to_piece], to_sq);
+            set_bit(WhitePiecesArray[from_piece], to_sq);
+            clear_bit(WhitePiecesArray[from_piece], from_sq);
+        }
     }
     else
     {
-        clear_bit(WhitePiecesArray[to_piece], to_sq);
-        set_bit(BlackPiecesArray[from_piece], to_sq);
-        clear_bit(BlackPiecesArray[from_piece], from_sq);
+        if ((from_piece == King) && (GetCastling(from_color) != 0) &&
+            ((to_sq == c1) || (to_sq == c8) || (to_sq == g1) || (to_sq == g8)))
+            Castle(from_sq, to_sq, GetCastling(from_color));
+        else
+        {
+            clear_bit(WhitePiecesArray[to_piece], to_sq);
+            set_bit(BlackPiecesArray[from_piece], to_sq);
+            clear_bit(BlackPiecesArray[from_piece], from_sq);
+        }
+    }
+
+    UpdateBoard();
+}
+
+void ChessGame::Castle(Square from_sq, Square to_sq, U64 valid_moves)
+{
+    U64 from = 0ULL;
+    set_bit(from, from_sq);
+    Color from_color = GetColor(from); // could change param to 1ULL << from_sq maybe.
+
+    if (from_color == white)
+    {
+        if ((to_sq == c1 && get_bit(valid_moves, c1)) || (to_sq == c8 && get_bit(valid_moves, c8)))
+        {
+            set_bit(WhitePiecesArray[King], to_sq);
+            clear_bit(WhitePiecesArray[King], from_sq);
+            set_bit(WhitePiecesArray[Rook], to_sq + 1);
+            clear_bit(WhitePiecesArray[Rook], a1);
+        }
+        else if ((to_sq == g1 && get_bit(valid_moves, g1)) || (to_sq == g8 && get_bit(valid_moves, g8)))
+        {
+            set_bit(WhitePiecesArray[King], to_sq);
+            clear_bit(WhitePiecesArray[King], from_sq);
+            set_bit(WhitePiecesArray[Rook], to_sq - 1);
+            clear_bit(WhitePiecesArray[Rook], h1);
+        }
+    }
+    else
+    {
+        if ((to_sq == c1 && get_bit(valid_moves, c1)) || (to_sq == c8 && get_bit(valid_moves, c8)))
+        {
+            set_bit(WhitePiecesArray[King], to_sq);
+            clear_bit(WhitePiecesArray[King], from_sq);
+            set_bit(WhitePiecesArray[Rook], to_sq + 1);
+            clear_bit(WhitePiecesArray[Rook], a1);
+        }
+        else if ((to_sq == g1 && get_bit(valid_moves, g1)) || (to_sq == g8 && get_bit(valid_moves, g8)))
+        {
+            set_bit(WhitePiecesArray[King], to_sq);
+            clear_bit(WhitePiecesArray[King], from_sq);
+            set_bit(WhitePiecesArray[Rook], to_sq - 1);
+            clear_bit(WhitePiecesArray[Rook], h1);
+        }
     }
 
     UpdateBoard();
