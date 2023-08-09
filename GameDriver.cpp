@@ -17,27 +17,16 @@ int main()
 
     // cg.Move(d8, q);
     // Moving all pieces
-    cg.Move(a2, a7);
-    cg.Move(b2, b7);
-    cg.Move(b1, b8);
-    cg.Move(c2, c7);
-    cg.Move(c1, c8);
-    cg.Move(d2, d7);
-    cg.Move(d1, d8);
-    cg.Move(e2, e7);
-    cg.Move(f2, f7);
-    cg.Move(f1, f8);
-    cg.Move(g2, g7);
-    cg.Move(g1, g8);
-    cg.Move(h2, h7);
+
 
     cg.Move(f5, h5); // Queen
 
-    cg.PrintBoard();
-
-    cg.Move(e1, g1);
+    Square to_sq = a1;
 
     cg.PrintBoard();
 
+    cg.Move(a7, a1);
+
+    cg.PrintBoard();
     //    PrintGoard(8ULL << 1);
 }
