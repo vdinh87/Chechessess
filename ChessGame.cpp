@@ -506,7 +506,7 @@ void ChessGame::Move(Square from_sq, Square to_sq)
             ((to_sq == c1) || (to_sq == c8) || (to_sq == g1) || (to_sq == g8)))
             Castle(from_sq, to_sq, GetCastling(from_color));
         else if (from_piece == Pawn && (to_sq >= 0 && to_sq <= 7) || (to_sq >= 56 && to_sq <= 63))
-            Promote(from_sq, to_sq, white, to_piece);
+            Promote(from_sq, to_sq, black, to_piece);
         else
         {
             clear_bit(WhitePiecesArray[to_piece], to_sq);
