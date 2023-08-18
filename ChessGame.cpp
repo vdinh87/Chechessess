@@ -73,20 +73,23 @@ U64 ChessGame::GetPawnAttacks(Square square_, const U64 occupancy_) const
     U64 attacks, pawn = 0ULL;
     set_bit(pawn, square_);
     // white-side moves
-    if (GetColor(pawn) == white)
+    Color color = GetColor(pawn); 
+    if (color == white)
     {
-        attacks = (North(pawn) | NorthWest(pawn) | NorthEast(pawn));
-
+        attacks = North(pawn) | GetEnPassant(square_, occupancy_, color);
+        if (NorthWest(pawn) & BlackPieces) attacks = attacks | NorthWest(pawn);
+        if (NorthEast(pawn) & BlackPieces) attacks = attacks | NorthEast(pawn);
         // Initial 2 square move
         if (pawn & RANK_2)
             attacks |= pawn << 16;
     }
 
     // black-side moves
-    if (GetColor(pawn) == black)
+    if (color == black)
     {
-        attacks = (South(pawn) | SouthWest(pawn) | SouthEast(pawn));
-
+        attacks = South(pawn) | GetEnPassant(square_, occupancy_, color);
+        if (SouthWest(pawn) & WhitePieces) attacks = attacks | SouthWest(pawn);
+        if (SouthEast(pawn) & WhitePieces) attacks = attacks | SouthEast(pawn);
         // Initial 2 square move
         if (pawn & RANK_7)
             attacks |= pawn >> 16;
@@ -94,6 +97,33 @@ U64 ChessGame::GetPawnAttacks(Square square_, const U64 occupancy_) const
 
     return attacks;
 }
+
+U64 ChessGame::GetEnPassant(Square square, const U64 occupancy_, Color color) const
+{
+    U64 enpassant_moves = 0ULL;
+    //set_bit(enpassant_moves, square);
+    if(EnPassant(square, Pawn, color))
+    {
+        if (color == white)
+            set_bit(enpassant_moves, prevMove.to + 8);
+        else if (color == black)
+            set_bit(enpassant_moves, prevMove.to - 8);
+    }
+    return enpassant_moves;
+}
+
+bool ChessGame::EnPassant(Square square, Piece type, Color color) const
+{
+    if( (type==Pawn && prevMove.is_pawn==true) && //both are pawns
+        (abs(prevMove.to / 8 - prevMove.from / 8) == 2) && //moved two places previously
+        (abs((prevMove.to % 8) - (square % 8)) == 1 ) && //is next to it
+        (color==white && (square >= 32 && square <= 39) ) || (color==black && (square >= 24 && square <= 31) ) ) // check if it's on 4th and 5th rank
+    {
+        return true;
+    }
+    return false;
+}
+
 
 U64 ChessGame::GetKnightAttacks(Square square_, const U64 occupancy_) const
 {
@@ -493,6 +523,12 @@ void ChessGame::Move(Square from_sq, Square to_sq)
             Castle(from_sq, to_sq, GetCastling(from_color));
         else if (from_piece == Pawn && (to_sq >= 0 && to_sq <= 7) || (to_sq >= 56 && to_sq <= 63))
             Promote(from_sq, to_sq, white, to_piece);
+        else if (EnPassant(from_sq, from_piece, from_color))
+        {
+            clear_bit(BlackPiecesArray[to_piece], prevMove.to);
+            set_bit(WhitePiecesArray[from_piece], prevMove.to+8);
+            clear_bit(WhitePiecesArray[from_piece], from_sq);
+        }
         else
         {
             clear_bit(BlackPiecesArray[to_piece], to_sq);
@@ -500,13 +536,19 @@ void ChessGame::Move(Square from_sq, Square to_sq)
             clear_bit(WhitePiecesArray[from_piece], from_sq);
         }
     }
-    else
+    else if (from_color == black)
     {
         if ((from_piece == King) && (GetCastling(from_color) != 0) &&
             ((to_sq == c1) || (to_sq == c8) || (to_sq == g1) || (to_sq == g8)))
             Castle(from_sq, to_sq, GetCastling(from_color));
         else if (from_piece == Pawn && (to_sq >= 0 && to_sq <= 7) || (to_sq >= 56 && to_sq <= 63))
             Promote(from_sq, to_sq, black, to_piece);
+        else if (EnPassant(from_sq, from_piece, from_color))
+        {
+            clear_bit(WhitePiecesArray[to_piece], prevMove.to);
+            set_bit(BlackPiecesArray[from_piece], prevMove.to-8);
+            clear_bit(BlackPiecesArray[from_piece], from_sq);
+        }
         else
         {
             clear_bit(WhitePiecesArray[to_piece], to_sq);
@@ -515,6 +557,9 @@ void ChessGame::Move(Square from_sq, Square to_sq)
         }
     }
 
+    prevMove.from = from_sq;
+    prevMove.to = to_sq;
+    prevMove.is_pawn = (from_piece == Pawn);
     UpdateBoard();
 }
 
@@ -558,7 +603,9 @@ void ChessGame::Castle(Square from_sq, Square to_sq, U64 valid_moves)
             clear_bit(WhitePiecesArray[Rook], h1);
         }
     }
-
+    prevMove.from = from_sq;
+    prevMove.to = to_sq;
+    prevMove.is_pawn = false;
     UpdateBoard();
 }
 
@@ -605,5 +652,9 @@ void ChessGame::Promote(Square from_sq, Square to_sq, Color color, Piece to_piec
         set_bit(BlackPiecesArray[promoting_to_piece], to_sq);
         clear_bit(BlackPiecesArray[Pawn], from_sq);
     }
+
+    prevMove.from = from_sq;
+    prevMove.to = to_sq;
+    prevMove.is_pawn = false;
     UpdateBoard();
 }

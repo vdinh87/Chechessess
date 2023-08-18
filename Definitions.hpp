@@ -9,6 +9,8 @@
 #include <vector>
 #include <cmath>
 #include <stdexcept>
+#include <bitset>
+
 
 typedef uint64_t U64;
 
@@ -149,6 +151,14 @@ U64 GoInDirection(Direction direction, U64 & other_board)
 
   return board;
 }
+
+struct ChessMove
+{
+  Square from;
+  Square to;
+  bool is_pawn;
+};
+
 
 // inclusive to the to parameter
 // Ex: a1 -> c1 = 2 units
