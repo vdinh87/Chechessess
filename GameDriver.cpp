@@ -26,14 +26,14 @@ int main()
     // std::cout << "Is En passant Available: " << cg.EnPassant(d4, Pawn, black);
     // std::cout << "\n";
 
-    cg.Move(d2,dest);
-    cg.Move(e7, e5);
-    U64 test = 0ULL;
-    set_bit(test, dest);
+    // cg.Move(d2,dest);
+    // cg.Move(e7, e5);
+    // U64 test = 0ULL;
+    // set_bit(test, dest);
 
-    cg.PrintBoard();
-    std::cout<<"printgoard\n";
-    PrintGoard(cg.GetPawnAttacks(dest, occ));
+    // cg.PrintBoard();
+    // std::cout<<"printgoard\n";
+    // PrintGoard(cg.GetPawnAttacks(dest, occ));
 
 
 
