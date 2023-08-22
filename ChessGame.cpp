@@ -76,9 +76,7 @@ U64 ChessGame::GetPawnAttacks(Square square_, const U64 occupancy_) const
     Color color = GetColor(pawn); 
     if (color == white)
     {
-        attacks = North(pawn) | GetEnPassant(square_, occupancy_, color);
-        if (NorthWest(pawn) & BlackPieces) attacks = attacks | NorthWest(pawn);
-        if (NorthEast(pawn) & BlackPieces) attacks = attacks | NorthEast(pawn);
+        attacks = (North(pawn) & ~BlackPieces ) | GetEnPassant(square_, occupancy_, color) | (NorthEast(pawn) & BlackPieces) | (NorthWest(pawn) & BlackPieces);
         // Initial 2 square move
         if (pawn & RANK_2)
             attacks |= pawn << 16;
@@ -87,9 +85,7 @@ U64 ChessGame::GetPawnAttacks(Square square_, const U64 occupancy_) const
     // black-side moves
     if (color == black)
     {
-        attacks = South(pawn) | GetEnPassant(square_, occupancy_, color);
-        if (SouthWest(pawn) & WhitePieces) attacks = attacks | SouthWest(pawn);
-        if (SouthEast(pawn) & WhitePieces) attacks = attacks | SouthEast(pawn);
+        attacks = (South(pawn) & ~WhitePieces ) | GetEnPassant(square_, occupancy_, color) | (SouthEast(pawn) & WhitePieces) | (SouthWest(pawn) & WhitePieces);
         // Initial 2 square move
         if (pawn & RANK_7)
             attacks |= pawn >> 16;

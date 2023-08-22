@@ -49,12 +49,12 @@ enum Square {
   a8, b8, c8, d8, e8, f8, g8, h8
 };
 
-enum Piece { Pawn, Knight, Bishop, Rook, Queen, King };
+enum Piece : unsigned char { Pawn, Knight, Bishop, Rook, Queen, King };
 
 // define sides
-enum Color { white, black };
+enum Color : unsigned char { white, black };
 
-enum Direction { 
+enum Direction : unsigned char { 
   NW, N, NE, E,
   SW, S, SE, W
 };
