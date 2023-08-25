@@ -12,7 +12,6 @@ private:
     U64 BlackPieces;
     U64 board;
 
-<<<<<<< HEAD
     //for castling
     ChessMove prevMove;
 
@@ -20,22 +19,13 @@ private:
     void InitMagics() const;
     U64 Mask(Piece piece, Color color, const U64 &other_board) const;
 
-=======
-    // Innit magics
-    void InitMagics() const;
-    U64 Mask(Piece piece, Color color, const U64 &other_board) const;
-
->>>>>>> b2efa79b2baef0b0d93e0f892441bc7a35a33e3a
     // get attacks
     U64 GetKnightAttacks(Square square, const U64 occupancy_) const;
     U64 GetBishopAttacks(Square square, const U64 occupancy_) const;
     U64 GetRookAttacks(Square square, const U64 occupancy_) const;
     U64 GetQueenAttacks(Square square, const U64 occupancy_) const;
-<<<<<<< HEAD
     U64 GetKingAttacks(Square square, const U64 occupancy_) const;
     U64 GetPawnAttacks(Square square, const U64 occupancy_) const;
-=======
->>>>>>> b2efa79b2baef0b0d93e0f892441bc7a35a33e3a
     U64 GetAttacks(Square square_, const U64 occupancy_, int which_function = -1) const;
 
     // checking
@@ -55,14 +45,10 @@ private:
     void UpdateBoard();
 
     // Special move functions
-<<<<<<< HEAD
     U64 GetCastling(Color color) const;
     void Castle(Square from_sq, Square to_sq, U64 valid_moves);
     U64 GetEnPassant(Square square, const U64 occupancy_, Color color) const;
     bool EnPassant(Square square, Piece type, Color color) const;
-=======
-    void Castle(Square from_sq, Square to_sq, U64 valid_moves);
->>>>>>> b2efa79b2baef0b0d93e0f892441bc7a35a33e3a
     void Promote(Square from_sq, Square to_sq, Color color, Piece to_piece);
 
 public:
