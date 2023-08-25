@@ -11,30 +11,21 @@ int main()
 
     // b6, d6, f6, a4, f4
 
-    Square dest = d5;
+    Square dest = e3;
 
 
-    // cg.Move(a1, a5); // random rook move
-    // cg.Move(d7, d4); // setting up pawn move
-    // cg.Move(e2, e4); // Double pawn move
+    cg.Move(d8, f3);
+    cg.Move(c8, g3);
+    cg.Move(b8, b3);
 
-    // U64 from = 0ULL;
-    // set_bit(from, cg.prevMove.from);
-    // U64 to = 0ULL;
-    // set_bit(to, cg.prevMove.to);
+    cg.PrintBoard();
 
-    // std::cout << "Is En passant Available: " << cg.EnPassant(d4, Pawn, black);
-    // std::cout << "\n";
+    std::cout << "Printgoard castling: \n";
+    PrintGoard(cg.GetAttacks(e8));
 
-    // cg.Move(d2,dest);
-    // cg.Move(e7, e5);
-    // U64 test = 0ULL;
-    // set_bit(test, dest);
-
-    // cg.PrintBoard();
-    // std::cout<<"printgoard\n";
-    // PrintGoard(cg.GetPawnAttacks(dest, occ));
-
+    std::cout << "Castling\n";
+    cg.Move(e8, c8);
+    cg.PrintBoard();
 
 
     //PrintGoard(8ULL << 1);
