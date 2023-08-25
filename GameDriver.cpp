@@ -11,14 +11,4 @@ int main()
     
     //b6, d6, f6, a4, f4
 
-    Square dest = f4;
-
-
-    cg.Move(e1, dest); // King
-    cg.Move(e8, f6); // Queen
-    // cg.Move(f1, f4);
-    // cg.Move(h8, e5);
-    cg.PrintBoard();
-    std::cout << "Piece moves: \n";
-    PrintGoard(cg.GetAttacks(f6));
 }

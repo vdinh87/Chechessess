@@ -9,6 +9,8 @@
 #include <vector>
 #include <cmath>
 #include <stdexcept>
+#include <bitset>
+
 
 typedef uint64_t U64;
 
@@ -47,12 +49,12 @@ enum Square {
   a8, b8, c8, d8, e8, f8, g8, h8
 };
 
-enum Piece { Pawn, Knight, Bishop, Rook, Queen, King };
+enum Piece : unsigned char { Pawn, Knight, Bishop, Rook, Queen, King };
 
 // define sides
-enum Color { white, black };
+enum Color : unsigned char { white, black };
 
-enum Direction { 
+enum Direction : unsigned char { 
   NW, N, NE, E,
   SW, S, SE, W
 };
@@ -150,6 +152,14 @@ U64 GoInDirection(Direction direction, U64 & other_board)
   return board;
 }
 
+struct ChessMove
+{
+  Square from;
+  Square to;
+  bool is_pawn;
+};
+
+
 // inclusive to the to parameter
 // Ex: a1 -> c1 = 2 units
 double GetDistance(Square from_sq, Square to_sq) 
@@ -189,8 +199,7 @@ U64 GetRay(Square from_sq, Square to_sq)
   return ray;
 }
 
-Square GetSquare(const U64& bitboard)
+Square GetSquare(const U64 &bitboard)
 {
-  return static_cast<Square>( get_LSB(bitboard) );
+  return static_cast<Square>(get_LSB(bitboard));
 }
-
