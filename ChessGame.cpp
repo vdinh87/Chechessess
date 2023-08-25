@@ -233,7 +233,7 @@ U64 ChessGame::GetCastling(Color color) const
 
     if (!kingmoved && !rookmoved &&
         !(get_bit(board, king_sq - 1)) && !(get_bit(board, king_sq - 2)) && !(get_bit(board, king_sq - 3)) &&// Makes sure it's empty
-        (InCheck(board, color, -1) == 0ULL) && (InCheck(board, color, -2) == 0ULL)) // Checking
+        (InCheck(board, color, -1) == 0ULL) && (InCheck(board, color, -2) == 0ULL)&& (InCheck(board, color, -3) == 0ULL)) // Checking
         set_bit(valid_moves, king_sq - 2);
     if (!kingmoved && !rookmoved &&
         !(get_bit(board, king_sq + 1)) && !(get_bit(board, king_sq + 2)) &&       // Makes sure it's empty
