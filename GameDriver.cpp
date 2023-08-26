@@ -1,17 +1,10 @@
 #include "ChessGame.cpp"
 
-ChessGame cg;
-
-U64 Select(Color side, Square square)
-{
-    U64 piece;
-    set_bit(piece, square);
-
-    if( !(cg.GetPiecesOfColor(side) && piece) )
-}
 
 void Play()
 {
+    ChessGame cg;
+
     static std::unordered_map<std::string, Square> const table = { 
         {"a1", Square::a1}, {"a2", Square::a2}, {"a3", Square::a3}, {"a4", Square::a4},
         {"a5", Square::a5}, {"a6", Square::a6}, {"a7", Square::a7}, {"a8", Square::a8},
@@ -31,29 +24,54 @@ void Play()
         {"h5", Square::h5}, {"h6", Square::h6}, {"h7", Square::h7}, {"h8", Square::h8}
     };
   
-    std::string input_str;
-    Square selected_square;
-    U64 move_list;
     while( !cg.IsWin(white) || !cg.IsWin(black) )
     {
+        std::string input_str;
+        Square move_to_square = invalid;
+        U64 move_list = 0;
+
         std::cout << "White to move." << std::endl;
         std::cout << "Select piece square: ";
 
-        // Input to square
-        
-        std::cin >> input_str;
-
-        auto it = table.find(input_str);
-        if (it != table.end()) {
-            selected_square = it->second;    
-        } else { "Invalid square"; }
-        
-        U64 piece;
-        set_bit(piece, selected_square);
-        while( !(cg.GetPiecesOfColor(white) && piece) )
-            std::cout << "Invalid square or chose piece of opposite color." << std::endl;
+        U64 piece = 0;
+        while( move_to_square != invalid )
+        {
+            Square selected_square = invalid;
+            U64 square = 0;
+            // Invalid selected square loop
+            while( !(cg.GetPiecesOfColor(white) && square) )
+            {
+                std::cout << "Select valid square: " ;
             
-        move_list = Select(white, selected_square);
+                // Input to square
+                std::cin >> input_str;
+                std::cout << std::endl;
+
+                auto it = table.find(input_str);
+                if (it != table.end())
+                    selected_square = it->second;
+                else 
+                    std::cout << "Invalid square";
+                
+                //Selected square is in movelist
+                set_bit(square, selected_square);
+                if( square && move_list )
+                {
+                    move_to_square = GetSquare(square);
+                    break;
+                }
+                
+                //Set piece
+                set_bit(piece, selected_square);
+            }
+            
+            move_list = cg.GetAttacks(selected_square);
+            std::cout << "Movelist of piece at square: " << input_str << std::endl;
+            PrintGoard(move_list);
+        }
+
+        //move piece
+
     }
 
     if( cg.IsWin(white) )
@@ -71,4 +89,5 @@ int main()
     cg.PrintBoard();
     std::cout << "White win: " << cg.IsWin(white) << std::endl;
     std::cout << "Black win: " << cg.IsWin(black) << std::endl;
+
 }
