@@ -30,10 +30,11 @@ void Play()
         Square move_to_square = invalid;
         U64 move_list = 0;
 
+        cg.PrintBoard();
         std::cout << "White to move." << std::endl;
         std::cout << "Select piece square: ";
 
-        U64 piece = 0;
+        Square piece = invalid;
         while( move_to_square != invalid )
         {
             Square selected_square = invalid;
@@ -62,7 +63,7 @@ void Play()
                 }
                 
                 //Set piece
-                set_bit(piece, selected_square);
+                piece = selected_square;
             }
             
             move_list = cg.GetAttacks(selected_square);
@@ -71,9 +72,9 @@ void Play()
         }
 
         //move piece
-
+        cg.Move( piece, move_to_square);
     }
-
+    
     if( cg.IsWin(white) )
         std::cout << "White win!" << std::endl;
     else
