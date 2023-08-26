@@ -411,6 +411,10 @@ U64 ChessGame::FilterLegalKingMoves(const U64 &moveset, const U64 &piece) const
 
 void ChessGame::UpdateBoard()
 {
+    AllColorPiecesArray.clear();
+    AllColorPiecesArray.push_back(WhitePieces);
+    AllColorPiecesArray.push_back(BlackPieces);
+
     WhitePieces = WhitePiecesArray[Pawn] | WhitePiecesArray[Knight] | WhitePiecesArray[Bishop] |
                   WhitePiecesArray[Rook] | WhitePiecesArray[Queen] | WhitePiecesArray[King];
     BlackPieces = BlackPiecesArray[Pawn] | BlackPiecesArray[Knight] | BlackPiecesArray[Bishop] |
@@ -653,4 +657,25 @@ void ChessGame::Promote(Square from_sq, Square to_sq, Color color, Piece to_piec
     prevMove.to = to_sq;
     prevMove.is_pawn = false;
     UpdateBoard();
+}
+
+//public getters
+U64 ChessGame::GetPiecesOfColor(Color color) const
+{
+    return AllColorPiecesArray[color];
+}
+
+U64 ChessGame::GetBoard() const
+{
+    return board;
+}
+
+bool ChessGame::IsWin(Color color) const 
+{
+    if(color == white)
+        return ~GetAttacks( GetSquare(BlackPiecesArray[King]) ) && 
+                InCheck(board, black, BlackPiecesArray[King]);
+
+    return ~GetAttacks( GetSquare(WhitePiecesArray[King]) ) && 
+            InCheck(board, white, WhitePiecesArray[King]);
 }

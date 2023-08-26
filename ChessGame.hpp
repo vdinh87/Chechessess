@@ -7,6 +7,7 @@ private:
     // board
     std::vector<U64> WhitePiecesArray;
     std::vector<U64> BlackPiecesArray;
+    std::vector<U64> AllColorPiecesArray;
     std::vector<U64> PieceTypeArray;
     U64 WhitePieces;
     U64 BlackPieces;
@@ -52,15 +53,21 @@ private:
     void Promote(Square from_sq, Square to_sq, Color color, Piece to_piece);
 
 public:
-    U64 GetKingAttacks(Square square, const U64 occupancy_) const;
-    U64 GetCastling(Color color) const;
-    U64 GetPawnAttacks(Square square, const U64 occupancy_) const;
-    ChessMove prevMove;
-    U64 GetEnPassant(Square square, const U64 occupancy_, Color color) const;
-    bool EnPassant(Square square, Piece type, Color color) const;
     ChessGame();
     ~ChessGame() = default;
+
+    //public getters
+    U64 GetPiecesOfColor(Color color) const;
+    U64 GetBoard() const;
+
+    // check if win
+    bool IsWin(Color color) const;
+
+    // returns movelist
     U64 GetAttacks(Square square_) const;
+
+    //moves pieces
     void Move(Square from_sq, Square to_sq);
+
     void PrintBoard() const;
 };
