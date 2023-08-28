@@ -26,53 +26,58 @@ void Play()
   
     while( !cg.IsWin(white) || !cg.IsWin(black) )
     {
-        std::string input_str;
-        Square move_to_square = invalid;
-        U64 move_list = 0;
-
-        cg.PrintBoard();
-        std::cout << "White to move." << std::endl;
-        std::cout << "Select piece square: ";
-
-        Square piece = invalid;
-        while( move_to_square != invalid )
+        for( int i = white; i <= black; i++)
         {
-            Square selected_square = invalid;
-            U64 square = 0;
-            // Invalid selected square loop
-            while( !(cg.GetPiecesOfColor(white) && square) )
-            {
-                std::cout << "Select valid square: " ;
-            
-                // Input to square
-                std::cin >> input_str;
-                std::cout << std::endl;
+            Color color = static_cast<Color>(i);
+            std::string input_str;
+            Square move_to_square = invalid;
+            U64 move_list = 0;
 
-                auto it = table.find(input_str);
-                if (it != table.end())
-                    selected_square = it->second;
-                else 
-                    std::cout << "Invalid square";
-                
-                //Selected square is in movelist
-                set_bit(square, selected_square);
-                if( square && move_list )
+            cg.PrintBoard();
+
+            std::cout << ColorStrings[color] << " to move." << std::endl;
+            std::cout << "Select piece square: ";
+
+            Square piece = invalid;
+            while( move_to_square != invalid )
+            {
+                Square selected_square = invalid;
+                U64 square = 0;
+                // Invalid selected square loop
+                while( !(cg.GetPiecesOfColor(color) && square) )
                 {
-                    move_to_square = GetSquare(square);
-                    break;
+                    std::cout << "Select valid square: " ;
+                
+                    // Input to square
+                    std::cin >> input_str;
+                    std::cout << std::endl;
+
+                    auto it = table.find(input_str);
+                    if (it != table.end())
+                        selected_square = it->second;
+                    else 
+                        std::cout << "Invalid square";
+                    
+                    //Selected square is in movelist
+                    set_bit(square, selected_square);
+                    if( square && move_list )
+                    {
+                        move_to_square = GetSquare(square);
+                        break;
+                    }
+                    
+                    //Set piece
+                    piece = selected_square;
                 }
                 
-                //Set piece
-                piece = selected_square;
+                move_list = cg.GetAttacks(selected_square);
+                std::cout << "Movelist of piece at square: " << input_str << std::endl;
+                PrintGoard(move_list);
             }
-            
-            move_list = cg.GetAttacks(selected_square);
-            std::cout << "Movelist of piece at square: " << input_str << std::endl;
-            PrintGoard(move_list);
-        }
 
-        //move piece
-        cg.Move( piece, move_to_square);
+            //move piece
+            cg.Move( piece, move_to_square);
+        }
     }
     
     if( cg.IsWin(white) )

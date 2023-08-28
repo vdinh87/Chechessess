@@ -54,6 +54,7 @@ enum Piece : unsigned char { Pawn, Knight, Bishop, Rook, Queen, King };
 
 // define sides
 enum Color : unsigned char { white, black };
+const std::string ColorStrings[] = { "White", "Black" };
 
 enum Direction : unsigned char { 
   NW, N, NE, E,
