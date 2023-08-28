@@ -25,8 +25,8 @@ void Play()
     };
   
     while( !cg.IsWin(white) && !cg.IsWin(black) )
-    {
-        for( int i = white; i <= black; i++)
+    { 
+        for( int i = white; i <= black && ( !cg.IsWin(white) && !cg.IsWin(black) ); i++)
         {
             Color color = static_cast<Color>(i);
             std::string input_str;
@@ -78,8 +78,8 @@ void Play()
 
             //move piece
             cg.Move( piece, move_to_square);
-            if( cg.IsWin(white) || cg.IsWin(black) )
-                break;
+            // if( cg.IsWin(white) || cg.IsWin(black) )
+            //     break;
         }
     }
     
