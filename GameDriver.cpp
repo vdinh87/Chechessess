@@ -24,7 +24,7 @@ void Play()
         {"h5", Square::h5}, {"h6", Square::h6}, {"h7", Square::h7}, {"h8", Square::h8}
     };
   
-    while( !cg.IsWin(white) || !cg.IsWin(black) )
+    while( !cg.IsWin(white) && !cg.IsWin(black) )
     {
         for( int i = white; i <= black; i++)
         {
@@ -32,20 +32,16 @@ void Play()
             std::string input_str;
             Square move_to_square = invalid;
             U64 move_list = 0;
-
-            cg.PrintBoard();
-
-            std::cout << ColorStrings[color] << " to move." << std::endl;
-            std::cout << "Select piece square: ";
-
             Square piece = invalid;
-            while( move_to_square != invalid )
+            while( move_to_square == invalid )
             {
                 Square selected_square = invalid;
                 U64 square = 0;
                 // Invalid selected square loop
-                while( !(cg.GetPiecesOfColor(color) && square) )
+                while( !(cg.GetPiecesOfColor(color) & square) )
                 {
+                    cg.PrintBoard();
+                    std::cout << ColorStrings[color] << " to move." << std::endl;
                     std::cout << "Select valid square: " ;
                 
                     // Input to square
@@ -56,27 +52,34 @@ void Play()
                     if (it != table.end())
                         selected_square = it->second;
                     else 
-                        std::cout << "Invalid square";
+                        std::cout << "Invalid square" << std::endl;
                     
                     //Selected square is in movelist
                     set_bit(square, selected_square);
-                    if( square && move_list )
+
+                    if( square & move_list )
                     {
                         move_to_square = GetSquare(square);
                         break;
                     }
-                    
+                    else
+                        move_list = 0;
                     //Set piece
                     piece = selected_square;
                 }
-                
-                move_list = cg.GetAttacks(selected_square);
-                std::cout << "Movelist of piece at square: " << input_str << std::endl;
-                PrintGoard(move_list);
+
+                if( move_to_square == invalid)
+                {
+                    move_list = cg.GetAttacks(selected_square);
+                    std::cout << "Movelist of piece at square: " << input_str << std::endl;
+                    PrintGoard(move_list);
+                }   
             }
 
             //move piece
             cg.Move( piece, move_to_square);
+            if( cg.IsWin(white) || cg.IsWin(black) )
+                break;
         }
     }
     
@@ -88,12 +91,5 @@ void Play()
 
 int main()
 {
-    ChessGame cg;
-    cg.Move(d8, f2);
-    cg.Move(h8, f3);
-
-    cg.PrintBoard();
-    std::cout << "White win: " << cg.IsWin(white) << std::endl;
-    std::cout << "Black win: " << cg.IsWin(black) << std::endl;
-
+    Play();
 }

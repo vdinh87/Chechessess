@@ -411,14 +411,15 @@ U64 ChessGame::FilterLegalKingMoves(const U64 &moveset, const U64 &piece) const
 
 void ChessGame::UpdateBoard()
 {
-    AllColorPiecesArray.clear();
-    AllColorPiecesArray.push_back(WhitePieces);
-    AllColorPiecesArray.push_back(BlackPieces);
-
     WhitePieces = WhitePiecesArray[Pawn] | WhitePiecesArray[Knight] | WhitePiecesArray[Bishop] |
                   WhitePiecesArray[Rook] | WhitePiecesArray[Queen] | WhitePiecesArray[King];
     BlackPieces = BlackPiecesArray[Pawn] | BlackPiecesArray[Knight] | BlackPiecesArray[Bishop] |
                   BlackPiecesArray[Rook] | BlackPiecesArray[Queen] | BlackPiecesArray[King];
+
+    AllColorPiecesArray.clear();
+    AllColorPiecesArray.push_back(WhitePieces);
+    AllColorPiecesArray.push_back(BlackPieces);
+
     for (size_t i = 0; i < PieceTypeArray.size(); i++)
         PieceTypeArray[i] = (WhitePiecesArray[i] | BlackPiecesArray[i]);
     board = WhitePieces | BlackPieces;
@@ -460,6 +461,7 @@ void ChessGame::PrintBoard() const
 {
     std::string boardString;
     U64 square;
+    std::cout << "Chess Board: " << std::endl;
     for (int i = 63; i >= 0; i--)
     {
         square = get_bit(board, i);
@@ -673,9 +675,9 @@ U64 ChessGame::GetBoard() const
 bool ChessGame::IsWin(Color color) const 
 {
     if(color == white)
-        return ~GetAttacks( GetSquare(BlackPiecesArray[King]) ) && 
-                InCheck(board, black, BlackPiecesArray[King]);
+        return ( !(GetAttacks( GetSquare(BlackPiecesArray[King])) ) && 
+                InCheck(board, black, BlackPiecesArray[King]) );
 
-    return ~GetAttacks( GetSquare(WhitePiecesArray[King]) ) && 
-            InCheck(board, white, WhitePiecesArray[King]);
+    return ( !(GetAttacks( GetSquare(WhitePiecesArray[King])) ) && 
+            InCheck(board, white, WhitePiecesArray[King]) );
 }
