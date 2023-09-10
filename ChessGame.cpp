@@ -1,3 +1,4 @@
+#pragma once
 #include "ChessGame.hpp"
 
 // PrintBoard with a g
@@ -119,7 +120,6 @@ bool ChessGame::EnPassant(Square square, Piece type, Color color) const
     }
     return false;
 }
-
 
 U64 ChessGame::GetKnightAttacks(Square square_, const U64 occupancy_) const
 {
@@ -415,7 +415,7 @@ void ChessGame::UpdateBoard()
                   WhitePiecesArray[Rook] | WhitePiecesArray[Queen] | WhitePiecesArray[King];
     BlackPieces = BlackPiecesArray[Pawn] | BlackPiecesArray[Knight] | BlackPiecesArray[Bishop] |
                   BlackPiecesArray[Rook] | BlackPiecesArray[Queen] | BlackPiecesArray[King];
-
+    
     AllColorPiecesArray.clear();
     AllColorPiecesArray.push_back(WhitePieces);
     AllColorPiecesArray.push_back(BlackPieces);
@@ -509,12 +509,11 @@ void ChessGame::Move(Square from_sq, Square to_sq)
     if (!(from & board) || (from_sq == to_sq) || (to & ally_pieces))
         return;
 
-
-
     Color from_color = GetColor(from);
     Piece from_piece = GetPieceType(from);
     Piece to_piece = GetPieceType(to);
 
+    //before move
     if (from_color == white)
     {
 
@@ -553,12 +552,13 @@ void ChessGame::Move(Square from_sq, Square to_sq)
         }
         else
         {
+            // on capture effect
             clear_bit(WhitePiecesArray[to_piece], to_sq);
             set_bit(BlackPiecesArray[from_piece], to_sq);
             clear_bit(BlackPiecesArray[from_piece], from_sq);
         }
     }
-
+    //after move
     prevMove.from = from_sq;
     prevMove.to = to_sq;
     prevMove.is_pawn = (from_piece == Pawn);

@@ -1,6 +1,5 @@
 #include "ChessGame.cpp"
-
-
+#include "SuperChessGame.cpp"
 void Play()
 {
     ChessGame cg;
@@ -91,5 +90,16 @@ void Play()
 
 int main()
 {
-    Play();
+    // Play();
+    SuperPieceInfo KingShot = std::make_pair(King, T3);
+    SuperChessGame* spg = new SuperChessGame(KingShot);
+    spg->PrintBoard();
+    spg->AddPiece(d4, black, Pawn);
+    spg->Move(a2,a5);
+    spg->PrintBoard();
+    spg->UseAbility();
+    
+    // AbilityLibrary al(spg);
+    // Ability a = al.GetAbility(KingShot);
+    // std::cout << a.GetName();
 }

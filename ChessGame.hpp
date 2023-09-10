@@ -3,7 +3,7 @@
 
 class ChessGame
 {
-private:
+protected:
     // board
     std::vector<U64> WhitePiecesArray;
     std::vector<U64> BlackPiecesArray;
@@ -67,7 +67,7 @@ public:
     U64 GetAttacks(Square square_) const;
 
     //moves pieces
-    void Move(Square from_sq, Square to_sq);
+    virtual void Move(Square from_sq, Square to_sq);
 
     void PrintBoard() const;
 };

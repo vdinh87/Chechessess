@@ -10,6 +10,8 @@
 #include <cmath>
 #include <stdexcept>
 #include <bitset>
+#include <unordered_map>
+#include <utility>
 
 
 typedef uint64_t U64;
@@ -59,6 +61,20 @@ const std::string ColorStrings[] = { "White", "Black" };
 enum Direction : unsigned char { 
   NW, N, NE, E,
   SW, S, SE, W
+};
+
+enum Tier : unsigned char { T0, T1, T2, T3, T4 };
+
+enum AbilityType : unsigned char { active };
+
+typedef std::pair<Piece, Tier> SuperPieceInfo; 
+struct PairEnumHash
+{
+    template <typename Enum1, typename Enum2>
+    std::size_t operator()(std::pair<Enum1, Enum2> t) const
+    {
+        return static_cast<std::size_t>(t.first)*2 + static_cast<std::size_t>(t.second);
+    }
 };
 
 U64 North(U64 & other_board)
@@ -205,3 +221,4 @@ Square GetSquare(const U64 &bitboard)
 {
   return static_cast<Square>(get_LSB(bitboard));
 }
+

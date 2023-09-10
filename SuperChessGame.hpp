@@ -1,14 +1,18 @@
-#include "ChessGame.hpp"
-
-
+#pragma once
+#include "ChessGame.cpp"
+#include "AbilityLibrary.fwd.hpp"
+#include "SuperChessGame.fwd.hpp"
+#include "Ability.hpp"
 class SuperChessGame : public ChessGame
 {
 private:
-    SuperChessGame(Piece 1st_super_piece);
-    vector<> effect_list_;
-
-    void AddPiece(Square square, Piece piece);
-    void RemovePiece(Square square, Piece piece);
-
+    AbilityLibrary* al;
+    std::vector<Ability> all_abilities;
 public:
+    SuperChessGame(const SuperPieceInfo& white);
+    ~SuperChessGame();
+    bool AddPiece(Square square, Color color, Piece piece);
+    bool RemovePiece(Square square);
+    void Move(Square from_sq, Square to_sq);
+    void UseAbility(); 
 };

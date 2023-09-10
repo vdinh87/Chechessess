@@ -60,6 +60,7 @@
         "numeric": "cpp",
         "string_view": "cpp",
         "numbers": "cpp",
-        "optional": "cpp"
+        "optional": "cpp",
+        "map": "cpp"
     }
 }
