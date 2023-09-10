@@ -12,6 +12,7 @@
 #include <bitset>
 #include <unordered_map>
 #include <utility>
+#include <memory>
 
 
 typedef uint64_t U64;
