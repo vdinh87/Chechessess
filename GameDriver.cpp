@@ -1,8 +1,11 @@
 #include "ChessGame.cpp"
 #include "SuperChessGame.cpp"
+#include "Logger.hpp"
+
 void Play()
 {
     ChessGame cg;
+    Logger chess_game_logger;
 
     static std::unordered_map<std::string, Square> const table = { 
         {"a1", Square::a1}, {"a2", Square::a2}, {"a3", Square::a3}, {"a4", Square::a4},
@@ -22,9 +25,10 @@ void Play()
         {"h1", Square::h1}, {"h2", Square::h2}, {"h3", Square::h3}, {"h4", Square::h4},
         {"h5", Square::h5}, {"h6", Square::h6}, {"h7", Square::h7}, {"h8", Square::h8}
     };
-  
     while( !cg.IsWin(white) && !cg.IsWin(black) )
-    { 
+    {
+        ChessMove move;
+
         for( int i = white; i <= black && ( !cg.IsWin(white) && !cg.IsWin(black) ); i++)
         {
             Color color = static_cast<Color>(i);
@@ -76,11 +80,18 @@ void Play()
             }
 
             //move piece
-            cg.Move( piece, move_to_square);
-            // if( cg.IsWin(white) || cg.IsWin(black) )
-            //     break;
+            thismove.type = cg.GetPieceType(1ULL << piece);
+            thismove.from = piece;
+            thismove.to = move_to_square;
+            thismove.actions = cg.Move( piece, move_to_square);
+            logger.log(thismove);
+
+            if( cg.IsWin(white) || cg.IsWin(black) )
+                break;
         }
     }
+
+    
     
     if( cg.IsWin(white) )
         std::cout << "White win!" << std::endl;

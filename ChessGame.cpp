@@ -111,7 +111,7 @@ U64 ChessGame::GetEnPassant(Square square, const U64 occupancy_, Color color) co
 
 bool ChessGame::EnPassant(Square square, Piece type, Color color) const
 {
-    if( (type==Pawn && prevMove.is_pawn==true) && //both are pawns
+    if( (type==Pawn && prevMove.type==Pawn) && //both are pawns
         (abs(prevMove.to / 8 - prevMove.from / 8) == 2) && //moved two places previously
         (abs((prevMove.to % 8) - (square % 8)) == 1 ) && //is next to it
         (color==white && (square >= 32 && square <= 39) ) || (color==black && (square >= 24 && square <= 31) ) ) // check if it's on 4th and 5th rank
@@ -498,6 +498,7 @@ void ChessGame::PrintBoard() const
 
 std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
 {
+    std::vector<Action> actions;
     U64 from = 0ULL;
     U64 to = 0ULL;
     set_bit(from, from_sq);
@@ -515,57 +516,66 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
 
     //before move
     if (from_color == white)
-    {
-
+    { 
         if ((from_piece == King) && (GetCastling(from_color) != 0) &&
             ((to_sq == c1) || (to_sq == c8) || (to_sq == g1) || (to_sq == g8)))
-            Castle(from_sq, to_sq, GetCastling(from_color));
-        else if (from_piece == Pawn && to_sq >= 56 && to_sq <= 63)
-        {
-            Promote(from_sq, to_sq, white, to_piece);
+            actions.push_back(Castle(from_sq, to_sq, GetCastling(from_color))); //castling!
+        else if (from_piece == Pawn && to_sq >= 56 && to_sq <= 63){
+            actions.push_back(Promote(from_sq, to_sq, white, to_piece)); //Promoting
         }
         else if (EnPassant(from_sq, from_piece, from_color))
-        {
+        { // En passant
             clear_bit(BlackPiecesArray[to_piece], prevMove.to);
             set_bit(WhitePiecesArray[from_piece], prevMove.to+8);
             clear_bit(WhitePiecesArray[from_piece], from_sq);
+            actions.push_back(Capture);
         }
-        else
-        {
-            clear_bit(BlackPiecesArray[to_piece], to_sq);
-            set_bit(WhitePiecesArray[from_piece], to_sq);
-            clear_bit(WhitePiecesArray[from_piece], from_sq);
-        }
+        else //Normal Move
+            actions.push_back(RegMove(from_color, from_sq, to_sq, from_piece, to_piece))
     }
     else if (from_color == black)
     {
         if ((from_piece == King) && (GetCastling(from_color) != 0) &&
             ((to_sq == c1) || (to_sq == c8) || (to_sq == g1) || (to_sq == g8)))
-            Castle(from_sq, to_sq, GetCastling(from_color));
+            actions.push_back(Castle(from_sq, to_sq, GetCastling(from_color)));
         else if (from_piece == Pawn && to_sq >= 0 && to_sq <= 7)
-            Promote(from_sq, to_sq, black, to_piece);
+            actions.push_back(Promote(from_sq, to_sq, black, to_piece))
         else if (EnPassant(from_sq, from_piece, from_color))
         {
             clear_bit(WhitePiecesArray[to_piece], prevMove.to);
             set_bit(BlackPiecesArray[from_piece], prevMove.to-8);
             clear_bit(BlackPiecesArray[from_piece], from_sq);
+            actions.push_back(Capture);
         }
         else
-        {
-            // on capture effect
-            clear_bit(WhitePiecesArray[to_piece], to_sq);
-            set_bit(BlackPiecesArray[from_piece], to_sq);
-            clear_bit(BlackPiecesArray[from_piece], from_sq);
-        }
+            actions.push(RegMove(from_color, from_sq, to_sq, from_piece, to_piece));
     }
+    if (InCheck(board, !from_color, 0))
+        actions.push_back(Check);
+    if( cg.IsWin(white) || cg.IsWin(black) )
+        actions.push_back(Checkmate);
+
     //after move
-    prevMove.from = from_sq;
-    prevMove.to = to_sq;
-    prevMove.is_pawn = (from_piece == Pawn);
+    UpdatePrevMove(from_sq, to_sq, (from_piece == Pawn))
     UpdateBoard();
+    return actions;
 }
 
-void ChessGame::Castle(Square from_sq, Square to_sq, U64 valid_moves)
+Action ChessGame::RegMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)
+{
+    if (color == white){
+        clear_bit(BlackPiecesArray[to_piece], to_sq);
+        set_bit(WhitePiecesArray[from_piece], to_sq);
+        clear_bit(WhitePiecesArray[from_piece], from_sq);
+    } else if (color == black){
+        clear_bit(WhitePiecesArray[to_piece], to_sq);
+        set_bit(BlackPiecesArray[from_piece], to_sq);
+        clear_bit(BlackPiecesArray[from_piece], from_sq);
+    }
+    return Capture;
+}
+
+Action ChessGame::Castle(Square from_sq, Square to_sq, U64 valid_moves)
 {
     U64 from = 0ULL;
     set_bit(from, from_sq);
@@ -605,13 +615,11 @@ void ChessGame::Castle(Square from_sq, Square to_sq, U64 valid_moves)
             clear_bit(BlackPiecesArray[Rook], h8);
         }
     }
-    prevMove.from = from_sq;
-    prevMove.to = to_sq;
-    prevMove.is_pawn = false;
+    UpdatePrevMove(from_sq, to_sq, false);
     UpdateBoard();
 }
 
-void ChessGame::Promote(Square from_sq, Square to_sq, Color color, Piece to_piece)
+Action ChessGame::Promote(Square from_sq, Square to_sq, Color color, Piece to_piece)
 {
     char promotionChoice;
     std::cout << "Pawn promotion: Choose Q for Queen, R for Rook, B for Bishop, or N for Knight: ";
@@ -655,10 +663,9 @@ void ChessGame::Promote(Square from_sq, Square to_sq, Color color, Piece to_piec
         clear_bit(BlackPiecesArray[Pawn], from_sq);
     }
 
-    prevMove.from = from_sq;
-    prevMove.to = to_sq;
-    prevMove.is_pawn = false;
+    UpdatePrevMove(from_sq, to_sq, false);
     UpdateBoard();
+    return Promotion;
 }
 
 //public getters
@@ -667,9 +674,11 @@ U64 ChessGame::GetPiecesOfColor(Color color) const
     return AllColorPiecesArray[color];
 }
 
-void ChessGame::UpdatePrevMove(Square from, Square to, bool is_pawn)
+void UpdatePrevMove(Square from, Square to, bool is_pawn);
 {
-    
+    prevMove.from = from;
+    prevMove.to = to;
+    prevMove.type = is_pawn;
 }
 
 U64 ChessGame::GetBoard() const
