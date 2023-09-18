@@ -4,8 +4,6 @@
 #include "Ability.hpp"
 #include "KingSniperShot.cpp"
 #include "Definitions.hpp"
-template <typename T>
-void callDerivedMethod(std::unordered_map<SuperPieceInfo, std::shared_ptr<Ability>, PairEnumHash> &lib, const SuperPieceInfo &key);
 
 class AbilityLibrary{
 private:

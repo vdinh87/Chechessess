@@ -98,8 +98,5 @@ int main()
     spg->Move(a2,a5);
     spg->PrintBoard();
     spg->UseAbility();
-
-    // AbilityLibrary al(spg);
-    // Ability a = al.GetAbility(KingShot);
-    // std::cout << a.GetName();
+    spg->PrintBoard();
 }

@@ -111,8 +111,6 @@ void SuperChessGame::UseAbility()
 {
     for(auto a: all_abilities)
     {
-        std::cout << "Name of ability: " ;
         a->Effect();
-        std::cout << std::endl;
     }
 }
