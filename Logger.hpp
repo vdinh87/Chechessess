@@ -8,4 +8,4 @@ public:
     void PrintLog();
 private:
     std::vector<ChessMove> log;
-}
+};

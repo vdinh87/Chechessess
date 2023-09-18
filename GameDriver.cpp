@@ -80,11 +80,11 @@ void Play()
             }
 
             //move piece
-            thismove.type = cg.GetPieceType(1ULL << piece);
-            thismove.from = piece;
-            thismove.to = move_to_square;
-            thismove.actions = cg.Move( piece, move_to_square);
-            logger.log(thismove);
+            move.type = cg.GetPieceType(1ULL << piece);
+            move.from = piece;
+            move.to = move_to_square;
+            move.actions = cg.Move( piece, move_to_square);
+            chess_game_logger.Log(move);
 
             if( cg.IsWin(white) || cg.IsWin(black) )
                 break;

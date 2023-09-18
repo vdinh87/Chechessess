@@ -55,7 +55,7 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 
     // no piece on board or parameters are same square
     if (!(from & board) || (from_sq == to_sq) || (to & ally_pieces))
-        return;
+        return actions;
 
     Color from_color = GetColor(from);
     Piece from_piece = GetPieceType(from);
@@ -80,7 +80,7 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
             actions.push_back(Capture);
         }
         else
-            actions.push(RegMove(from_color, from_sq, to_sq, from_piece, to_piece));
+            actions.push_back(RegMove(from_color, from_sq, to_sq, from_piece, to_piece));
     }
     else if (from_color == black)
     {
@@ -97,11 +97,11 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
             actions.push_back(Capture);
         }
         else
-            actions.push(RegMove(from_color, from_sq, to_sq, from_piece, to_piece));
+            actions.push_back(RegMove(from_color, from_sq, to_sq, from_piece, to_piece));
     }
 
 
-    UpdatePrevMove(from_sq, to_sq, (from_piece == Pawn))
+    UpdatePrevMove(from_sq, to_sq, from_piece);
     UpdateBoard();
     return actions;
 }

@@ -40,11 +40,10 @@ protected:
     U64 FilterLegalKingMoves(const U64 &moveset, const U64 &piece) const;
 
     // Utility functions
-    void UpdatePrevMove(Square from, Square to, bool is_pawn);
+    void UpdatePrevMove(Square from, Square to, Piece type);
     Color GetColor(U64 piece) const;
-    Piece GetPieceType(U64 unknown_piece) const;
     bool IsSlider(const U64 board_) const;
-    Action RegMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)
+    Action RegMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece);
     void UpdateBoard();
 
     // Special move functions
@@ -70,6 +69,9 @@ public:
 
     //moves pieces
     virtual std::vector<Action> Move(Square from_sq, Square to_sq);
+
+    //Returns which type of piece it is
+    Piece GetPieceType(U64 unknown_piece) const;
 
     void PrintBoard() const;
 };
