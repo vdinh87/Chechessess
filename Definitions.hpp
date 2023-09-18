@@ -68,6 +68,10 @@ enum Tier : unsigned char { T0, T1, T2, T3, T4 };
 
 enum AbilityType : unsigned char { active };
 
+enum Action :unsigned char {
+  Capture, Check, Castle, Checkmate, Promotion
+};
+
 typedef std::pair<Piece, Tier> SuperPieceInfo; 
 struct PairEnumHash
 {
@@ -175,7 +179,9 @@ struct ChessMove
 {
   Square from;
   Square to;
-  bool is_pawn;
+  Piece type;
+  std::vector<Action> actions;
+  bool is_pawn; // To be replaced
 };
 
 

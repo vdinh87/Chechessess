@@ -40,6 +40,7 @@ protected:
     U64 FilterLegalKingMoves(const U64 &moveset, const U64 &piece) const;
 
     // Utility functions
+    void UpdatePrevMove(Square from, Square to, bool is_pawn);
     Color GetColor(U64 piece) const;
     Piece GetPieceType(U64 unknown_piece) const;
     bool IsSlider(const U64 board_) const;
@@ -67,7 +68,7 @@ public:
     U64 GetAttacks(Square square_) const;
 
     //moves pieces
-    virtual void Move(Square from_sq, Square to_sq);
+    virtual std::vector<Action> Move(Square from_sq, Square to_sq);
 
     void PrintBoard() const;
 };

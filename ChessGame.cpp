@@ -496,7 +496,7 @@ void ChessGame::PrintBoard() const
               << std::endl;
 }
 
-void ChessGame::Move(Square from_sq, Square to_sq)
+std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
 {
     U64 from = 0ULL;
     U64 to = 0ULL;
@@ -665,6 +665,11 @@ void ChessGame::Promote(Square from_sq, Square to_sq, Color color, Piece to_piec
 U64 ChessGame::GetPiecesOfColor(Color color) const
 {
     return AllColorPiecesArray[color];
+}
+
+void ChessGame::UpdatePrevMove(Square from, Square to, bool is_pawn)
+{
+    
 }
 
 U64 ChessGame::GetBoard() const

@@ -13,6 +13,6 @@ public:
     ~SuperChessGame();
     bool AddPiece(Square square, Color color, Piece piece);
     bool RemovePiece(Square square);
-    void Move(Square from_sq, Square to_sq);
+    std::vector<Action> Move(Square from_sq, Square to_sq);
     void UseAbility();
 };

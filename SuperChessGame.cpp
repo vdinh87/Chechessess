@@ -43,7 +43,7 @@ bool SuperChessGame::RemovePiece(Square square)
     return true;
 }
 
-void SuperChessGame::Move(Square from_sq, Square to_sq)
+std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 {
     U64 from = 0ULL;
     U64 to = 0ULL;
@@ -110,6 +110,7 @@ void SuperChessGame::Move(Square from_sq, Square to_sq)
     prevMove.to = to_sq;
     prevMove.is_pawn = (from_piece == Pawn);
     UpdateBoard();
+    
 }
 
 void SuperChessGame::UseAbility()
