@@ -16,6 +16,7 @@ bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
 {
     U64 p = 0ULL;
     set_bit(p, square);
+    
     if(color == white)
         WhitePiecesArray[piece] |= p;
     else
@@ -28,6 +29,10 @@ bool SuperChessGame::RemovePiece(Square square)
 {
     U64 p = 0;
     set_bit(p, square);
+    //no piece on board
+    if( !(p & board) )
+        return false;
+
     Color color = GetColor(p);
     if(color == white)
         clear_bit(WhitePiecesArray[GetPieceType(p)], square);
