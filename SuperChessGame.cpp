@@ -1,10 +1,10 @@
 #pragma once
 #include "SuperChessGame.hpp"
 #include "AbilityLibrary.cpp"
-SuperChessGame::SuperChessGame(const SuperPieceInfo& white)
+SuperChessGame::SuperChessGame(const SuperPieceInfo &white)
 {
     al = new AbilityLibrary(this);
-    all_abilities.push_back( al->GetAbility(white) );
+    all_abilities.push_back(al->GetAbility(white));
 }
 
 SuperChessGame::~SuperChessGame()
@@ -16,25 +16,25 @@ bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
 {
     U64 p = 0ULL;
     set_bit(p, square);
-    
-    if(color == white)
-        WhitePiecesArray[piece] |= p;
-    else
-        BlackPiecesArray[piece] |= p;
+    if (!(board & p) && color == white)
+        return WhitePiecesArray[piece] |= p;
+    else if (!(board & p) && color == black)
+        return BlackPiecesArray[piece] |= p;
+
     UpdateBoard();
-    return true;
+    return false;
 }
 
 bool SuperChessGame::RemovePiece(Square square)
 {
     U64 p = 0;
     set_bit(p, square);
-    //no piece on board
-    if( !(p & board) )
+    // no piece on board
+    if (!(p & board))
         return false;
 
     Color color = GetColor(p);
-    if(color == white)
+    if (color == white)
         clear_bit(WhitePiecesArray[GetPieceType(p)], square);
     else
         clear_bit(BlackPiecesArray[GetPieceType(p)], square);
@@ -60,7 +60,7 @@ void SuperChessGame::Move(Square from_sq, Square to_sq)
     Piece from_piece = GetPieceType(from);
     Piece to_piece = GetPieceType(to);
 
-    //before move
+    // before move
     if (from_color == white)
     {
 
@@ -74,7 +74,7 @@ void SuperChessGame::Move(Square from_sq, Square to_sq)
         else if (EnPassant(from_sq, from_piece, from_color))
         {
             clear_bit(BlackPiecesArray[to_piece], prevMove.to);
-            set_bit(WhitePiecesArray[from_piece], prevMove.to+8);
+            set_bit(WhitePiecesArray[from_piece], prevMove.to + 8);
             clear_bit(WhitePiecesArray[from_piece], from_sq);
         }
         else
@@ -94,7 +94,7 @@ void SuperChessGame::Move(Square from_sq, Square to_sq)
         else if (EnPassant(from_sq, from_piece, from_color))
         {
             clear_bit(WhitePiecesArray[to_piece], prevMove.to);
-            set_bit(BlackPiecesArray[from_piece], prevMove.to-8);
+            set_bit(BlackPiecesArray[from_piece], prevMove.to - 8);
             clear_bit(BlackPiecesArray[from_piece], from_sq);
         }
         else
@@ -105,7 +105,7 @@ void SuperChessGame::Move(Square from_sq, Square to_sq)
             clear_bit(BlackPiecesArray[from_piece], from_sq);
         }
     }
-    //after move
+    // after move
     prevMove.from = from_sq;
     prevMove.to = to_sq;
     prevMove.is_pawn = (from_piece == Pawn);
@@ -114,7 +114,7 @@ void SuperChessGame::Move(Square from_sq, Square to_sq)
 
 void SuperChessGame::UseAbility()
 {
-    for(auto a: all_abilities)
+    for (auto a : all_abilities)
     {
         a->Effect();
     }
