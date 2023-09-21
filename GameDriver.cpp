@@ -77,8 +77,8 @@ void Play()
 
             //move piece
             cg.Move( piece, move_to_square);
-            // if( cg.IsWin(white) || cg.IsWin(black) )
-            //     break;
+            if( cg.IsWin(white) || cg.IsWin(black) )
+                break;
         }
     }
     
@@ -99,4 +99,5 @@ int main()
     spg->PrintBoard();
     spg->UseAbility();
     spg->PrintBoard();
+    
 }

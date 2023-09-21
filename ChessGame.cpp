@@ -523,7 +523,7 @@ void ChessGame::Move(Square from_sq, Square to_sq)
         else if (from_piece == Pawn && to_sq >= 56 && to_sq <= 63)
         {
             Promote(from_sq, to_sq, white, to_piece);
-        }
+        }   
         else if (EnPassant(from_sq, from_piece, from_color))
         {
             clear_bit(BlackPiecesArray[to_piece], prevMove.to);

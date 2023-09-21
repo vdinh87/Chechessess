@@ -12,6 +12,7 @@ SuperChessGame::~SuperChessGame()
     delete al;
     al = nullptr;
 }
+
 bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
 {
     U64 p = 0ULL;
