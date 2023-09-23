@@ -1,8 +1,11 @@
 #include "ChessGame.cpp"
 #include "SuperChessGame.cpp"
+#include "Logger.cpp"
+
 void Play()
 {
     ChessGame cg;
+    Logger chess_game_logger;
 
     static std::unordered_map<std::string, Square> const table = { 
         {"a1", Square::a1}, {"a2", Square::a2}, {"a3", Square::a3}, {"a4", Square::a4},
@@ -22,9 +25,10 @@ void Play()
         {"h1", Square::h1}, {"h2", Square::h2}, {"h3", Square::h3}, {"h4", Square::h4},
         {"h5", Square::h5}, {"h6", Square::h6}, {"h7", Square::h7}, {"h8", Square::h8}
     };
-  
     while( !cg.IsWin(white) && !cg.IsWin(black) )
-    { 
+    {
+        ChessMove move;
+
         for( int i = white; i <= black && ( !cg.IsWin(white) && !cg.IsWin(black) ); i++)
         {
             Color color = static_cast<Color>(i);
@@ -76,9 +80,21 @@ void Play()
             }
 
             //move piece
-            cg.Move( piece, move_to_square);
+            move.type = cg.GetPieceType(1ULL << piece);
+            move.from = piece;
+            move.to = move_to_square;
+            std::vector<Action> action_list = cg.Move( piece, move_to_square);
+                 
             if( cg.IsWin(white) || cg.IsWin(black) )
+            {
+                action_list.push_back(Action::Checkmate);
+                move.actions = action_list;
+                chess_game_logger.Log(move);
                 break;
+            }
+
+            move.actions = action_list;
+            chess_game_logger.Log(move);
         }
     }
     
@@ -86,18 +102,62 @@ void Play()
         std::cout << "White win!" << std::endl;
     else
         std::cout << "Black win!" << std::endl;
+    chess_game_logger.PrintLog();
 }
 
 int main()
 {
-    // Play();
-    SuperPieceInfo KingShot = std::make_pair(King, T3);
-    SuperChessGame* spg = new SuperChessGame(KingShot);
-    spg->PrintBoard();
-    spg->AddPiece(d4, black, Pawn);
-    spg->Move(a2,a5);
-    spg->PrintBoard();
-    spg->UseAbility();
-    spg->PrintBoard();
-    
+    Play();
+    // SuperPieceInfo KingShot = std::make_pair(King, T3);
+    // SuperChessGame* spg = new SuperChessGame(KingShot);
+    // spg->PrintBoard();
+    // spg->AddPiece(d4, black, Pawn);
+    // spg->Move(a2,a5);
+    // spg->PrintBoard();
+    // spg->UseAbility();
+    // spg->PrintBoard();
+    // std::cout << "| White   | Black " << std::endl; 
+    // //moving regularly
+    // std::cout << "| d4      | e5    " << std::endl; //pawn
+    // std::cout << "| Ne4     | Be4   " << std::endl; //non-pawn
+    // //capture
+    // std::cout << "| dxe4    | exf5  " << std::endl; //pawn
+    // std::cout << "| Nxe4    | Qxf5  " << std::endl; //non-pawn
+    // //check
+    // std::cout << "| Qd5+    | Ke4   " << std::endl; //non-pawn
+    // //check with capture
+    // std::cout << "| gxd5+   | Ke4   " << std::endl; //pawn
+    // std::cout << "| Qxd5+   | Ke4   " << std::endl; //non-pawn
+    // //promotion
+    // std::cout << "| d1=Q    | Ke4   " << std::endl; //pawn
+    // //promotion with capture
+    // std::cout << "| gxd1=Q  | Ke4   " << std::endl; //pawn
+    // //promotion with check
+    // std::cout << "| d1=Q+   | Ke4   " << std::endl; //pawn
+    // //promotion with capture with check
+    // std::cout << "| gxd1=Q+ | Ke4   " << std::endl; //pawn
+    // //castling
+    // std::cout << "| O-O     | Ke4   " << std::endl; //short castle
+    // std::cout << "| O-O-O   | Ke4   " << std::endl; //long castle
+    // //castling with check
+    // std::cout << "| O-O+    | Ke4   " << std::endl; //short castle
+    // std::cout << "| O-O-O+  | Ke4   " << std::endl; //long castle
+    // //checkmate
+    // std::cout << "| Rd4#    |       " << std::endl; 
+    // //checkmate with capture
+    // std::cout << "| Rxd4#   |       " << std::endl; 
+    // //checkmate with castle
+    // std::cout << "| O-O#    |       " << std::endl; //short castle
+    // std::cout << "| O-O-O#  |       " << std::endl; //long castle
+
+    // std::cout << std::endl;
+
+    // int width = 8; // Set the desired width
+    // std::string text = "Hello"; // Your string
+
+    // // Left-aligned
+    // std::cout << "| " << std::setw(width) << std::left << text ;
+    // std::cout << "| " << std::setw(width) << std::left << text << std::endl;
+    // std::cout << "| " << std::setw(width) << std::left << text ;
+    // std::cout << "| " << std::setw(width) << std::left << text << std::endl;
 }
