@@ -46,4 +46,7 @@ void KingSniperShot::Effect()
     std::cout << "KingSniperShot succeeded" << std::endl;
 }
 
-
+void KingSniperShot::Notify(const std::vector<ChessMove>& log)
+{
+    log_ = log;
+}

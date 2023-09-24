@@ -1,9 +1,12 @@
 #pragma once
+#include "Definitions.hpp"
 #include "Magics.cpp"
-
-class ChessGame
+#include "Listener.hpp"
+class ChessGame : public Listener
 {
 protected:
+    //log
+    std::vector<ChessMove> log_;
     // board
     std::vector<U64> WhitePiecesArray;
     std::vector<U64> BlackPiecesArray;
@@ -73,5 +76,6 @@ public:
     //Returns which type of piece it is
     Piece GetPieceType(U64 unknown_piece) const;
 
+    void Notify(const std::vector<ChessMove>& log) override;
     void PrintBoard() const;
 };

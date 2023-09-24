@@ -27,6 +27,61 @@ void PrintGoard(U64 board)
               << std::endl;
 }
 
+void PrintDaLog(const std::vector<ChessMove>& log)
+{
+    std::string output;
+    int width = 10;
+    std::cout << "| White   | Black " << std::endl; 
+    
+    for(int i = 0; i < log.size(); i++)
+    {
+        std::string line;
+        ChessMove move = log[i];
+
+        //castling
+        auto it = std::find(move.actions.begin(), move.actions.end(), Action::Castle);
+        if(it != move.actions.end()) 
+            line += "O-O";
+
+        if( it == move.actions.end() ) //if not castle proceed
+        {
+            //add piece type
+            line += PieceStrings[move.type];
+
+            //capture
+            it = std::find(move.actions.begin(), move.actions.end(), Action::Capture);
+            if(it != move.actions.end()) 
+                line += "x";
+
+            //destination square
+            if( move.to != Square::invalid )
+                line += SquareStrings[move.to];
+            
+            //promotion
+            it = std::find(move.actions.begin(), move.actions.end(), Action::Promotion);
+            if(it != move.actions.end()) 
+                line += "=" + PieceStrings[move.type];
+            
+            //checkmate
+            it = std::find(move.actions.begin(), move.actions.end(), Action::Checkmate);
+            if(it != move.actions.end()) 
+                line += "#";
+
+            //check
+            if( it == move.actions.end() ) //if not checkmate proceed
+            {
+                it = std::find(move.actions.begin(), move.actions.end(), Action::Check);
+                if(it != move.actions.end()) 
+                    line += "+";
+            }
+        }
+        int width = 8;
+        std::cout << "| " << std::setw(width) << std::left << line ;
+        if( i % 2 == 1) //black move
+            std::cout << std::endl;
+    }
+}
+
 ChessGame::ChessGame(/* args */)
 {
     // { Pawn, Knight, Bishop, Rook, Queen, King }
@@ -728,3 +783,11 @@ bool ChessGame::IsWin(Color color) const
     return (!(GetAttacks(GetSquare(WhitePiecesArray[King]))) &&
             InCheck(board, white, WhitePiecesArray[King]));
 }
+
+//logger stuff
+void ChessGame::Notify(const std::vector<ChessMove>& log)
+{
+    log_ = log;
+    PrintDaLog(log);
+}
+

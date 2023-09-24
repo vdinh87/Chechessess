@@ -1,9 +1,31 @@
 #pragma once
 #include "Logger.hpp"
 
+Logger::~Logger()
+{
+    for( auto listener: listeners)
+        delete listener;
+    listeners.clear();
+}
 void Logger::Log(ChessMove move)
 {
     log.push_back(move);
+    for( auto listener: listeners)
+        listener->Notify(log);
+}
+
+void Logger::AddListener(Listener* l)
+{
+    listeners.push_back(l);
+}
+
+void Logger::RemoveListener(Listener* l)
+{
+    auto it = std::remove(listeners.begin(), listeners.end(), l);
+    if (it != listeners.end()) {
+        listeners.erase(it);
+        delete l; // Remember to clean up the removed listener
+    }
 }
 
 void Logger::PrintLog()
