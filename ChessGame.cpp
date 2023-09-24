@@ -788,6 +788,5 @@ bool ChessGame::IsWin(Color color) const
 void ChessGame::Notify(const std::vector<ChessMove>& log)
 {
     log_ = log;
-    PrintDaLog(log);
 }
 

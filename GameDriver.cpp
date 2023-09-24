@@ -7,7 +7,7 @@ void Play()
     ChessGame* cg = new ChessGame();
     Logger chess_game_logger;
     chess_game_logger.AddListener(cg);
-
+    
     while( !cg->IsWin(white) && !cg->IsWin(black) )
     {
         ChessMove move;
