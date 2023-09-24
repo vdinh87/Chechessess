@@ -27,81 +27,28 @@ void PrintGoard(U64 board)
               << std::endl;
 }
 
-void PrintDaLog(const std::vector<ChessMove>& log)
-{
-    std::string output;
-    int width = 10;
-    std::cout << "| White   | Black " << std::endl; 
-    
-    for(int i = 0; i < log.size(); i++)
-    {
-        std::string line;
-        ChessMove move = log[i];
-
-        //castling
-        auto it = std::find(move.actions.begin(), move.actions.end(), Action::Castle);
-        if(it != move.actions.end()) 
-            line += "O-O";
-
-        if( it == move.actions.end() ) //if not castle proceed
-        {
-            //add piece type
-            line += PieceStrings[move.type];
-
-            //capture
-            it = std::find(move.actions.begin(), move.actions.end(), Action::Capture);
-            if(it != move.actions.end()) 
-                line += "x";
-
-            //destination square
-            if( move.to != Square::invalid )
-                line += SquareStrings[move.to];
-            
-            //promotion
-            it = std::find(move.actions.begin(), move.actions.end(), Action::Promotion);
-            if(it != move.actions.end()) 
-                line += "=" + PieceStrings[move.type];
-            
-            //checkmate
-            it = std::find(move.actions.begin(), move.actions.end(), Action::Checkmate);
-            if(it != move.actions.end()) 
-                line += "#";
-
-            //check
-            if( it == move.actions.end() ) //if not checkmate proceed
-            {
-                it = std::find(move.actions.begin(), move.actions.end(), Action::Check);
-                if(it != move.actions.end()) 
-                    line += "+";
-            }
-        }
-        int width = 8;
-        std::cout << "| " << std::setw(width) << std::left << line ;
-        if( i % 2 == 1) //black move
-            std::cout << std::endl;
-    }
-}
-
 ChessGame::ChessGame(/* args */)
 {
     // { Pawn, Knight, Bishop, Rook, Queen, King }
     WhitePiecesArray =
-        {
-            0x000000000000FF00ULL,
-            0x0000000000000042ULL,
-            0x0000000000000024ULL,
-            0x0000000000000081ULL,
-            0x0000000000000008ULL,
-            0x0000000000000010ULL};
+    {
+        0x000000000000FF00ULL,
+        0x0000000000000042ULL,
+        0x0000000000000024ULL,
+        0x0000000000000081ULL,
+        0x0000000000000008ULL,
+        0x0000000000000010ULL
+    };
 
     BlackPiecesArray =
-        {
-            0x00FF000000000000ULL,
-            0x4200000000000000ULL,
-            0x2400000000000000ULL,
-            0x8100000000000000ULL,
-            0x0800000000000000ULL,
-            0x1000000000000000ULL};
+    {
+        0x00FF000000000000ULL,
+        0x4200000000000000ULL,
+        0x2400000000000000ULL,
+        0x8100000000000000ULL,
+        0x0800000000000000ULL,
+        0x1000000000000000ULL
+    };
 
     for (size_t i = 0; i < WhitePiecesArray.size(); i++)
         PieceTypeArray.push_back(WhitePiecesArray[i] | BlackPiecesArray[i]);
