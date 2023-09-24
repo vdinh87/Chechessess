@@ -116,8 +116,8 @@ bool ChessGame::EnPassant(Square square, Piece type, Color color) const
     if ((type == Pawn && prevMove.type == Pawn) &&             // both are pawns
             (abs(prevMove.to / 8 - prevMove.from / 8) == 2) && // moved two places previously
             (abs((prevMove.to % 8) - (square % 8)) == 1) &&    // is next to it
-            (color == white && (square >= 32 && square <= 39)) ||
-        (color == black && (square >= 24 && square <= 31))) // check if it's on 4th and 5th rank
+            ((color == white && (square >= 32 && square <= 39)) ||
+        (color == black && (square >= 24 && square <= 31)))) // check if it's on 4th and 5th rank
     {
         return true;
     }
