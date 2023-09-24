@@ -93,56 +93,6 @@ void Play()
 int main()
 {
     Play();
-    // SuperPieceInfo KingShot = std::make_pair(King, T3);
-    // SuperChessGame* spg = new SuperChessGame(KingShot);
-    // spg->PrintBoard();
-    // spg->AddPiece(d4, black, Pawn);
-    // spg->Move(a2,a5);
-    // spg->PrintBoard();
-    // spg->UseAbility();
-    // spg->PrintBoard();
-    // std::cout << "| White   | Black " << std::endl; 
-    // //moving regularly
-    // std::cout << "| d4      | e5    " << std::endl; //pawn
-    // std::cout << "| Ne4     | Be4   " << std::endl; //non-pawn
-    // //capture
-    // std::cout << "| dxe4    | exf5  " << std::endl; //pawn
-    // std::cout << "| Nxe4    | Qxf5  " << std::endl; //non-pawn
-    // //check
-    // std::cout << "| Qd5+    | Ke4   " << std::endl; //non-pawn
-    // //check with capture
-    // std::cout << "| gxd5+   | Ke4   " << std::endl; //pawn
-    // std::cout << "| Qxd5+   | Ke4   " << std::endl; //non-pawn
-    // //promotion
-    // std::cout << "| d1=Q    | Ke4   " << std::endl; //pawn
-    // //promotion with capture
-    // std::cout << "| gxd1=Q  | Ke4   " << std::endl; //pawn
-    // //promotion with check
-    // std::cout << "| d1=Q+   | Ke4   " << std::endl; //pawn
-    // //promotion with capture with check
-    // std::cout << "| gxd1=Q+ | Ke4   " << std::endl; //pawn
-    // //castling
-    // std::cout << "| O-O     | Ke4   " << std::endl; //short castle
-    // std::cout << "| O-O-O   | Ke4   " << std::endl; //long castle
-    // //castling with check
-    // std::cout << "| O-O+    | Ke4   " << std::endl; //short castle
-    // std::cout << "| O-O-O+  | Ke4   " << std::endl; //long castle
-    // //checkmate
-    // std::cout << "| Rd4#    |       " << std::endl; 
-    // //checkmate with capture
-    // std::cout << "| Rxd4#   |       " << std::endl; 
-    // //checkmate with castle
-    // std::cout << "| O-O#    |       " << std::endl; //short castle
-    // std::cout << "| O-O-O#  |       " << std::endl; //long castle
 
-    // std::cout << std::endl;
-
-    // int width = 8; // Set the desired width
-    // std::string text = "Hello"; // Your string
-
-    // // Left-aligned
-    // std::cout << "| " << std::setw(width) << std::left << text ;
-    // std::cout << "| " << std::setw(width) << std::left << text << std::endl;
-    // std::cout << "| " << std::setw(width) << std::left << text ;
-    // std::cout << "| " << std::setw(width) << std::left << text << std::endl;
+    
 }
