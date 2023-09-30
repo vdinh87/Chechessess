@@ -67,7 +67,6 @@ void Play()
             move.from = piece;
             move.to = move_to_square;
             std::vector<Action> action_list = cg->Move( piece, move_to_square);
-                 
             if( cg->IsWin(white) || cg->IsWin(black) )
             {
                 action_list.push_back(Action::Checkmate);
@@ -93,6 +92,4 @@ void Play()
 int main()
 {
     Play();
-
-    
 }

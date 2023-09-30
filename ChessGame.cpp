@@ -518,7 +518,7 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
     Color from_color = GetColor(from);
     Piece from_piece = GetPieceType(from);
     Piece to_piece = GetPieceType(to);
-
+    
     // before move
     if (from_color == white)
     {
@@ -538,7 +538,6 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
         }
         else // Normal Move
         {
-            // std::cout << "Piece type: " << PieceStrings[to_piece] << std::endl;
             actions.push_back(RegMove(from_color, from_sq, to_sq, from_piece, to_piece));
         }
     }
@@ -562,13 +561,15 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
     from_color =  static_cast<Color>(!static_cast<bool>(from_color));
     if (InCheck(board, from_color, 0)) // const U64 &occupany_, Color color_of_king, int offset
         actions.push_back(Check);
-    if (IsWin(white) || IsWin(black))
-        actions.push_back(Checkmate);
-
-    // after move
     
+    
+    
+    // after move
     UpdatePrevMove(from_sq, to_sq, from_piece);
     UpdateBoard();
+
+    if (IsWin(white) || IsWin(black))
+        actions.push_back(Checkmate);
     return actions;
 }
 
@@ -735,4 +736,3 @@ void ChessGame::Notify(const std::vector<ChessMove>& log)
 {
     log_ = log;
 }
-
