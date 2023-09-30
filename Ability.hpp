@@ -3,29 +3,22 @@
 #include "Definitions.hpp"
 class Ability
 {
-private:
+protected:
+    Square piece;
     std::string name;
+    SuperChessGame *game;
 public:
-    Ability();
-    Ability(const std::string& name_);
-    virtual ~Ability();
+    Ability() = default;
+    Ability(const std::string& name_, SuperChessGame* game_);
+    virtual ~Ability() = default;
+    void UpdatePiece(const Square& square);
     const std::string& GetName() const;
     virtual void Effect();
 };
 
-Ability::Ability()
-{
+Ability::Ability(const std::string &name_, SuperChessGame *game_) : name(name_), game(game_) {}
 
-}
-
-Ability::Ability(const std::string& name_)
-{
-    name = name_;
-}
-
-Ability::~Ability()
-{
-}
+void UpdatePiece(const Square &square) : piece(square) {}
 
 const std::string& Ability::GetName() const
 {

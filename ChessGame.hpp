@@ -44,7 +44,6 @@ protected:
 
     // Utility functions
     void UpdatePrevMove(Square from, Square to, Piece type);
-    Color GetColor(U64 piece) const;
     bool IsSlider(const U64 board_) const;
     Action RegMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece);
     void UpdateBoard();
@@ -63,6 +62,7 @@ public:
     //public getters
     U64 GetPiecesOfColor(Color color) const;
     U64 GetBoard() const;
+    Color GetColor(const U64 piece) const;
 
     // check if win
     bool IsWin(Color color) const;
