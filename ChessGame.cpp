@@ -416,7 +416,9 @@ void ChessGame::UpdateBoard()
     WhitePieces = WhitePiecesArray[Pawn] | WhitePiecesArray[Knight] | WhitePiecesArray[Bishop] |
                   WhitePiecesArray[Rook] | WhitePiecesArray[Queen] | WhitePiecesArray[King];
     BlackPieces = BlackPiecesArray[Pawn] | BlackPiecesArray[Knight] | BlackPiecesArray[Bishop] |
-                  BlackPiecesArray[Rook] | BlackPiecesArray[Queen] | BlackPiecesArray[King];
+                  BlackPiecesArray[Rook] | BlackPiecesArray[Queen] | BlackPiecesArray[King]; 
+
+    std::vector<Piece> arrayofsuperpieceenum
 
     AllColorPiecesArray.clear();
     AllColorPiecesArray.push_back(WhitePieces);
