@@ -31,24 +31,22 @@ ChessGame::ChessGame(/* args */)
 {
     // { Pawn, Knight, Bishop, Rook, Queen, King }
     WhitePiecesArray =
-    {
-        0x000000000000FF00ULL,
-        0x0000000000000042ULL,
-        0x0000000000000024ULL,
-        0x0000000000000081ULL,
-        0x0000000000000008ULL,
-        0x0000000000000010ULL
-    };
+        {
+            0x000000000000FF00ULL,
+            0x0000000000000042ULL,
+            0x0000000000000024ULL,
+            0x0000000000000081ULL,
+            0x0000000000000008ULL,
+            0x0000000000000010ULL};
 
     BlackPiecesArray =
-    {
-        0x00FF000000000000ULL,
-        0x4200000000000000ULL,
-        0x2400000000000000ULL,
-        0x8100000000000000ULL,
-        0x0800000000000000ULL,
-        0x1000000000000000ULL
-    };
+        {
+            0x00FF000000000000ULL,
+            0x4200000000000000ULL,
+            0x2400000000000000ULL,
+            0x8100000000000000ULL,
+            0x0800000000000000ULL,
+            0x1000000000000000ULL};
 
     for (size_t i = 0; i < WhitePiecesArray.size(); i++)
         PieceTypeArray.push_back(WhitePiecesArray[i] | BlackPiecesArray[i]);
@@ -113,10 +111,10 @@ U64 ChessGame::GetEnPassant(Square square, const U64 occupancy_, Color color) co
 
 bool ChessGame::EnPassant(Square square, Piece type, Color color) const
 {
-    if ((type == Pawn && prevMove.type == Pawn) &&             // both are pawns
-            (abs(prevMove.to / 8 - prevMove.from / 8) == 2) && // moved two places previously
-            (abs((prevMove.to % 8) - (square % 8)) == 1) &&    // is next to it
-            ((color == white && square >= 32 && square <= 39) || (color == black && square >= 24 && square <= 31))) // check if it's on 4th and 5th rank
+    if ((type == Pawn && prevMove.type == Pawn) &&                                                              // both are pawns
+        (abs(prevMove.to / 8 - prevMove.from / 8) == 2) &&                                                      // moved two places previously
+        (abs((prevMove.to % 8) - (square % 8)) == 1) &&                                                         // is next to it
+        ((color == white && square >= 32 && square <= 39) || (color == black && square >= 24 && square <= 31))) // check if it's on 4th and 5th rank
     {
         return true;
     }
@@ -416,9 +414,7 @@ void ChessGame::UpdateBoard()
     WhitePieces = WhitePiecesArray[Pawn] | WhitePiecesArray[Knight] | WhitePiecesArray[Bishop] |
                   WhitePiecesArray[Rook] | WhitePiecesArray[Queen] | WhitePiecesArray[King];
     BlackPieces = BlackPiecesArray[Pawn] | BlackPiecesArray[Knight] | BlackPiecesArray[Bishop] |
-                  BlackPiecesArray[Rook] | BlackPiecesArray[Queen] | BlackPiecesArray[King]; 
-
-    std::vector<Piece> arrayofsuperpieceenum
+                  BlackPiecesArray[Rook] | BlackPiecesArray[Queen] | BlackPiecesArray[King];
 
     AllColorPiecesArray.clear();
     AllColorPiecesArray.push_back(WhitePieces);
@@ -450,7 +446,7 @@ Piece ChessGame::GetPieceType(U64 unknown_piece) const
             p = static_cast<Piece>(i);
         }
     }
-    
+
     return p;
 }
 
@@ -520,7 +516,7 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
     Color from_color = GetColor(from);
     Piece from_piece = GetPieceType(from);
     Piece to_piece = GetPieceType(to);
-    
+
     // before move
     if (from_color == white)
     {
@@ -551,21 +547,19 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
         else if (from_piece == Pawn && to_sq >= 0 && to_sq <= 7)
             actions.push_back(Promote(from_sq, to_sq, black, to_piece));
         else if (EnPassant(from_sq, from_piece, from_color))
-            {
-                clear_bit(WhitePiecesArray[to_piece], prevMove.to);
-                set_bit(BlackPiecesArray[from_piece], prevMove.to - 8);
-                clear_bit(BlackPiecesArray[from_piece], from_sq);
-                actions.push_back(Capture);
-            }
+        {
+            clear_bit(WhitePiecesArray[to_piece], prevMove.to);
+            set_bit(BlackPiecesArray[from_piece], prevMove.to - 8);
+            clear_bit(BlackPiecesArray[from_piece], from_sq);
+            actions.push_back(Capture);
+        }
         else
             actions.push_back(RegMove(from_color, from_sq, to_sq, from_piece, to_piece));
     }
-    from_color =  static_cast<Color>(!static_cast<bool>(from_color));
+    from_color = static_cast<Color>(!static_cast<bool>(from_color));
     if (InCheck(board, from_color, 0)) // const U64 &occupany_, Color color_of_king, int offset
         actions.push_back(Check);
-    
-    
-    
+
     // after move
     UpdatePrevMove(from_sq, to_sq, from_piece);
     UpdateBoard();
@@ -583,10 +577,10 @@ Action ChessGame::RegMove(Color color, Square from_sq, Square to_sq, Piece from_
         set_bit(WhitePiecesArray[from_piece], to_sq);
         clear_bit(WhitePiecesArray[from_piece], from_sq);
 
-        //for returning regular move
+        // for returning regular move
         U64 s;
         set_bit(s, to_sq);
-        if ( !(s & BlackPiecesArray[to_piece]) )
+        if (!(s & BlackPiecesArray[to_piece]))
         {
             return Action::Move;
         }
@@ -597,16 +591,15 @@ Action ChessGame::RegMove(Color color, Square from_sq, Square to_sq, Piece from_
         set_bit(BlackPiecesArray[from_piece], to_sq);
         clear_bit(BlackPiecesArray[from_piece], from_sq);
 
-        //for returning regular move
+        // for returning regular move
         U64 s;
         set_bit(s, to_sq);
-        if ( !(s & WhitePiecesArray[to_piece]) )
+        if (!(s & WhitePiecesArray[to_piece]))
         {
             return Action::Move;
         }
     }
-    
-    
+
     return Capture;
 }
 
@@ -733,8 +726,8 @@ bool ChessGame::IsWin(Color color) const
             InCheck(board, white, WhitePiecesArray[King]));
 }
 
-//logger stuff
-void ChessGame::Notify(const std::vector<ChessMove>& log)
+// logger stuff
+void ChessGame::Notify(const std::vector<ChessMove> &log)
 {
     log_ = log;
 }
