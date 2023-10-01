@@ -18,7 +18,10 @@ public:
 
 Ability::Ability(const std::string &name_, SuperChessGame *game_) : name(name_), game(game_) {}
 
-void UpdatePiece(const Square &square) : piece(square) {}
+void Ability::UpdatePiece(const Square &square)
+{
+    piece = square;
+}
 
 const std::string& Ability::GetName() const
 {

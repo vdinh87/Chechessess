@@ -44,6 +44,11 @@ bool SuperChessGame::RemovePiece(Square square)
     return true;
 }
 
+bool AddSuperPiecesofType(SuperPieceInfo info, Color color)
+{
+    
+}
+
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 {
     std::vector<Action> actions;
