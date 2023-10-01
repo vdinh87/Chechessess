@@ -91,5 +91,6 @@ void Play()
 
 int main()
 {
-    Play();
+    SuperChessGame* spg = new SuperChessGame(std::make_pair(King,T3));
+    spg->UseAbility();
 }

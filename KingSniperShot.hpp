@@ -7,8 +7,6 @@ class KingSniperShot : public Ability, public Listener
 {
 private:
     AbilityType type = active;
-    std::string name = "King Sniper Shot";
-    SuperChessGame* game;
     std::vector<ChessMove> log_;
 public:
     KingSniperShot(SuperChessGame* game_);
