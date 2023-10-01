@@ -4,18 +4,10 @@
 KingSniperShot::KingSniperShot(SuperChessGame* game_) :
 Ability("King Sniper Shot", game_)
 {
-<<<<<<< HEAD
-    
-=======
->>>>>>> 74671688b6bc55b6f48211bc66829fc6b81d06c8
 }
 
 void KingSniperShot::Effect()
 {
-<<<<<<< HEAD
-    
-=======
->>>>>>> 74671688b6bc55b6f48211bc66829fc6b81d06c8
     std::string input_str;
     Square sq;
     std::cout << "Choose piece to delete: ";
@@ -31,7 +23,7 @@ void KingSniperShot::Effect()
         return;
     }
 
-    int current_turn = (log.size() + 1 ) / 2;
+    int current_turn = (log_.size() + 1) / 2;
 
     if (king_color == game->GetColor(1ULL << sq)) { 
         std::cout << "Invalid square Same color piece." << std::endl;
@@ -39,17 +31,13 @@ void KingSniperShot::Effect()
     } if (cooldown_tracker < cooldown){
         std::cout << name << " is Still on CoolDown\n";
         return;
-    } if ( current_turn < 10 ){
+    } if ( current_turn < activation_turn ){
         std::cout << name << " is only Available at turn 10. It's currently Turn [" << current_turn << "]\n";
         return;
+    } if (game->RemovePiece(sq) == true){
+        cooldown_tracker = 0;
+        std::cout << "KingSniperShot succeeded" << std::endl;
     }
-
-
-
-    game->RemovePiece(sq);
-    cooldown_tracker = 0;
-
-    std::cout << "KingSniperShot succeeded" << std::endl;
 }
 
 void KingSniperShot::Notify(const std::vector<ChessMove>& log)
