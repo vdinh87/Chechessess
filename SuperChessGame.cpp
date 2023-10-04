@@ -33,6 +33,10 @@ bool SuperChessGame::RemovePiece(Square square)
     // no piece on board
     if (!(p & board))
         return false;
+    if ( ((1ULL << square) & PieceTypeArray[King]) != 0 ){
+        std::cout << "You may not remove the King from the Board!!\n";
+        return false;
+    }
 
     Color color = GetColor(p);
     if (color == white)

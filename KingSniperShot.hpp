@@ -10,7 +10,7 @@ private:
     std::string name = "King Sniper Shot";
     std::vector<ChessMove> log_;
     const int cooldown = 10;
-    const int activation_turn = 10;
+    const int activation_turn = 0;
     int cooldown_tracker = 10;
 public:
     KingSniperShot(SuperChessGame* game_);
