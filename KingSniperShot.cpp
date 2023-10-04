@@ -4,18 +4,10 @@
 KingSniperShot::KingSniperShot(SuperChessGame* game_) :
 Ability("King Sniper Shot", game_)
 {
-<<<<<<< HEAD
-    
-=======
->>>>>>> 74671688b6bc55b6f48211bc66829fc6b81d06c8
 }
 
 void KingSniperShot::Effect()
 {
-<<<<<<< HEAD
-    
-=======
->>>>>>> 74671688b6bc55b6f48211bc66829fc6b81d06c8
     std::string input_str;
     Square sq;
     std::cout << "Choose piece to delete: ";
@@ -43,8 +35,6 @@ void KingSniperShot::Effect()
         std::cout << name << " is only Available at turn 10. It's currently Turn [" << current_turn << "]\n";
         return;
     }
-
-
 
     game->RemovePiece(sq);
     cooldown_tracker = 0;
