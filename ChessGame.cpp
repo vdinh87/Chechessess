@@ -31,22 +31,22 @@ ChessGame::ChessGame(/* args */)
 {
     // { Pawn, Knight, Bishop, Rook, Queen, King }
     WhitePiecesArray =
-        {
-            0x000000000000FF00ULL,
-            0x0000000000000042ULL,
-            0x0000000000000024ULL,
-            0x0000000000000081ULL,
-            0x0000000000000008ULL,
-            0x0000000000000010ULL};
+    {
+        0x000000000000FF00ULL,
+        0x0000000000000042ULL,
+        0x0000000000000024ULL,
+        0x0000000000000081ULL,
+        0x0000000000000008ULL,
+        0x0000000000000010ULL};
 
     BlackPiecesArray =
-        {
-            0x00FF000000000000ULL,
-            0x4200000000000000ULL,
-            0x2400000000000000ULL,
-            0x8100000000000000ULL,
-            0x0800000000000000ULL,
-            0x1000000000000000ULL};
+    {
+        0x00FF000000000000ULL,
+        0x4200000000000000ULL,
+        0x2400000000000000ULL,
+        0x8100000000000000ULL,
+        0x0800000000000000ULL,
+        0x1000000000000000ULL};
 
     for (size_t i = 0; i < WhitePiecesArray.size(); i++)
         PieceTypeArray.push_back(WhitePiecesArray[i] | BlackPiecesArray[i]);

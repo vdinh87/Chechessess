@@ -91,12 +91,10 @@ void Play()
 
 int main()
 {
-    SuperChessGame* spg = new SuperChessGame(std::make_pair(King,T3));
-
-
-
+    SuperChessGame* spg = new SuperChessGame(std::make_pair(Piece::King, Tier::T3), std::make_pair(Piece::King, Tier::T3));
+    std::vector<std::unique_ptr<Ability>> v;
+    v.push_back(std::make_unique<KingSniperShot>(spg));
     spg->PrintBoard();
- 
-    spg->UseAbility();
+    spg->Do(Square::a1);
     spg->PrintBoard();
 }

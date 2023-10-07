@@ -1,16 +1,15 @@
 #pragma once
 #include "SuperChessGame.hpp"
 #include "AbilityLibrary.cpp"
-SuperChessGame::SuperChessGame(const SuperPieceInfo &white)
+#include "SuperPiece.cpp"
+SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info)
 {
-    al = new AbilityLibrary(this);
-    all_abilities.push_back(al->GetAbility(white));
-}
-
-SuperChessGame::~SuperChessGame()
-{
-    delete al;
-    al = nullptr;
+    // InitSuperPieces(white, black);
+    // all_abilities.push_back(al->GetAbility(black));
+    al = std::make_shared<AbilityLibrary>(this);
+    std::vector<std::unique_ptr<Ability>> v;
+    v.push_back(al->GetAbility(white_info));
+    super_pieces[Square::a1] = std::make_shared<SuperPiece>(v, white_info, Square::a1, Color::white);
 }
 
 bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
@@ -23,6 +22,16 @@ bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
         return BlackPiecesArray[piece] |= p;
 
     UpdateBoard();
+    return false;
+}
+
+bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color)
+{
+    return false;
+}
+
+bool SuperChessGame::AddSuperPiecesofType(SuperPieceInfo info, Color color)
+{
     return false;
 }
 
@@ -48,11 +57,7 @@ bool SuperChessGame::RemovePiece(Square square)
     return true;
 }
 
-bool AddSuperPiecesofType(SuperPieceInfo info, Color color)
-{
-    
-}
-
+//overrides
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 {
     std::vector<Action> actions;
@@ -110,16 +115,19 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
             actions.push_back(RegMove(from_color, from_sq, to_sq, from_piece, to_piece));
     }
 
-
     UpdatePrevMove(from_sq, to_sq, from_piece);
     UpdateBoard();
     return actions;
 }
 
-void SuperChessGame::UseAbility()
+//init
+void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white, const SuperPieceInfo &black)
 {
-    for (auto a : all_abilities)
-    {
-        a->Effect();
-    }
+    
+}
+
+//misc
+void SuperChessGame::Do(Square sq)
+{
+    super_pieces[sq]->UseAbility();
 }

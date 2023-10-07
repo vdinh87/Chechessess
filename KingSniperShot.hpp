@@ -15,7 +15,9 @@ private:
 public:
     KingSniperShot(SuperChessGame* game_);
     ~KingSniperShot() = default;
+
     void Effect();
+    std::unique_ptr<Ability> Clone() const override;
     void Notify(const std::vector<ChessMove>& log) override;
 };
 

@@ -4,10 +4,14 @@
 AbilityLibrary::AbilityLibrary(SuperChessGame *game_)
 {
     game = game_;
-    lib[std::make_pair(King, T3)] = std::make_shared<KingSniperShot>(game_);
+    lib[std::make_pair(King, T3)] = std::make_unique<KingSniperShot>(game_);
 }
 
-std::shared_ptr<Ability> AbilityLibrary::GetAbility(const SuperPieceInfo &key)
+std::unique_ptr<Ability> AbilityLibrary::GetAbility(const SuperPieceInfo &key)
 {
-    return lib[key];
+    auto it = lib.find(key);
+    if (it != lib.end()) 
+        return it->second->Clone();
+
+    return nullptr;
 }

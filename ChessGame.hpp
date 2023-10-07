@@ -45,8 +45,8 @@ protected:
     // Utility functions
     void UpdatePrevMove(Square from, Square to, Piece type);
     bool IsSlider(const U64 board_) const;
-    Action RegMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece);
-    void UpdateBoard();
+    virtual Action RegMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece);
+    virtual void UpdateBoard();
 
     // Special move functions
     U64 GetCastling(Color color) const;
