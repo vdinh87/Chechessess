@@ -7,14 +7,18 @@ protected:
     Square piece;
     std::string name;
     SuperChessGame *game;
-
 public:
     Ability() = default;
     Ability(const std::string &name_, SuperChessGame *game_);
     virtual ~Ability() = default;
-    void UpdatePiece(const Square &square);
-    const std::string &GetName() const;
+    
+    //methods
     virtual void Effect();
+    virtual std::unique_ptr<Ability> Clone() const = 0;
+    void UpdatePiece(const Square &square);
+
+    //accessors
+    const std::string &GetName() const;
 };
 
 Ability::Ability(const std::string &name_, SuperChessGame *game_) : name(name_), game(game_) {}
@@ -32,4 +36,9 @@ const std::string &Ability::GetName() const
 void Ability::Effect()
 {
     std::cout << "Normal effect" << std::endl;
+}
+
+std::unique_ptr<Ability> Ability::Clone() const
+{
+    return nullptr;
 }

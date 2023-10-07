@@ -40,6 +40,11 @@ void KingSniperShot::Effect()
     }
 }
 
+std::unique_ptr<Ability> KingSniperShot::Clone() const
+{
+    return std::make_unique<KingSniperShot>(*this);
+}
+
 void KingSniperShot::Notify(const std::vector<ChessMove>& log)
 {
     log_ = log;

@@ -8,9 +8,9 @@
 class AbilityLibrary{
 private:
     SuperChessGame* game;
-    std::unordered_map<SuperPieceInfo, std::shared_ptr<Ability>, PairEnumHash> lib;
+    std::unordered_map<SuperPieceInfo, std::unique_ptr<Ability>, PairEnumHash> lib;
 public:
     AbilityLibrary(SuperChessGame* game_);
     ~AbilityLibrary() = default;
-    std::shared_ptr<Ability> GetAbility(const SuperPieceInfo& key);
+    std::unique_ptr<Ability> GetAbility(const SuperPieceInfo& key);
 };
