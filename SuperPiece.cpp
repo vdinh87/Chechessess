@@ -7,15 +7,22 @@ sq(sq_),
 color(color_)
 {
     for(auto& a : abilities_)
-        abilities.push_back(std::move(a));
+    {
+        abilities[info_.second] = std::move(a);
+    }
     
     abilities_.clear();
 }
 
-void SuperPiece::UseAbility()
+bool SuperPiece::UseAbility(Tier key)
 {
-    for(auto& a : abilities)
+    auto it = abilities.find(key);
+    if(it != abilities.end())
     {
-        a->Effect();
+        it->second->Effect();
+        return true;
     }
+
+    return false;
+    
 }

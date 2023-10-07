@@ -24,5 +24,5 @@ public:
     std::vector<Action> Move(Square from_sq, Square to_sq) override;
 
     //misc
-    void Do(Square sq);
+    void Do(Square sq, Tier t);
 };

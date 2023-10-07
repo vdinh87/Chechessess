@@ -5,11 +5,9 @@
 SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info)
 {
     // InitSuperPieces(white, black);
-    // all_abilities.push_back(al->GetAbility(black));
     al = std::make_shared<AbilityLibrary>(this);
-    std::vector<std::unique_ptr<Ability>> v;
-    v.push_back(al->GetAbility(white_info));
-    super_pieces[Square::a1] = std::make_shared<SuperPiece>(v, white_info, Square::a1, Color::white);
+
+    AddSuperPiece(white_info, Square::b3, Color::white);
 }
 
 bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
@@ -27,7 +25,14 @@ bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
 
 bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color)
 {
-    return false;
+    if(board & (1ULL << square))
+        return false;
+
+    std::vector<std::unique_ptr<Ability>> v;
+    v.push_back(al->GetAbility(info));
+    super_pieces[square] = std::make_shared<SuperPiece>(v, info, square, color);
+
+    return true;
 }
 
 bool SuperChessGame::AddSuperPiecesofType(SuperPieceInfo info, Color color)
@@ -157,7 +162,7 @@ void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white, const SuperPie
 }
 
 //misc
-void SuperChessGame::Do(Square sq)
+void SuperChessGame::Do(Square sq, Tier t)
 {
-    super_pieces[sq]->UseAbility();
+    super_pieces[sq]->UseAbility(t);
 }
