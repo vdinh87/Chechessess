@@ -47,13 +47,14 @@ protected:
     bool IsSlider(const U64 board_) const;
     virtual Action RegMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece);
     virtual void UpdateBoard();
+    void executeMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece);
+    void UpdateBoard();
 
     // Special move functions
     U64 GetCastling(Color color) const;
-    Action Castle(Square from_sq, Square to_sq, U64 valid_moves);
     U64 GetEnPassant(Square square, const U64 occupancy_, Color color) const;
     bool EnPassant(Square square, Piece type, Color color) const;
-    Action Promote(Square from_sq, Square to_sq, Color color, Piece to_piece);
+    Piece promoteInput(Square from_sq, Square to_sq, Color color, Piece to_piece);
 
 public:
     ChessGame();
