@@ -5,7 +5,7 @@
 class ChessGame : public Listener
 {
 protected:
-    //log
+    // log
     std::vector<ChessMove> log_;
     // board
     std::vector<U64> WhitePiecesArray;
@@ -16,7 +16,7 @@ protected:
     U64 BlackPieces;
     U64 board;
 
-    //for castling
+    // for castling
     ChessMove prevMove;
 
     // Init magics
@@ -59,7 +59,7 @@ public:
     ChessGame();
     ~ChessGame() = default;
 
-    //public getters
+    // public getters
     U64 GetPiecesOfColor(Color color) const;
     U64 GetBoard() const;
     Color GetColor(const U64 piece) const;
@@ -70,12 +70,12 @@ public:
     // returns movelist
     U64 GetAttacks(Square square_) const;
 
-    //moves pieces
+    // moves pieces
     virtual std::vector<Action> Move(Square from_sq, Square to_sq);
 
-    //Returns which type of piece it is
+    // Returns which type of piece it is
     Piece GetPieceType(U64 unknown_piece) const;
 
-    void Notify(const std::vector<ChessMove>& log) override;
+    void Notify(const std::vector<ChessMove> &log) override;
     void PrintBoard() const;
 };
