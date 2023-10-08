@@ -92,12 +92,14 @@ void Play()
 int main()
 {
     SuperChessGame* spg = new SuperChessGame(std::make_pair(Piece::King, Tier::T3), std::make_pair(Piece::King, Tier::T3));
-    Square k = g1;
-    spg->Move(g2,g3);
-    spg->Move(g1,h3);
-    spg->Move(f1,g2);
-    spg->Move(e1,k);
+    Square k = a3;
+    spg->Move(b7,b5);
+    spg->Move(b5,b4);
+    spg->Move(a2,a3);
+    spg->Move(b4,a3);
     std::cout << "IS SUPER PIECE? : "<< (spg->IsSuperPiece(k)) << std::endl;
+    std::cout << "IS SUPER PIECE? : "<< (spg->IsSuperPiece(k)) << std::endl;
+    // spg->Move(e8,k);
     spg->PrintBoard();
     // spg->Do(Square::b3, Tier::T3);
     // spg->PrintBoard();

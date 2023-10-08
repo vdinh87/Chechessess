@@ -12,4 +12,5 @@ public:
     SuperPiece(std::vector<std::unique_ptr<Ability>>& abilities_, SuperPieceInfo info_, Square sq_, Color color_);
     ~SuperPiece() = default;
     bool UseAbility(Tier key);
+    void UpdateSquare(Square to_sq);
 };

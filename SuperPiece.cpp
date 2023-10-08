@@ -24,5 +24,9 @@ bool SuperPiece::UseAbility(Tier key)
     }
 
     return false;
-    
+}
+
+void SuperPiece::UpdateSquare(Square to_sq)
+{
+    sq = to_sq;
 }

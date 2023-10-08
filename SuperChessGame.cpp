@@ -7,7 +7,7 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
     // InitSuperPieces(white, black);
     al = std::make_shared<AbilityLibrary>(this);
 
-    AddSuperPiece(white_info, Square::e1, Color::white);
+    AddSuperPiece(white_info, Square::a2, Color::white);
 }
 
 bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
@@ -177,6 +177,7 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
         super_pieces.erase(to_sq);
         super_pieces[to_sq] = std::move(super_pieces[from_sq]);
         super_pieces.erase(from_sq);
+        super_pieces[to_sq]->UpdateSquare(to_sq);
     }
 }
 // init
@@ -193,9 +194,12 @@ void SuperChessGame::Do(Square sq, Tier t)
 //utility
 bool SuperChessGame::IsSuperPiece(const Square& key) const
 {
+    for(auto& e: super_pieces)
+        std::cout << "SP";
     auto it = super_pieces.find(key);
     if( it != super_pieces.end() )
         return true;
 
     return false;
+    
 }
