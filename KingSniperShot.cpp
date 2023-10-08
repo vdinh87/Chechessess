@@ -12,7 +12,7 @@ void KingSniperShot::Effect()
     Square sq;
     std::cout << "Choose piece to delete: ";
 
-    Color king_color =  game->GetColor(1ULL << piece);
+    Color king_color = game->GetColor(1ULL << piece);
     std::cin >> input_str;
     std::cout << std::endl;
     auto it = SqStrMap.find(input_str);
