@@ -548,7 +548,8 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
         else if (EnPassant(from_sq, from_piece, from_color))
         { // En passant
             ExecuteMove(from_color, from_sq, static_cast<Square>(static_cast<int>(prevMove.to) + 8), from_piece, to_piece);
-            clear_bit(BlackPiecesArray[to_piece], prevMove.to);
+            // clear_bit(BlackPiecesArray[to_piece], prevMove.to);
+            RemovePiece(prevMove.to);
             actions.push_back(Capture);
         }
         else // Normal Move
@@ -581,7 +582,8 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
         else if (EnPassant(from_sq, from_piece, from_color))
         { // Enpassant
             ExecuteMove(from_color, from_sq, static_cast<Square>(static_cast<int>(prevMove.to) - 8), from_piece, to_piece);
-            clear_bit(WhitePiecesArray[to_piece], prevMove.to);
+            // clear_bit(WhitePiecesArray[to_piece], prevMove.to);
+            RemovePiece(prevMove.to);
             actions.push_back(Capture);
         } // Normal move
         else
