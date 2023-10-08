@@ -51,7 +51,6 @@ bool SuperChessGame::RemovePiece(Square square)
     if( IsSuperPiece(square) )
         super_pieces.erase(square);
         
-    UpdateBoard();
     return true;
 }
 
