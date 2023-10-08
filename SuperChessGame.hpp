@@ -16,7 +16,6 @@ public:
     SuperChessGame(const SuperPieceInfo &white, const SuperPieceInfo &black);
     ~SuperChessGame() = default;
 
-    bool AddPiece(Square square, Color color, Piece piece);
     bool RemovePiece(Square square) override;
     bool AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion);
     bool ConvertToSuperPiece(SuperPieceInfo info, Square square);
