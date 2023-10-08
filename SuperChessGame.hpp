@@ -20,6 +20,8 @@ public:
     bool AddSuperPiece(SuperPieceInfo info, Square square, Color color);
     bool AddSuperPiecesofType(SuperPieceInfo info, Color color);
     
+    //utility
+    bool IsSuperPiece(const Square& key) const;
     //overrides
     std::vector<Action> Move(Square from_sq, Square to_sq) override;
 

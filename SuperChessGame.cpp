@@ -42,12 +42,11 @@ bool SuperChessGame::AddSuperPiecesofType(SuperPieceInfo info, Color color)
 
 bool SuperChessGame::RemovePiece(Square square)
 {
-    U64 p = 0;
-    set_bit(p, square);
+    U64 p = 1ULL << square;
     // no piece on board
     if (!(p & board))
         return false;
-    if (((1ULL << square) & PieceTypeArray[King]) != 0)
+    if ((p & PieceTypeArray[King]))
     {
         std::cout << "You may not remove the King from the Board!!\n";
         return false;
@@ -58,13 +57,18 @@ bool SuperChessGame::RemovePiece(Square square)
         clear_bit(WhitePiecesArray[GetPieceType(p)], square);
     else
         clear_bit(BlackPiecesArray[GetPieceType(p)], square);
-
+    
+    //remove if superpiece
+    if( IsSuperPiece(square) )
+        super_pieces.erase(square);
+        
     UpdateBoard();
     return true;
 }
 
 bool AddSuperPiecesofType(SuperPieceInfo info, Color color)
 {
+    return false;
 }
 
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
@@ -170,4 +174,14 @@ void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white, const SuperPie
 void SuperChessGame::Do(Square sq, Tier t)
 {
     super_pieces[sq]->UseAbility(t);
+}
+
+//utility
+bool SuperChessGame::IsSuperPiece(const Square& key) const
+{
+    auto it = super_pieces.find(key);
+    if( it != super_pieces.end() )
+        return true;
+
+    return false;
 }
