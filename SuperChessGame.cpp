@@ -23,11 +23,13 @@ bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
     return false;
 }
 
-bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color)
+bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion)
 {
-    // if (board & (1ULL << square))
-    //     return false;
-
+    if( conversion && !(board & (1ULL << square)) ) //square doesn't contain piece to convert
+        return false;
+    if ( !conversion && (board & (1ULL << square)) ) //regular add, checks if not piece there
+        return false;
+    
     std::vector<std::unique_ptr<Ability>> v;
     v.push_back(al->GetAbility(info));
     super_pieces[square] = std::make_shared<SuperPiece>(v, info, square, color);
@@ -39,6 +41,7 @@ bool SuperChessGame::AddSuperPiecesofType(SuperPieceInfo info, Color color)
 {
     return false;
 }
+
 
 bool SuperChessGame::RemovePiece(Square square)
 {
@@ -52,102 +55,13 @@ bool SuperChessGame::RemovePiece(Square square)
     return true;
 }
 
-bool AddSuperPiecesofType(SuperPieceInfo info, Color color)
+bool SuperChessGame::ConvertToSuperPiece(SuperPieceInfo info, Square square)
 {
-    return false;
+    AddSuperPiece(info, square, GetColor(1ULL << square), true);
 }
-
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 {
-    std::vector<Action> actions;
-    U64 from = 0ULL;
-    U64 to = 0ULL;
-    set_bit(from, from_sq);
-    set_bit(to, to_sq);
-
-    U64 ally_pieces = GetColor(from) == white ? WhitePieces : BlackPieces;
-
-    // no piece on board or parameters are same square
-    if (!(from & board) || (from_sq == to_sq) || (to & ally_pieces))
-        return actions;
-
-    Color from_color = GetColor(from);
-    Piece from_piece = GetPieceType(from);
-    Piece to_piece = GetPieceType(to);
-
-    if (from_color == white)
-    { // Castling Conditions
-        if ((from_piece == King) && (GetCastling(from_color) != 0) &&
-            ((to_sq == c1) || (to_sq == c8) || (to_sq == g1) || (to_sq == g8)))
-        {                                              // Castling
-            U64 valid_moves = GetCastling(from_color); // does null check and InCheck
-            ExecuteMove(from_color, from_sq, to_sq, from_piece, to_piece);
-            std::cout << "Test\n";
-            // Checks which way
-            if (to_sq == c1 && get_bit(valid_moves, c1))
-            {
-                ExecuteMove(from_color, a1, static_cast<Square>(static_cast<int>(to_sq) + 1), Rook, King);
-            }
-            else if (to_sq == g1 && get_bit(valid_moves, g1))
-                ExecuteMove(from_color, h1, static_cast<Square>(static_cast<int>(to_sq) - 1), Rook, Rook);
-
-            actions.push_back(Action::Castle);
-        } // Promotion conditions
-        else if (from_piece == Pawn && to_sq >= 56 && to_sq <= 63)
-        { // Promotion
-            Piece promoting_to_piece = PromoteInput(from_sq, to_sq, from_color, to_piece);
-            ExecuteMove(from_color, from_sq, to_sq, promoting_to_piece, to_piece);
-            actions.push_back(Action::Promotion);
-        } // En passant conditions
-        else if (EnPassant(from_sq, from_piece, from_color))
-        { // En passant
-            ExecuteMove(from_color, from_sq, static_cast<Square>(static_cast<int>(prevMove.to) + 8), from_piece, to_piece);
-            RemovePiece(prevMove.to);
-            actions.push_back(Capture);
-        }
-        else // Normal Move
-        {
-            ExecuteMove(from_color, from_sq, to_sq, from_piece, to_piece);
-            actions.push_back(Action::Move);
-        }
-    }
-    else if (from_color == black)
-    { // Castling Conditions
-        if ((from_piece == King) && (GetCastling(from_color) != 0) &&
-            ((to_sq == c1) || (to_sq == c8) || (to_sq == g1) || (to_sq == g8)))
-        {                                              // Castling
-            U64 valid_moves = GetCastling(from_color); // does null check and InCheck
-            ExecuteMove(from_color, from_sq, to_sq, King, King);
-            // Checks which way
-            if (to_sq == c8 && get_bit(valid_moves, c8))
-                ExecuteMove(from_color, a8, static_cast<Square>(static_cast<int>(to_sq) + 1), Rook, Rook);
-            else if (to_sq == g8 && get_bit(valid_moves, g8))
-                ExecuteMove(from_color, h8, static_cast<Square>(static_cast<int>(to_sq) - 1), Rook, Rook);
-
-            actions.push_back(Action::Castle);
-        }
-        else if (from_piece == Pawn && to_sq >= 0 && to_sq <= 7)
-        { // Promotion
-            Piece promoting_to_piece = PromoteInput(from_sq, to_sq, from_color, to_piece);
-            ExecuteMove(from_color, from_sq, to_sq, promoting_to_piece, to_piece);
-            actions.push_back(Action::Promotion);
-        } // Enpassant conditoins
-        else if (EnPassant(from_sq, from_piece, from_color))
-        { // Enpassant
-            ExecuteMove(from_color, from_sq, static_cast<Square>(static_cast<int>(prevMove.to) - 8), from_piece, to_piece);
-            RemovePiece(prevMove.to);
-            actions.push_back(Capture);
-        } // Normal move
-        else
-        {
-            ExecuteMove(from_color, from_sq, to_sq, from_piece, to_piece);
-            actions.push_back(Action::Move);
-        }
-    }
-
-    UpdatePrevMove(from_sq, to_sq, from_piece);
-    UpdateBoard();
-    return actions;
+    ChessGame::Move(from_sq, to_sq);
 }
 
 void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)

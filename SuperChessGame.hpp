@@ -18,7 +18,8 @@ public:
 
     bool AddPiece(Square square, Color color, Piece piece);
     bool RemovePiece(Square square) override;
-    bool AddSuperPiece(SuperPieceInfo info, Square square, Color color);
+    bool AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion);
+    bool ConvertToSuperPiece(SuperPieceInfo info, Square square);
     bool AddSuperPiecesofType(SuperPieceInfo info, Color color);
     
     //utility
