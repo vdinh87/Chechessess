@@ -154,8 +154,7 @@ U64 ChessGame::GetKingAttacks(Square square_, const U64 occupancy_) const
                South(king) | SouthEast(king) | SouthWest(king) |
                East(king) | West(king));
 
-    bool has_moved = false; // won't be needed when it's a private member or something
-    if (!has_moved)         // this way it doesn't have to do the function every single time it just checks one byte
+    if (!CheckIfMoved(square_))
         attacks = attacks | GetCastling(GetColor(king));
 
     return attacks;
@@ -219,19 +218,21 @@ U64 ChessGame::GetAttacks(Square square_) const
 
 U64 ChessGame::GetCastling(Color color) const
 {
-    bool kingmoved, rookmoved = false;
+    bool kingmoved, rookmoved = true;
     U64 valid_moves = 0ULL;
     U64 king = 0ULL;
 
     if (color == white)
     {
         king = WhitePiecesArray[King];
-        // TODO: Set kingmoved and rookmoved to true at the start of this function, then Use Logger To check kingmoved and make it false if they have
+        kingmoved = CheckIfMoved(e1);
+        rookmoved= (CheckIfMoved(a1) | CheckIfMoved(h1));
     }
     else
     {
         king = BlackPiecesArray[King];
-        // TODO: Set kingmoved and rookmoved to true at the start of this function, then Use Logger To check kingmoved and make it false if they have
+        kingmoved = CheckIfMoved(e8);
+        rookmoved= (CheckIfMoved(a8) | CheckIfMoved(h8));
     }
     Square king_sq = static_cast<Square>(get_LSB(king));
 
@@ -463,6 +464,15 @@ bool ChessGame::IsSlider(const U64 board_) const
         return true;
     return false;
 }
+
+bool ChessGame::CheckIfMoved(Square original_square) const{
+    for (const auto &move : log_)
+        if (move.from == original_square)
+            return true;
+    return false;
+}
+
+
 
 void ChessGame::PrintBoard() const
 {

@@ -45,6 +45,7 @@ protected:
     // Utility functions
     void UpdatePrevMove(Square from, Square to, Piece type);
     bool IsSlider(const U64 board_) const;
+    bool CheckIfMoved(Square original_square) const;
     virtual void UpdateBoard();
 
     // Move functions
