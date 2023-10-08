@@ -22,9 +22,11 @@ public:
     
     //utility
     bool IsSuperPiece(const Square& key) const;
+
     //overrides
     std::vector<Action> Move(Square from_sq, Square to_sq) override;
-
+    void ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece) override;
+    
     //misc
     void Do(Square sq, Tier t);
 };
