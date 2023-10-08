@@ -690,6 +690,19 @@ void ChessGame::Notify(const std::vector<ChessMove> &log)
 }
 
 // board editing
+bool ChessGame::AddPiece(Square square, Color color, Piece piece)
+{
+    U64 p = 0ULL;
+    set_bit(p, square);
+    if (!(board & p) && color == white)
+        return WhitePiecesArray[piece] |= p;
+    else if (!(board & p) && color == black)
+        return BlackPiecesArray[piece] |= p;
+
+    UpdateBoard();
+    return false;
+}
+
 bool ChessGame::RemovePiece(Square square)
 {
     U64 p = 1ULL << square;

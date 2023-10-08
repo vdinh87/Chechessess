@@ -15,7 +15,7 @@ protected:
     U64 WhitePieces;
     U64 BlackPieces;
     U64 board;
-    
+
     // for castling
     ChessMove prevMove;
 
@@ -55,7 +55,6 @@ protected:
     Piece PromoteInput(Square from_sq, Square to_sq, Color color, Piece to_piece);
 
     // Board edit
-    virtual bool RemovePiece(Square square);
 
 public:
     ChessGame();
@@ -77,7 +76,11 @@ public:
 
     // Returns which type of piece it is
     Piece GetPieceType(U64 unknown_piece) const;
-
+    
+    //board editing
+    virtual bool RemovePiece(Square square);
+    bool AddPiece(Square square, Color color, Piece piece);
+    
     void Notify(const std::vector<ChessMove> &log) override;
     void PrintBoard() const;
 };
