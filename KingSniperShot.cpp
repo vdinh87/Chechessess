@@ -37,7 +37,6 @@ void KingSniperShot::Effect()
     } if (game->RemovePiece(sq) == true){
         cooldown_tracker = 0;
         std::cout << "KingSniperShot succeeded" << std::endl;
-        game->UpdateBoard();
     }
 }
 
