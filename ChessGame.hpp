@@ -15,7 +15,7 @@ protected:
     U64 WhitePieces;
     U64 BlackPieces;
     U64 board;
-
+    
     // for castling
     ChessMove prevMove;
 
@@ -45,15 +45,17 @@ protected:
     // Utility functions
     void UpdatePrevMove(Square from, Square to, Piece type);
     bool IsSlider(const U64 board_) const;
-    // Action RegMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece);
     virtual void UpdateBoard();
-    virtual void ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece);
 
-    // Special move functions
+    // Move functions
+    virtual void ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece);
     U64 GetCastling(Color color) const;
     U64 GetEnPassant(Square square, const U64 occupancy_, Color color) const;
     bool EnPassant(Square square, Piece type, Color color) const;
     Piece PromoteInput(Square from_sq, Square to_sq, Color color, Piece to_piece);
+
+    // Board edit
+    virtual bool RemovePiece(Square square);
 
 public:
     ChessGame();

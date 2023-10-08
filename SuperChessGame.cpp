@@ -42,21 +42,7 @@ bool SuperChessGame::AddSuperPiecesofType(SuperPieceInfo info, Color color)
 
 bool SuperChessGame::RemovePiece(Square square)
 {
-    U64 p = 1ULL << square;
-    // no piece on board
-    if (!(p & board))
-        return false;
-    if ((p & PieceTypeArray[King]))
-    {
-        std::cout << "You may not remove the King from the Board!!\n";
-        return false;
-    }
-
-    Color color = GetColor(p);
-    if (color == white)
-        clear_bit(WhitePiecesArray[GetPieceType(p)], square);
-    else
-        clear_bit(BlackPiecesArray[GetPieceType(p)], square);
+    ChessGame::RemovePiece(square);
     
     //remove if superpiece
     if( IsSuperPiece(square) )

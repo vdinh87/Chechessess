@@ -15,15 +15,16 @@ private:
 public:
     SuperChessGame(const SuperPieceInfo &white, const SuperPieceInfo &black);
     ~SuperChessGame() = default;
+
     bool AddPiece(Square square, Color color, Piece piece);
-    bool RemovePiece(Square square);
+    bool RemovePiece(Square square) override;
     bool AddSuperPiece(SuperPieceInfo info, Square square, Color color);
     bool AddSuperPiecesofType(SuperPieceInfo info, Color color);
     
     //utility
     bool IsSuperPiece(const Square& key) const;
 
-    //overrides
+    // Move functions
     std::vector<Action> Move(Square from_sq, Square to_sq) override;
     void ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece) override;
     
