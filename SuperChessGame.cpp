@@ -7,7 +7,7 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
     // InitSuperPieces(white, black);
     al = std::make_shared<AbilityLibrary>(this);
 
-    AddSuperPiece(white_info, Square::b3, Color::white);
+    AddSuperPiece(white_info, Square::e1, Color::white);
 }
 
 bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
@@ -25,8 +25,8 @@ bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
 
 bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color)
 {
-    if (board & (1ULL << square))
-        return false;
+    // if (board & (1ULL << square))
+    //     return false;
 
     std::vector<std::unique_ptr<Ability>> v;
     v.push_back(al->GetAbility(info));
@@ -174,9 +174,9 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
     //move from_piece
     if( IsSuperPiece(from_sq) )
     {
-        auto& sp = super_pieces[from_sq];
+        super_pieces.erase(to_sq);
+        super_pieces[to_sq] = std::move(super_pieces[from_sq]);
         super_pieces.erase(from_sq);
-        super_pieces[to_sq] = sp;
     }
 }
 // init
