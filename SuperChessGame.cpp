@@ -7,7 +7,8 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
     // InitSuperPieces(white, black);
     al = std::make_shared<AbilityLibrary>(this);
 
-    AddSuperPiece(white_info, Square::a2, Color::white);
+    // AddSuperPiece(white_info, Square::a2, Color::white);
+    ConvertToSuperPiece(white_info, Square::a2);
 }
 
 bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
@@ -57,11 +58,15 @@ bool SuperChessGame::RemovePiece(Square square)
 
 bool SuperChessGame::ConvertToSuperPiece(SuperPieceInfo info, Square square)
 {
-    AddSuperPiece(info, square, GetColor(1ULL << square), true);
+    auto it = super_pieces.find(square);
+    if( it != super_pieces.end() )
+        return false;
+    return AddSuperPiece(info, square, GetColor(1ULL << square), true);
 }
+
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 {
-    ChessGame::Move(from_sq, to_sq);
+    return ChessGame::Move(from_sq, to_sq);
 }
 
 void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)
@@ -85,12 +90,6 @@ void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white, const SuperPie
 {
 }
 
-// misc
-void SuperChessGame::Do(Square sq, Tier t)
-{
-    super_pieces[sq]->UseAbility(t);
-}
-
 //utility
 bool SuperChessGame::IsSuperPiece(const Square& key) const
 {
@@ -101,5 +100,10 @@ bool SuperChessGame::IsSuperPiece(const Square& key) const
         return true;
 
     return false;
-    
+}
+
+// misc
+void SuperChessGame::Do(Square sq, Tier t)
+{
+    super_pieces[sq]->UseAbility(t);
 }
