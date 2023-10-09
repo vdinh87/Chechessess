@@ -13,4 +13,9 @@ public:
     ~SuperPiece() = default;
     bool UseAbility(Tier key);
     void UpdateSquare(Square to_sq);
+
+    //Getters
+    const SuperPieceInfo& GetInfo() const;
+    const Square& GetSquare() const;
+    const Color& GetColor() const;
 };

@@ -1,10 +1,11 @@
 #pragma once
 #include "SuperChessGame.cpp"
 #include "Definitions.hpp"
+
+class SuperPiece;
 class Ability
 {
 protected:
-    Square piece;
     std::string name;
     SuperChessGame *game;
 public:
@@ -13,9 +14,9 @@ public:
     virtual ~Ability() = default;
     
     //methods
-    virtual void Effect();
+    virtual void Effect(const SuperPiece& piece);
     virtual std::unique_ptr<Ability> Clone() const = 0;
-    void UpdatePiece(const Square &square);
+    void UpdateLocation(const Square &square);
 
     //accessors
     const std::string &GetName() const;
@@ -23,17 +24,12 @@ public:
 
 Ability::Ability(const std::string &name_, SuperChessGame *game_) : name(name_), game(game_) {}
 
-void Ability::UpdatePiece(const Square &square)
-{
-    piece = square;
-}
-
 const std::string &Ability::GetName() const
 {
     return name;
 }
 
-void Ability::Effect()
+void Ability::Effect(const SuperPiece& piece)
 {
     std::cout << "Normal effect" << std::endl;
 }

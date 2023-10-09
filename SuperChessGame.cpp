@@ -7,25 +7,14 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
     // InitSuperPieces(white, black);
     al = std::make_shared<AbilityLibrary>(this);
 
-    // AddSuperPiece(white_info, Square::a2, Color::white);
-    ConvertToSuperPiece(white_info, Square::a2);
-}
-
-bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
-{
-    U64 p = 0ULL;
-    set_bit(p, square);
-    if (!(board & p) && color == white)
-        return WhitePiecesArray[piece] |= p;
-    else if (!(board & p) && color == black)
-        return BlackPiecesArray[piece] |= p;
-
-    UpdateBoard();
-    return false;
+    AddSuperPiece(white_info, Square::b3, Color::white);
+    ConvertToSuperPiece(white_info, Square::e1);
 }
 
 bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion)
-{
+{   
+    if( !ChessGame::AddPiece(square, color, info.first) )
+        return false;
     if( conversion && !(board & (1ULL << square)) ) //square doesn't contain piece to convert
         return false;
     if ( !conversion && (board & (1ULL << square)) ) //regular add, checks if not piece there
@@ -46,7 +35,8 @@ bool SuperChessGame::AddSuperPiecesofType(SuperPieceInfo info, Color color)
 
 bool SuperChessGame::RemovePiece(Square square)
 {
-    ChessGame::RemovePiece(square);
+    if (!ChessGame::RemovePiece(square))
+        return false;
     
     //remove if superpiece
     if( IsSuperPiece(square) )
@@ -65,6 +55,7 @@ bool SuperChessGame::ConvertToSuperPiece(SuperPieceInfo info, Square square)
 
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 {
+    // for passive abilities later
     return ChessGame::Move(from_sq, to_sq);
 }
 

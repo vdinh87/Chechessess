@@ -17,7 +17,7 @@ public:
     ~SuperChessGame() = default;
 
     bool RemovePiece(Square square) override;
-    bool AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion);
+    bool AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion = 0);
     bool ConvertToSuperPiece(SuperPieceInfo info, Square square);
     bool AddSuperPiecesofType(SuperPieceInfo info, Color color);
     

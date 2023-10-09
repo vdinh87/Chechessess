@@ -19,7 +19,7 @@ bool SuperPiece::UseAbility(Tier key)
     auto it = abilities.find(key);
     if(it != abilities.end())
     {
-        it->second->Effect();
+        it->second->Effect(*this);
         return true;
     }
 
@@ -29,4 +29,17 @@ bool SuperPiece::UseAbility(Tier key)
 void SuperPiece::UpdateSquare(Square to_sq)
 {
     sq = to_sq;
+}
+
+const SuperPieceInfo& SuperPiece::GetInfo() const
+{
+    return info;
+}
+const Square& SuperPiece::GetSquare() const
+{
+    return sq;
+}
+const Color& SuperPiece::GetColor() const
+{
+    return color;
 }

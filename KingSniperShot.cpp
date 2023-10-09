@@ -6,13 +6,13 @@ Ability("King Sniper Shot", game_)
 {
 }
 
-void KingSniperShot::Effect()
+void KingSniperShot::Effect(const SuperPiece& piece)
 {
     std::string input_str;
     Square sq;
     std::cout << "Choose piece to delete: ";
 
-    Color king_color = game->GetColor(1ULL << piece);
+    Color king_color = piece.GetColor();
     std::cin >> input_str;
     std::cout << std::endl;
     auto it = SqStrMap.find(input_str);
@@ -37,7 +37,6 @@ void KingSniperShot::Effect()
     } if (game->RemovePiece(sq) == true){
         cooldown_tracker = 0;
         std::cout << "KingSniperShot succeeded" << std::endl;
-        game->UpdateBoard();
     }
 }
 
