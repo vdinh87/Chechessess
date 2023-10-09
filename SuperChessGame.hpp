@@ -23,6 +23,7 @@ public:
     
     //utility
     bool IsSuperPiece(const Square& key) const;
+    bool InCheck(Color color, Square square) const;
 
     // Move functions
     std::vector<Action> Move(Square from_sq, Square to_sq) override;

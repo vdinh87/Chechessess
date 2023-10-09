@@ -93,6 +93,11 @@ bool SuperChessGame::IsSuperPiece(const Square& key) const
     return false;
 }
 
+bool SuperChessGame::InCheck(Color color, Square square) const
+{
+    return ChessGame::InCheck(ChessGame::GetBoard(), color, static_cast<U64>(1ULL << square)); //it wouldn't take 1ull<<square unless it was assigned to a variable, or casted.
+}
+
 // misc
 void SuperChessGame::Do(Square sq, Tier t)
 {

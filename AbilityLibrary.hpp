@@ -3,6 +3,7 @@
 #include "SuperChessGame.fwd.hpp"
 #include "Ability.hpp"
 #include "KingSniperShot.cpp"
+#include "KingTeleport.cpp"
 #include "Definitions.hpp"
 
 class AbilityLibrary{

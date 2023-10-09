@@ -29,7 +29,7 @@ void KingSniperShot::Effect(const SuperPiece& piece)
         std::cout << "Invalid square Same color piece." << std::endl;
         return;
     } if (cooldown_tracker < cooldown){
-        std::cout << name << " is Still on CoolDown\n";
+        std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - cooldown_tracker << "\n" ;
         return;
     } if ( current_turn < activation_turn ){
         std::cout << name << " is only Available at turn 10. It's currently Turn [" << current_turn << "]\n";
