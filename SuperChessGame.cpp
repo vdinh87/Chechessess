@@ -7,7 +7,7 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
     // InitSuperPieces(white, black);
     al = std::make_shared<AbilityLibrary>(this);
 
-    AddSuperPiece(white_info, Square::b3, Color::white);
+    // AddSuperPiece(white_info, Square::b3, Color::white);
     ConvertToSuperPiece(white_info, Square::e1);
 }
 
@@ -42,6 +42,7 @@ bool SuperChessGame::RemovePiece(Square square)
     if( IsSuperPiece(square) )
         super_pieces.erase(square);
         
+    UpdateBoard();
     return true;
 }
 

@@ -102,18 +102,18 @@ U64 ChessGame::GetEnPassant(Square square, const U64 occupancy_, Color color) co
     if (EnPassant(square, Pawn, color))
     {
         if (color == white)
-            set_bit(enpassant_moves, prevMove.to + 8);
+            set_bit(enpassant_moves, GetPreviousMove().to + 8);
         else if (color == black)
-            set_bit(enpassant_moves, prevMove.to - 8);
+            set_bit(enpassant_moves, GetPreviousMove().to - 8);
     }
     return enpassant_moves;
 }
 
 bool ChessGame::EnPassant(Square square, Piece type, Color color) const
 {
-    if ((type == Pawn && prevMove.type == Pawn) &&                                                              // both are pawns
-        (abs(prevMove.to / 8 - prevMove.from / 8) == 2) &&                                                      // moved two places previously
-        (abs((prevMove.to % 8) - (square % 8)) == 1) &&                                                         // is next to it
+    if ((type == Pawn && GetPreviousMove().type == Pawn) &&                                                              // both are pawns
+        (abs(GetPreviousMove().to / 8 - GetPreviousMove().from / 8) == 2) &&                                                      // moved two places previously
+        (abs((GetPreviousMove().to % 8) - (square % 8)) == 1) &&                                                         // is next to it
         ((color == white && square >= 32 && square <= 39) || (color == black && square >= 24 && square <= 31))) // check if it's on 4th and 5th rank
         return true;
     return false;
@@ -154,8 +154,7 @@ U64 ChessGame::GetKingAttacks(Square square_, const U64 occupancy_) const
                South(king) | SouthEast(king) | SouthWest(king) |
                East(king) | West(king));
 
-    bool has_moved = false; // won't be needed when it's a private member or something
-    if (!has_moved)         // this way it doesn't have to do the function every single time it just checks one byte
+    if (!CheckIfMoved(square_))
         attacks = attacks | GetCastling(GetColor(king));
 
     return attacks;
@@ -219,19 +218,21 @@ U64 ChessGame::GetAttacks(Square square_) const
 
 U64 ChessGame::GetCastling(Color color) const
 {
-    bool kingmoved, rookmoved = false;
+    bool kingmoved, rookmoved = true;
     U64 valid_moves = 0ULL;
     U64 king = 0ULL;
 
     if (color == white)
     {
         king = WhitePiecesArray[King];
-        // TODO: Set kingmoved and rookmoved to true at the start of this function, then Use Logger To check kingmoved and make it false if they have
+        kingmoved = CheckIfMoved(e1);
+        rookmoved = (CheckIfMoved(a1) | CheckIfMoved(h1));
     }
     else
     {
         king = BlackPiecesArray[King];
-        // TODO: Set kingmoved and rookmoved to true at the start of this function, then Use Logger To check kingmoved and make it false if they have
+        kingmoved = CheckIfMoved(e8);
+        rookmoved = (CheckIfMoved(a8) | CheckIfMoved(h8));
     }
     Square king_sq = static_cast<Square>(get_LSB(king));
 
@@ -464,6 +465,21 @@ bool ChessGame::IsSlider(const U64 board_) const
     return false;
 }
 
+bool ChessGame::CheckIfMoved(Square original_square) const
+{
+    for (const auto &move : log_)
+        if (move.from == original_square)
+            return true;
+    return false;
+}
+ChessMove ChessGame::GetPreviousMove() const
+{
+    if (!log_.empty())
+        return log_.back();
+    return ChessMove();
+}
+
+
 void ChessGame::PrintBoard() const
 {
     std::string boardString;
@@ -547,9 +563,9 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
         } // En passant conditions
         else if (EnPassant(from_sq, from_piece, from_color))
         { // En passant
-            ExecuteMove(from_color, from_sq, static_cast<Square>(static_cast<int>(prevMove.to) + 8), from_piece, to_piece);
-            // clear_bit(BlackPiecesArray[to_piece], prevMove.to);
-            RemovePiece(prevMove.to);
+            ExecuteMove(from_color, from_sq, static_cast<Square>(static_cast<int>(GetPreviousMove().to) + 8), from_piece, to_piece);
+            // clear_bit(BlackPiecesArray[to_piece], GetPreviousMove().to);
+            RemovePiece(GetPreviousMove().to);
             actions.push_back(Capture);
         }
         else // Normal Move
@@ -581,9 +597,9 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
         } // Enpassant conditoins
         else if (EnPassant(from_sq, from_piece, from_color))
         { // Enpassant
-            ExecuteMove(from_color, from_sq, static_cast<Square>(static_cast<int>(prevMove.to) - 8), from_piece, to_piece);
-            // clear_bit(WhitePiecesArray[to_piece], prevMove.to);
-            RemovePiece(prevMove.to);
+            ExecuteMove(from_color, from_sq, static_cast<Square>(static_cast<int>(GetPreviousMove().to) - 8), from_piece, to_piece);
+            // clear_bit(WhitePiecesArray[to_piece], GetPreviousMove().to);
+            RemovePiece(GetPreviousMove().to);
             actions.push_back(Capture);
         } // Normal move
         else
@@ -598,7 +614,6 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
         actions.push_back(Check);
 
     // after move
-    UpdatePrevMove(from_sq, to_sq, from_piece);
     UpdateBoard();
 
     if (IsWin(white) || IsWin(black))
@@ -661,13 +676,6 @@ U64 ChessGame::GetPiecesOfColor(Color color) const
     return AllColorPiecesArray[color];
 }
 
-void ChessGame::UpdatePrevMove(Square from, Square to, Piece type)
-{
-    prevMove.from = from;
-    prevMove.to = to;
-    prevMove.type = type;
-}
-
 U64 ChessGame::GetBoard() const
 {
     return board;
@@ -720,7 +728,7 @@ bool ChessGame::RemovePiece(Square square)
         clear_bit(WhitePiecesArray[GetPieceType(p)], square);
     else
         clear_bit(BlackPiecesArray[GetPieceType(p)], square);
-        
+
     UpdateBoard();
     return true;
 }
