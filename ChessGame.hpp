@@ -16,9 +16,6 @@ protected:
     U64 BlackPieces;
     U64 board;
 
-    // for castling
-    ChessMove prevMove;
-
     // Init magics
     void InitMagics() const;
     U64 Mask(Piece piece, Color color, const U64 &other_board) const;
@@ -43,9 +40,9 @@ protected:
     U64 FilterLegalKingMoves(const U64 &moveset, const U64 &piece) const;
 
     // Utility functions
-    void UpdatePrevMove(Square from, Square to, Piece type);
     bool IsSlider(const U64 board_) const;
     bool CheckIfMoved(Square original_square) const;
+    ChessMove GetPreviousMove() const;
     virtual void UpdateBoard();
 
     // Move functions

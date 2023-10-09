@@ -11,19 +11,6 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
     ConvertToSuperPiece(white_info, Square::a2);
 }
 
-bool SuperChessGame::AddPiece(Square square, Color color, Piece piece)
-{
-    U64 p = 0ULL;
-    set_bit(p, square);
-    if (!(board & p) && color == white)
-        return WhitePiecesArray[piece] |= p;
-    else if (!(board & p) && color == black)
-        return BlackPiecesArray[piece] |= p;
-
-    UpdateBoard();
-    return false;
-}
-
 bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion)
 {
     if( conversion && !(board & (1ULL << square)) ) //square doesn't contain piece to convert
