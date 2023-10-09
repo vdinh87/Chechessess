@@ -479,7 +479,6 @@ ChessMove ChessGame::GetPreviousMove() const
     return ChessMove();
 }
 
-
 void ChessGame::PrintBoard() const
 {
     std::string boardString;
