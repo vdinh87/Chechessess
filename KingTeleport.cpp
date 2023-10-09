@@ -10,7 +10,7 @@ void KingTeleport::Effect(const SuperPiece& piece)
 {
     std::string input_str; 
     Square sq;
-    std::cout << "Choose piece to Teleport to: ";
+    std::cout << "Choose square to Teleport to: ";
 
     Color king_color = piece.GetColor();
     std::cin >> input_str; // input string
@@ -29,8 +29,8 @@ void KingTeleport::Effect(const SuperPiece& piece)
         std::cout << "Cannot teleport into another piece." << std::endl;
     else if (cooldown_tracker < cooldown)
         std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - cooldown_tracker << "\n" ;
-    else if (game->InCheck(king_color, piece.GetSquare()) || game->InCheck(king_color, sq))
-        std::cout << "King In Check! Cannot Teleport!\n";
+    else if (game->InCheck(king_color) || game->InCheck(king_color))
+        std::cout << "King Will Be In Check! Cannot Teleport!\n";
     else {
         game->Move(piece.GetSquare(), sq);
         std::cout << "Teleportation Succeeded _-=* mgic" << std::endl;

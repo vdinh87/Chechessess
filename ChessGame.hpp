@@ -10,7 +10,7 @@ protected:
     // board
     std::vector<U64> WhitePiecesArray;
     std::vector<U64> BlackPiecesArray;
-    std::vector<U64> AllColorPiecesArray;
+    std::vector<std::vector<U64>> AllColorPiecesArray;
     std::vector<U64> PieceTypeArray;
     U64 WhitePieces;
     U64 BlackPieces;

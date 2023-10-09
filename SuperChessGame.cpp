@@ -8,16 +8,14 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
     al = std::make_shared<AbilityLibrary>(this);
 
     // AddSuperPiece(white_info, Square::b3, Color::white);
-    ConvertToSuperPiece(white_info, Square::e1);
+    // ConvertToSuperPiece(white_info, Square::e1);
 }
 
 bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion)
 {   
-    if( !ChessGame::AddPiece(square, color, info.first) )
+    if( !conversion && !ChessGame::AddPiece(square, color, info.first) )
         return false;
     if( conversion && !(board & (1ULL << square)) ) //square doesn't contain piece to convert
-        return false;
-    if ( !conversion && (board & (1ULL << square)) ) //regular add, checks if not piece there
         return false;
     
     std::vector<std::unique_ptr<Ability>> v;
@@ -84,8 +82,6 @@ void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white, const SuperPie
 //utility
 bool SuperChessGame::IsSuperPiece(const Square& key) const
 {
-    for(auto& e: super_pieces)
-        std::cout << "SP";
     auto it = super_pieces.find(key);
     if( it != super_pieces.end() )
         return true;
@@ -93,9 +89,9 @@ bool SuperChessGame::IsSuperPiece(const Square& key) const
     return false;
 }
 
-bool SuperChessGame::InCheck(Color color, Square square) const
+bool SuperChessGame::InCheck(Color color) const
 {
-    return ChessGame::InCheck(ChessGame::GetBoard(), color, static_cast<U64>(1ULL << square)); //it wouldn't take 1ull<<square unless it was assigned to a variable, or casted.
+    return ChessGame::InCheck(ChessGame::GetBoard(), color, static_cast<U64>(1ULL << GetSquare(AllColorPiecesArray[color][King]))); //it wouldn't take 1ull<<square unless it was assigned to a variable, or casted.
 }
 
 // misc

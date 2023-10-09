@@ -422,8 +422,8 @@ void ChessGame::UpdateBoard()
                   BlackPiecesArray[Rook] | BlackPiecesArray[Queen] | BlackPiecesArray[King];
 
     AllColorPiecesArray.clear();
-    AllColorPiecesArray.push_back(WhitePieces);
-    AllColorPiecesArray.push_back(BlackPieces);
+    AllColorPiecesArray.push_back(WhitePiecesArray);
+    AllColorPiecesArray.push_back(BlackPiecesArray);
 
     for (size_t i = 0; i < PieceTypeArray.size(); i++)
         PieceTypeArray[i] = (WhitePiecesArray[i] | BlackPiecesArray[i]);
@@ -543,7 +543,6 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
         {                                              // Castling
             U64 valid_moves = GetCastling(from_color); // does null check and InCheck
             ExecuteMove(from_color, from_sq, to_sq, from_piece, to_piece);
-            std::cout << "Test\n";
             // Checks which way
             if (to_sq == c1 && get_bit(valid_moves, c1))
             {
@@ -672,7 +671,9 @@ Piece ChessGame::PromoteInput(Square from_sq, Square to_sq, Color color, Piece t
 // public getters
 U64 ChessGame::GetPiecesOfColor(Color color) const
 {
-    return AllColorPiecesArray[color];
+    if(color == white)
+        return WhitePieces;
+    return BlackPieces;
 }
 
 U64 ChessGame::GetBoard() const
@@ -698,16 +699,17 @@ void ChessGame::Notify(const std::vector<ChessMove> &log)
 
 // board editing
 bool ChessGame::AddPiece(Square square, Color color, Piece piece)
-{
+{ 
     U64 p = 0ULL;
     set_bit(p, square);
     if (!(board & p) && color == white)
-        return WhitePiecesArray[piece] |= p;
+        WhitePiecesArray[piece] |= p;
     else if (!(board & p) && color == black)
-        return BlackPiecesArray[piece] |= p;
-
+        BlackPiecesArray[piece] |= p;
+    else
+        return false;
     UpdateBoard();
-    return false;
+    return true;
 }
 
 bool ChessGame::RemovePiece(Square square)

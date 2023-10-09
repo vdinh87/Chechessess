@@ -1,9 +1,10 @@
 #pragma once
 #include "SuperPiece.hpp"
 
-SuperPiece::SuperPiece(std::vector<std::unique_ptr<Ability>> &abilities_, SuperPieceInfo info_, Square sq_, Color color_) : info(info_),
-                                                                                                                            sq(sq_),
-                                                                                                                            color(color_)
+SuperPiece::SuperPiece(std::vector<std::unique_ptr<Ability>> &abilities_, SuperPieceInfo info_, Square sq_, Color color_) : 
+info(info_),
+sq(sq_),
+color(color_)
 {
     for (auto &a : abilities_)
     {
@@ -15,7 +16,6 @@ SuperPiece::SuperPiece(std::vector<std::unique_ptr<Ability>> &abilities_, SuperP
 
 bool SuperPiece::UseAbility(Tier key)
 {
-    std::cout << "reached this far \n The line below cause segmentation fault auto it = abilities.find(key); ";
     auto it = abilities.find(key);
     if (it != abilities.end())
     {
