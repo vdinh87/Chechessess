@@ -13,7 +13,12 @@ public:
     ~SuperPiece() = default;
     
     bool UseAbility(Tier key);
+
+    //updaters
     void UpdateSquare(Square to_sq);
+    void UpdateColor(Color new_color);
+    void UpdateTier(Tier t);
+    void AddAbilities(std::vector<std::unique_ptr<Ability>>& abilities_);
 
     //Getters
     const SuperPieceInfo& GetInfo() const;

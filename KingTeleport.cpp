@@ -35,6 +35,7 @@ void KingTeleport::Effect(const SuperPiece& piece)
         game->Move(piece.GetSquare(), sq);
         std::cout << "Teleportation Succeeded _-=* mgic" << std::endl;
     }
+    
     return;
 
 }

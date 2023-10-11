@@ -91,12 +91,15 @@ void Play()
 
 int main()
 {
-    SuperPieceInfo king = std::make_pair(Piece::King, Tier::T2);
+    SuperPieceInfo king = std::make_pair(Piece::King, Tier::T4);
     SuperChessGame* spg = new SuperChessGame(king, king);
     // spg->ConvertToSuperPiece(king, e1);
     spg->AddSuperPiece(king, e3, white);
-    spg->PrintBoard();
-    Square k = e1;
-    spg->Do(e3, Tier::T2);
-    spg->PrintBoard();
+    // spg->AddSuperPiece(king, e3, white);
+    // Square k = a1;
+    // spg->PrintBoard();
+    // spg->ConvertPieceToSide(k, black);
+    // spg->ConvertToSuperPiece(king, k);
+    spg->Do(e3, Tier::T4);
+    // spg->PrintBoard();
 }

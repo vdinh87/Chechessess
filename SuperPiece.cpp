@@ -6,12 +6,14 @@ info(info_),
 sq(sq_),
 color(color_)
 {
-    for (auto &a : abilities_)
-    {
+    // to remove
+    for (auto &a : abilities_) {
         abilities[info_.second] = std::move(a);
     }
-
     abilities_.clear();
+    
+    //to add
+    // AddAbilities(abilities_);
 }
 
 bool SuperPiece::UseAbility(Tier key)
@@ -27,11 +29,35 @@ bool SuperPiece::UseAbility(Tier key)
     return false;
 }
 
+//updaters
 void SuperPiece::UpdateSquare(Square to_sq)
 {
     sq = to_sq;
 }
 
+void SuperPiece::UpdateColor(Color new_color)
+{
+    color = new_color;
+}
+
+void SuperPiece::UpdateTier(Tier t)
+{
+    info.second = t;
+}
+
+void SuperPiece::AddAbilities(std::vector<std::unique_ptr<Ability>> &abilities_)
+{
+    int i = 0;
+    for (auto &a : abilities_)
+    {
+        abilities[static_cast<Tier>(i)] = std::move(a);
+        ++i;
+    }
+
+    abilities_.clear();
+}
+
+//getters
 const SuperPieceInfo &SuperPiece::GetInfo() const
 {
     return info;

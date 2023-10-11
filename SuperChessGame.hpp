@@ -18,13 +18,17 @@ public:
 
     bool RemovePiece(Square square) override;
     bool AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion = 0);
-    bool ConvertToSuperPiece(SuperPieceInfo info, Square square);
     bool AddSuperPiecesofType(SuperPieceInfo info, Color color);
-    
+    bool ConvertPieceToSide(Square square, Color side);
+    bool ConvertToSuperPiece(SuperPieceInfo info, Square square);
+    bool UpgradeSuperPieceTier(Square square, Tier to_tier);
+
+
     //utility
     bool IsSuperPiece(const Square& key) const;
     bool InCheck(Color color) const;
-
+    void CapTier(Tier& t, Piece p_type) const;
+    void MakeAbilityVector(std::vector<std::unique_ptr<Ability>>& v, SuperPieceInfo info);
     // Move functions
     std::vector<Action> Move(Square from_sq, Square to_sq) override;
     void ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece) override;

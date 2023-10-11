@@ -451,7 +451,7 @@ Piece ChessGame::GetPieceType(U64 unknown_piece) const
             p = static_cast<Piece>(i);
         }
     }
-
+    
     return p;
 }
 

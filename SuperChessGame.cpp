@@ -13,13 +13,17 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
 
 bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion)
 {   
+    U64 p = 1ULL << square;
     if( !conversion && !ChessGame::AddPiece(square, color, info.first) )
         return false;
-    if( conversion && !(board & (1ULL << square)) ) //square doesn't contain piece to convert
+    if( conversion && !(board & p) ) //square doesn't contain piece to convert
         return false;
-    
+    if( conversion && (GetPieceType(p) != info.first) ) //converting type and current type are not the same
+        return false;
+
+    CapTier(info.second, info.first);
     std::vector<std::unique_ptr<Ability>> v;
-    v.push_back(al->GetAbility(info));
+    MakeAbilityVector(v, info);
     super_pieces[square] = std::make_shared<SuperPiece>(v, info, square, color);
 
     return true;
@@ -44,12 +48,45 @@ bool SuperChessGame::RemovePiece(Square square)
     return true;
 }
 
+bool SuperChessGame::ConvertPieceToSide(Square square, Color side)
+{
+    U64 p = 1ULL << square;
+    if( !(p & board)) //no piece
+        return false;
+
+    if( (side == white && (WhitePieces & p)) || (side == black && (BlackPieces & p)) )
+    {
+        std::cout << "Piece is already of color: " << ColorStrings[side] << std::endl;
+        return false;
+    }
+
+    Piece p_type = GetPieceType(p);
+    RemovePiece(square);
+    AddPiece(square, side, p_type);
+    if( IsSuperPiece(square) )
+        super_pieces[square]->UpdateColor(side);
+    return true;
+}
+
 bool SuperChessGame::ConvertToSuperPiece(SuperPieceInfo info, Square square)
 {
     auto it = super_pieces.find(square);
     if( it != super_pieces.end() )
         return false;
     return AddSuperPiece(info, square, GetColor(1ULL << square), true);
+}
+
+bool SuperChessGame::UpgradeSuperPieceTier(Square square, Tier to_tier)
+{
+    auto it = super_pieces.find(square);
+    if( it == super_pieces.end() )
+        return false;
+
+    CapTier(to_tier, GetPieceType(1ULL << square) );
+    it->second->UpdateTier(to_tier);
+    std::vector<std::unique_ptr<Ability>> v;
+    MakeAbilityVector( v, std::make_pair(GetPieceType(1ULL << square), to_tier) );
+    return true;
 }
 
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
@@ -92,6 +129,27 @@ bool SuperChessGame::IsSuperPiece(const Square& key) const
 bool SuperChessGame::InCheck(Color color) const
 {
     return ChessGame::InCheck(ChessGame::GetBoard(), color, static_cast<U64>(1ULL << GetSquare(AllColorPiecesArray[color][King]))); //it wouldn't take 1ull<<square unless it was assigned to a variable, or casted.
+}
+
+void SuperChessGame::CapTier(Tier& t, Piece p_type) const
+{
+    if( t > al->GetMaxTier(p_type) ){
+        t = al->GetMaxTier(p_type);
+    }
+}
+
+void SuperChessGame::MakeAbilityVector(std::vector<std::unique_ptr<Ability>>& v, SuperPieceInfo info)
+{
+    CapTier(info.second, info.first);
+    //to remove
+    v.push_back(al->GetAbility(info));
+    
+    //to add
+    // for(int i = 0; i < info.second; i++)
+    // {
+    //     info.second = static_cast<Tier>(i);
+    //     v.push_back(al->GetAbility(info));
+    // }
 }
 
 // misc
