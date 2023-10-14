@@ -9,6 +9,7 @@ private:
     // ability related data members
     std::shared_ptr<AbilityLibrary> al;
     std::unordered_map<Square, std::shared_ptr<SuperPiece>> super_pieces;
+    std::unordered_map<std::pair(Color, Piece), int> graveyard;
 
     //init
     void InitSuperPieces(const SuperPieceInfo &white, const SuperPieceInfo &black);
@@ -29,6 +30,8 @@ public:
     bool InCheck(Color color) const;
     void CapTier(Tier& t, Piece p_type) const;
     void MakeAbilityVector(std::vector<std::unique_ptr<Ability>>& v, SuperPieceInfo info);
+    bool PieceInGraveyard(Color color, Piece piece);
+
     // Move functions
     std::vector<Action> Move(Square from_sq, Square to_sq) override;
     void ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece) override;
