@@ -9,7 +9,6 @@ private:
     // ability related data members
     std::shared_ptr<AbilityLibrary> al;
     std::unordered_map<Square, std::shared_ptr<SuperPiece>> super_pieces;
-
     //init
     void InitSuperPieces(const SuperPieceInfo &white, const SuperPieceInfo &black);
 public:

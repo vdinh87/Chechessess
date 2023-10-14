@@ -7,6 +7,7 @@ Logger::~Logger()
         delete listener;
     listeners.clear();
 }
+
 void Logger::Log(ChessMove move)
 {
     log.push_back(move);

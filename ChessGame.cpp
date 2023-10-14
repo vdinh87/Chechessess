@@ -31,13 +31,13 @@ ChessGame::ChessGame(/* args */)
 {
     // { Pawn, Knight, Bishop, Rook, Queen, King }
     WhitePiecesArray =
-        {
-            0x000000000000FF00ULL,
-            0x0000000000000042ULL,
-            0x0000000000000024ULL,
-            0x0000000000000081ULL,
-            0x0000000000000008ULL,
-            0x0000000000000010ULL};
+    {
+        0x000000000000FF00ULL, //WPstartingpositions --> (wpsp & ~board) tihs gives you the valid starting positions
+        0x0000000000000042ULL, 
+        0x0000000000000024ULL, 
+        0x0000000000000081ULL,
+        0x0000000000000008ULL, 
+        0x0000000000000010ULL };
 
     BlackPiecesArray =
         {

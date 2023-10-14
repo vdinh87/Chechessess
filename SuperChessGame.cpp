@@ -34,7 +34,6 @@ bool SuperChessGame::AddSuperPiecesofType(SuperPieceInfo info, Color color)
     return false;
 }
 
-
 bool SuperChessGame::RemovePiece(Square square)
 {
     if (!ChessGame::RemovePiece(square))
