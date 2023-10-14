@@ -98,7 +98,7 @@ enum Direction : unsigned char {
   SW, S, SE, W
 };
 
-enum Tier : unsigned char { T0, T1, T2, T3, T4 };
+enum Tier : unsigned char { T0, T1, T2, T3, T4, not_superpiece };
 
 enum AbilityType : unsigned char { active };
 

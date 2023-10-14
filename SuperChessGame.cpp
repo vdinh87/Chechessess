@@ -12,13 +12,13 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
 }
 
 bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion)
-{   
+{
     U64 p = 1ULL << square;
-    if( !conversion && !ChessGame::AddPiece(square, color, info.first) )
+    if (!conversion && !ChessGame::AddPiece(square, color, info.first))
         return false;
-    if( conversion && !(board & p) ) //square doesn't contain piece to convert
+    if (conversion && !(board & p)) // square doesn't contain piece to convert
         return false;
-    if( conversion && (GetPieceType(p) != info.first) ) //converting type and current type are not the same
+    if (conversion && (GetPieceType(p) != info.first)) // converting type and current type are not the same
         return false;
 
     CapTier(info.second, info.first);
@@ -38,11 +38,11 @@ bool SuperChessGame::RemovePiece(Square square)
 {
     if (!ChessGame::RemovePiece(square))
         return false;
-    
-    //remove if superpiece
-    if( IsSuperPiece(square) )
+
+    // remove if superpiece
+    if (IsSuperPiece(square))
         super_pieces.erase(square);
-        
+
     UpdateBoard();
     return true;
 }
@@ -50,10 +50,10 @@ bool SuperChessGame::RemovePiece(Square square)
 bool SuperChessGame::ConvertPieceToSide(Square square, Color side)
 {
     U64 p = 1ULL << square;
-    if( !(p & board)) //no piece
+    if (!(p & board)) // no piece
         return false;
 
-    if( (side == white && (WhitePieces & p)) || (side == black && (BlackPieces & p)) )
+    if ((side == white && (WhitePieces & p)) || (side == black && (BlackPieces & p)))
     {
         std::cout << "Piece is already of color: " << ColorStrings[side] << std::endl;
         return false;
@@ -62,7 +62,7 @@ bool SuperChessGame::ConvertPieceToSide(Square square, Color side)
     Piece p_type = GetPieceType(p);
     RemovePiece(square);
     AddPiece(square, side, p_type);
-    if( IsSuperPiece(square) )
+    if (IsSuperPiece(square))
         super_pieces[square]->UpdateColor(side);
     return true;
 }
@@ -70,7 +70,7 @@ bool SuperChessGame::ConvertPieceToSide(Square square, Color side)
 bool SuperChessGame::ConvertToSuperPiece(SuperPieceInfo info, Square square)
 {
     auto it = super_pieces.find(square);
-    if( it != super_pieces.end() )
+    if (it != super_pieces.end())
         return false;
     return AddSuperPiece(info, square, GetColor(1ULL << square), true);
 }
@@ -78,13 +78,13 @@ bool SuperChessGame::ConvertToSuperPiece(SuperPieceInfo info, Square square)
 bool SuperChessGame::UpgradeSuperPieceTier(Square square, Tier to_tier)
 {
     auto it = super_pieces.find(square);
-    if( it == super_pieces.end() )
+    if (it == super_pieces.end())
         return false;
 
-    CapTier(to_tier, GetPieceType(1ULL << square) );
+    CapTier(to_tier, GetPieceType(1ULL << square));
     it->second->UpdateTier(to_tier);
     std::vector<std::unique_ptr<Ability>> v;
-    MakeAbilityVector( v, std::make_pair(GetPieceType(1ULL << square), to_tier) );
+    MakeAbilityVector(v, std::make_pair(GetPieceType(1ULL << square), to_tier));
     return true;
 }
 
@@ -97,29 +97,40 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)
 {
     ChessGame::ExecuteMove(color, from_sq, to_sq, from_piece, to_piece);
-
-    //remove to_piece
-    if( IsSuperPiece(to_sq) )
+    
+    // remove to_piece
+    if (IsSuperPiece(to_sq))
         super_pieces.erase(to_sq);
-    //move from_piece
-    if( IsSuperPiece(from_sq) )
+    // move from_piece
+    if (IsSuperPiece(from_sq))
     {
         super_pieces.erase(to_sq);
         super_pieces[to_sq] = std::move(super_pieces[from_sq]);
         super_pieces.erase(from_sq);
         super_pieces[to_sq]->UpdateSquare(to_sq);
     }
+    // If piece is removed, update Graveyard
+    if( board & (1ULL << to_sq))
+    {
+        if( graveyard.find(std::make_pair(GetColor(to_piece), to_piece)) != graveyard.end() ){
+            graveyard[std::make_pair(GetColor(to_piece), to_piece)]++;
+        }
+        else{
+            graveyard[std::make_pair(GetColor(to_piece), to_piece)] = 1;
+        }
+    }
 }
+
 // init
 void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white, const SuperPieceInfo &black)
 {
 }
 
-//utility
-bool SuperChessGame::IsSuperPiece(const Square& key) const
+// utility
+bool SuperChessGame::IsSuperPiece(const Square &key) const
 {
     auto it = super_pieces.find(key);
-    if( it != super_pieces.end() )
+    if (it != super_pieces.end())
         return true;
 
     return false;
@@ -127,28 +138,38 @@ bool SuperChessGame::IsSuperPiece(const Square& key) const
 
 bool SuperChessGame::InCheck(Color color) const
 {
-    return ChessGame::InCheck(ChessGame::GetBoard(), color, static_cast<U64>(1ULL << GetSquare(AllColorPiecesArray[color][King]))); //it wouldn't take 1ull<<square unless it was assigned to a variable, or casted.
+    return ChessGame::InCheck(ChessGame::GetBoard(), color, static_cast<U64>(1ULL << GetSquare(AllColorPiecesArray[color][King]))); // it wouldn't take 1ull<<square unless it was assigned to a variable, or casted.
 }
 
-void SuperChessGame::CapTier(Tier& t, Piece p_type) const
+void SuperChessGame::CapTier(Tier &t, Piece p_type) const
 {
-    if( t > al->GetMaxTier(p_type) ){
+    if (t > al->GetMaxTier(p_type))
+    {
         t = al->GetMaxTier(p_type);
     }
 }
 
-void SuperChessGame::MakeAbilityVector(std::vector<std::unique_ptr<Ability>>& v, SuperPieceInfo info)
+void SuperChessGame::MakeAbilityVector(std::vector<std::unique_ptr<Ability>> &v, SuperPieceInfo info)
 {
     CapTier(info.second, info.first);
-    //to remove
+    // to remove
     v.push_back(al->GetAbility(info));
-    
-    //to add
-    // for(int i = 0; i < info.second; i++)
-    // {
-    //     info.second = static_cast<Tier>(i);
-    //     v.push_back(al->GetAbility(info));
-    // }
+
+    // to add
+    //  for(int i = 0; i < info.second; i++)
+    //  {
+    //      info.second = static_cast<Tier>(i);
+    //      v.push_back(al->GetAbility(info));
+    //  }
+}
+
+bool SuperChessGame::PieceInGraveyard(Color color, Piece piece)
+{
+    auto it = graveyard.find(std::make_pair(color, piece));
+
+    if (it != graveyard.end() && it->second >= 1)
+        return true;
+    return false;
 }
 
 // misc
