@@ -23,7 +23,6 @@ public:
     bool ConvertToSuperPiece(SuperPieceInfo info, Square square);
     bool UpgradeSuperPieceTier(Square square, Tier to_tier);
 
-
     //utility
     bool IsSuperPiece(const Square& key) const;
     bool InCheck(Color color) const;
