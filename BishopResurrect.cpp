@@ -68,12 +68,43 @@ void BishopResurrect::Effect(const SuperPiece &piece)
         }
     }
 
-    if (key.second != Tier::not_superpiece)
-        game->AddSuperPiece(key, get_lsb(spawn), bishop_color, false);
-    else
-        game->AddPiece(get_lsb(spawn), bishop_color, key.first);
+    //Choosing a spawnlocation.
+    std::cout << "Available squares to choose from:" << std::endl;
+    while (spawn != 0) {
+        Square squareIndex = static_cast<Square>get_lsb(spawn);
+        std::string squareString;
 
-    // TODO: All that's left is to subtract -1 to graveyard and possibly remove it from graveyard. (probably helper function)
+        for (const auto& pair : SqStrMap) {
+            if (pair.second == (squareIndex)) {
+                squareString = pair.first;
+                break;
+            }
+        }
+
+        std::cout << squareString << " ";
+        spawn &= (spawn - 1);
+    }
+
+    std::cout << "\nEnter your selection: ";
+    std::string userSelection;
+    std::cin >> userSelection;
+
+    Square sq = SqStrMap.find(userSelection);
+    if (sq == SqStrMap.end() && ((spawnlocations[key.first] & 1ULL<<sq) == 0ULL)) { //couldn't use spawn since I modified it iterating.
+        std::cout << "Invalid selection. Please choose a valid square." << std::endl;
+        return;
+    }
+
+
+    if (key.second != Tier::not_superpiece)
+        game->AddSuperPiece(key, sq, bishop_color, false);
+    else
+        game->AddPiece(sq, bishop_color, key.first);
+
+    game->RemoveFromGraveYard( std::make_pair(bishop_color, key) );
+
+    std::cout << "☆⌒(*^-゜)v huzzah Resurrection!!\n"
+
 }
 
 std::unique_ptr<Ability> BishopResurrect::Clone() const
