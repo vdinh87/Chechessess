@@ -99,7 +99,7 @@ enum Direction : unsigned char {
 };
 
 enum Tier : unsigned char { T0, T1, T2, T3, T4, not_superpiece };
-
+const std::string TierStrings[] = { "T0", "T1", "T2", "T3", "T4" };
 enum AbilityType : unsigned char { active };
 
 enum Action :unsigned char {

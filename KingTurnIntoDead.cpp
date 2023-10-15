@@ -34,10 +34,38 @@ void KingTurnIntoDead::Effect(const SuperPiece& piece)
         std::cout << name << " is only Available at turn 10. It's currently Turn [" << current_turn << "]\n";
         return;
     } 
-    if (game->RemovePiece(sq) == true){
-        cooldown_tracker = 0;
-        std::cout << "KingTurnIntoDead succeeded" << std::endl;
+    
+    //ability time 
+    std::vector<SuperPieceInfo> graveyard = game->GetPiecesInGraveyard( piece.GetColor() );
+
+    if( graveyard.empty() )
+    {
+        std::cout << "Graveyard is empty.\n";
+        return;
     }
+
+    int counter = 0;
+    std::string output;
+    for(const auto& p: graveyard)
+    {
+        std::string sp_str;
+        if( p.second != Tier::not_superpiece )
+            sp_str = TierStrings[p.second] + " Super";
+        
+        output += "(" + std::to_string(counter) + ") " + sp_str + PieceStrings[piece.GetInfo().first] + " ";
+        ++counter;
+    }
+
+    std::cout << "Choose piece to turn into dead: ";
+    int selection;
+    std::cin >> selection;
+    std::cout << std::endl;
+
+    SuperPieceInfo key;
+    if( selection < graveyard.size() && selection >= 0 ) //valid number, not super strict checking
+        key = graveyard[selection];
+    
+
 }
 
 std::unique_ptr<Ability> KingTurnIntoDead::Clone() const

@@ -181,6 +181,7 @@ bool SuperChessGame::PieceInGraveyard(Color color, Piece piece)
     }
     return false;
 }
+
 std::vector<SuperPieceInfo> SuperChessGame::GetPiecesInGraveyard(Color color) const
 {
     std::vector<SuperPieceInfo> pieces;
