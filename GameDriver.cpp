@@ -93,16 +93,15 @@ int main()
 {
     SuperPieceInfo king = std::make_pair(Piece::King, Tier::T4);
     SuperChessGame* spg = new SuperChessGame(king, king);
-    std::vector<std::unique_ptr<Ability>> v;
-    spg->MakeAbilityVector( v, std::make_pair(Piece::King, Tier::T3) );
-    std::cout << v.empty() << std::endl;
-    // spg->ConvertToSuperPiece(king, e1);
-    // spg->AddSuperPiece(king, e3, white);
-    // spg->AddSuperPiece(king, e3, white);
-    // Square k = a1;
-    // spg->PrintBoard();
-    // spg->ConvertPieceToSide(k, black);
-    // spg->ConvertToSuperPiece(king, k);
-    // spg->Do(e3, Tier::T4);
-    // spg->PrintBoard();
+    spg->PrintBoard();
+    spg->RemovePiece(a1);
+    auto graveyard = spg->GetPiecesInGraveyard(white);
+    std::cout << "Graveyard empty: " << graveyard.empty() << std::endl;
+
+    for(const auto& p : graveyard)
+    {
+        std::cout << "Piece: " << PieceStrings[p.first] << ", Tier: " << TierStrings[p.second] << std::endl;
+    }
+
+    spg->PrintBoard();
 }

@@ -28,6 +28,10 @@ public:
     bool InCheck(Color color) const;
     void CapTier(Tier& t, Piece p_type) const;
     void MakeAbilityVector(std::vector<std::unique_ptr<Ability>>& v, SuperPieceInfo info);
+
+    //graveyard functions
+    void AddToGraveyard(Color color, Square sq, Piece piece);
+    void RemoveFromGraveYard(const std::pair<Color, SuperPieceInfo>& key);
     bool PieceInGraveyard(Color color, Piece piece);
     std::vector<SuperPieceInfo> GetPiecesInGraveyard(Color color) const;
 

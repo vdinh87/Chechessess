@@ -72,7 +72,10 @@ void KingTurnIntoDead::Effect(const SuperPiece& piece)
         std::cout << "Not valid selection\n";
         return;
     }
+
     game->RemovePiece(sq);
+    game->RemoveFromGraveYard( std::make_pair(piece.GetColor(), key) );
+    
     if( key.second != Tier::not_superpiece ) //if dead piece was superpiece
         game->AddSuperPiece(key, sq, piece.GetColor());
     else
