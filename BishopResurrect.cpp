@@ -33,7 +33,7 @@ void BishopResurrect::Effect(const SuperPiece &piece)
     std::string output;
     U64 board = game->GetBoard();
 
-    U64 spawnlocations = (bishop_color == white) ? WhiteSpawnLocations : BlackSpawnLocations;
+    std::vector<U64> spawnlocations = (bishop_color == white) ? WhiteSpawnLocations : BlackSpawnLocations;
     for (const auto &p : graveyard) // showing options
     {
         U64 available_spawnlocations = spawnlocations[p.first] & ~board;
@@ -71,7 +71,7 @@ void BishopResurrect::Effect(const SuperPiece &piece)
     //Choosing a spawnlocation.
     std::cout << "Available squares to choose from:" << std::endl;
     while (spawn != 0) {
-        Square squareIndex = static_cast<Square>get_lsb(spawn);
+        Square squareIndex = static_cast<Square>get_LSB(spawn);
         std::string squareString;
 
         for (const auto& pair : SqStrMap) {
@@ -89,8 +89,8 @@ void BishopResurrect::Effect(const SuperPiece &piece)
     std::string userSelection;
     std::cin >> userSelection;
 
-    Square sq = SqStrMap.find(userSelection);
-    if (sq == SqStrMap.end() && ((spawnlocations[key.first] & 1ULL<<sq) == 0ULL)) { //couldn't use spawn since I modified it iterating.
+    Square sq = SqStrMap.at(userSelection);
+    if (spawnlocations[key.first] & static_cast<U64>(1ULL<<sq) == 0ULL) { //couldn't use spawn since I modified it iterating.
         std::cout << "Invalid selection. Please choose a valid square." << std::endl;
         return;
     }
@@ -103,7 +103,7 @@ void BishopResurrect::Effect(const SuperPiece &piece)
 
     game->RemoveFromGraveYard( std::make_pair(bishop_color, key) );
 
-    std::cout << "☆⌒(*^-゜)v huzzah Resurrection!!\n"
+    std::cout << "☆⌒(*^-゜)v huzzah Resurrection!!\n";
 
 }
 
