@@ -28,7 +28,8 @@ public:
     bool InCheck(Color color) const;
     void CapTier(Tier& t, Piece p_type) const;
     void MakeAbilityVector(std::vector<std::unique_ptr<Ability>>& v, SuperPieceInfo info);
-    bool PieceInGraveyard(Color color, SuperPieceInfo info);
+    bool PieceInGraveyard(Color color, Piece piece)
+    std::vector<SuperPieceInfo> GetPiecesInGraveyard(Color color) const;
 
     // Move functions
     std::vector<Action> Move(Square from_sq, Square to_sq) override;
