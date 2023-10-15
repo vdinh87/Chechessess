@@ -96,6 +96,21 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 
 void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)
 {
+    // If piece is removed, update Graveyard
+    if( board & (1ULL << to_sq))
+    {
+        SuperPieceInfo info = std::make_pair(to_piece, Tier::not_superpiece);
+        if( IsSuperPiece(to_sq) ){
+            info.second = super_pieces[to_sq]->GetInfo().second;
+        }
+        if( graveyard.find(std::make_pair(GetColor(to_piece), to_piece)) != graveyard.end() ){
+            graveyard[std::make_pair(GetColor(to_piece), info)]++;
+        }
+        else{
+            graveyard[std::make_pair(GetColor(to_piece), info)] = 1;
+        }
+    }
+
     ChessGame::ExecuteMove(color, from_sq, to_sq, from_piece, to_piece);
     
     // remove to_piece
@@ -109,16 +124,7 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
         super_pieces.erase(from_sq);
         super_pieces[to_sq]->UpdateSquare(to_sq);
     }
-    // If piece is removed, update Graveyard
-    if( board & (1ULL << to_sq))
-    {
-        if( graveyard.find(std::make_pair(GetColor(to_piece), to_piece)) != graveyard.end() ){
-            graveyard[std::make_pair(GetColor(to_piece), to_piece)]++;
-        }
-        else{
-            graveyard[std::make_pair(GetColor(to_piece), to_piece)] = 1;
-        }
-    }
+    
 }
 
 // init
@@ -163,9 +169,9 @@ void SuperChessGame::MakeAbilityVector(std::vector<std::unique_ptr<Ability>> &v,
     //  }
 }
 
-bool SuperChessGame::PieceInGraveyard(Color color, Piece piece)
+bool SuperChessGame::PieceInGraveyard(Color color, SuperPieceInfo info)
 {
-    auto it = graveyard.find(std::make_pair(color, piece));
+    auto it = graveyard.find(std::make_pair(color, info));
 
     if (it != graveyard.end() && it->second >= 1)
         return true;
