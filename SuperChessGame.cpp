@@ -179,6 +179,7 @@ bool SuperChessGame::PieceInGraveyard(Color color, Piece piece)
     return false;
 }
 
+
 // misc
 void SuperChessGame::Do(Square sq, Tier t)
 {
