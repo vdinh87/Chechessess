@@ -124,6 +124,15 @@ struct PairEnumHash
     }
 };
 
+struct PairInsidePairEnumHash
+{
+    template <typename Enum, typename Pair>
+    std::size_t operator()(std::pair<Enum, Pair> t) const
+    {
+        return static_cast<std::size_t>(t.first)*2 + static_cast<std::size_t>(t.second.first);
+    }
+};
+
 U64 North(U64 & other_board)
 {
   if( ~(other_board & RANK_8) )

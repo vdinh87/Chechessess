@@ -11,7 +11,7 @@ void KingSniperShot::Effect(const SuperPiece& piece)
     std::string input_str;
     Square sq;
     std::cout << "Choose piece to delete: ";
-
+    
     Color king_color = piece.GetColor();
     std::cin >> input_str;
     std::cout << std::endl;
@@ -24,7 +24,7 @@ void KingSniperShot::Effect(const SuperPiece& piece)
     }
 
     int current_turn = (log_.size() + 1) / 2;
-
+    
     if (king_color == game->GetColor(1ULL << sq)) { 
         std::cout << "Invalid square Same color piece." << std::endl;
         return;

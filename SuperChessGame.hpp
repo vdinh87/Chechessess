@@ -9,11 +9,11 @@ private:
     // ability related data members
     std::shared_ptr<AbilityLibrary> al;
     std::unordered_map<Square, std::shared_ptr<SuperPiece>> super_pieces;
-    std::unordered_map<std::pair(Color, SuperPieceInfo), int> graveyard;
+    std::unordered_map<std::pair<Color, SuperPieceInfo>, int, PairInsidePairEnumHash> graveyard;
     //init
     void InitSuperPieces(const SuperPieceInfo &white, const SuperPieceInfo &black);
 public:
-    SuperChessGame(const SuperPieceInfo &white, const SuperPieceInfo &black);
+    SuperChessGame(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info);
     ~SuperChessGame() = default;
 
     bool RemovePiece(Square square) override;
@@ -28,6 +28,10 @@ public:
     bool InCheck(Color color) const;
     void CapTier(Tier& t, Piece p_type) const;
     void MakeAbilityVector(std::vector<std::unique_ptr<Ability>>& v, SuperPieceInfo info);
+
+    //graveyard functions
+    void AddToGraveyard(Color color, Square sq, Piece piece);
+    void RemoveFromGraveYard(const std::pair<Color, SuperPieceInfo>& key);
     bool PieceInGraveyard(Color color, Piece piece);
     std::vector<SuperPieceInfo> GetPiecesInGraveyard(Color color) const;
 

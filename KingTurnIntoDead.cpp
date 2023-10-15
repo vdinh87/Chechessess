@@ -2,7 +2,7 @@
 #include "KingTurnIntoDead.hpp"
 
 KingTurnIntoDead::KingTurnIntoDead(SuperChessGame* game_) :
-Ability("King Sniper Shot", game_)
+Ability("King Turn Into Dead", game_)
 {
 }
 
@@ -24,6 +24,10 @@ void KingTurnIntoDead::Effect(const SuperPiece& piece)
 
     int current_turn = (log_.size() + 1) / 2;
 
+    if( sq == piece.GetSquare() ){
+        std::cout << "Cannot choose yourself\n";
+        return;
+    }
     if (piece.GetColor() != game->GetColor(1ULL << sq)) { 
         std::cout << "Invalid square different color piece." << std::endl;
         return;
@@ -56,16 +60,28 @@ void KingTurnIntoDead::Effect(const SuperPiece& piece)
         ++counter;
     }
 
-    std::cout << "Choose piece to turn into dead: ";
+    std::cout << "Select piece to resurrect: ";
     int selection;
     std::cin >> selection;
     std::cout << std::endl;
 
     SuperPieceInfo key;
     if( selection < graveyard.size() && selection >= 0 ) //valid number, not super strict checking
-        key = graveyard[selection];
-    
+        key = graveyard[selection];    
+    else{
+        std::cout << "Not valid selection\n";
+        return;
+    }
 
+    game->RemovePiece(sq);
+    game->RemoveFromGraveYard( std::make_pair(piece.GetColor(), key) );
+    
+    if( key.second != Tier::not_superpiece ) //if dead piece was superpiece
+        game->AddSuperPiece(key, sq, piece.GetColor());
+    else
+        game->AddPiece(sq, piece.GetColor(), key.first);
+
+    std::cout << "King Turn Into Dead successful";
 }
 
 std::unique_ptr<Ability> KingTurnIntoDead::Clone() const

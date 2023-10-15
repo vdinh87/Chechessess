@@ -2,6 +2,7 @@
 
 #include "SuperChessGame.fwd.hpp"
 #include "Ability.hpp"
+#include "KingTurnIntoDead.cpp"
 #include "KingSniperShot.cpp"
 #include "KingTeleport.cpp"
 #include "KingConvert.cpp"
