@@ -9,11 +9,11 @@ private:
     // ability related data members
     std::shared_ptr<AbilityLibrary> al;
     std::unordered_map<Square, std::shared_ptr<SuperPiece>> super_pieces;
-    std::unordered_map<std::pair(Color, SuperPieceInfo), int> graveyard;
+    std::unordered_map<std::pair<Color, SuperPieceInfo>, int, PairInsidePairEnumHash> graveyard;
     //init
     void InitSuperPieces(const SuperPieceInfo &white, const SuperPieceInfo &black);
 public:
-    SuperChessGame(const SuperPieceInfo &white, const SuperPieceInfo &black);
+    SuperChessGame(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info);
     ~SuperChessGame() = default;
 
     bool RemovePiece(Square square) override;

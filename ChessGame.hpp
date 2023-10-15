@@ -77,7 +77,7 @@ public:
     
     //board editing
     virtual bool RemovePiece(Square square);
-    bool AddPiece(Square square, Color color, Piece piece);
+    virtual bool AddPiece(Square square, Color color, Piece piece);
     
     void Notify(const std::vector<ChessMove> &log) override;
     void PrintBoard() const;

@@ -56,16 +56,14 @@ void KingTurnIntoDead::Effect(const SuperPiece& piece)
         ++counter;
     }
 
-    std::cout << "Choose piece to turn into dead: ";
+    std::cout << "Select piece to resurrect: ";
     int selection;
     std::cin >> selection;
     std::cout << std::endl;
 
     SuperPieceInfo key;
     if( selection < graveyard.size() && selection >= 0 ) //valid number, not super strict checking
-        key = graveyard[selection];
-    
-
+        key = graveyard[selection];    
 }
 
 std::unique_ptr<Ability> KingTurnIntoDead::Clone() const
