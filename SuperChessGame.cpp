@@ -97,22 +97,25 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)
 {
     // If piece is removed, update Graveyard
-    if( board & (1ULL << to_sq) )
+    if (board & (1ULL << to_sq))
     {
         SuperPieceInfo info = std::make_pair(to_piece, Tier::not_superpiece);
-        if( IsSuperPiece(to_sq) ){
+        if (IsSuperPiece(to_sq))
+        {
             info.second = super_pieces[to_sq]->GetInfo().second;
         }
-        if( graveyard.find(std::make_pair(GetColor(to_piece), info)) != graveyard.end() ){
+        if (graveyard.find(std::make_pair(GetColor(to_piece), info)) != graveyard.end())
+        {
             graveyard[std::make_pair(GetColor(to_piece), info)]++;
         }
-        else{
+        else
+        {
             graveyard[std::make_pair(GetColor(to_piece), info)] = 1;
         }
     }
 
     ChessGame::ExecuteMove(color, from_sq, to_sq, from_piece, to_piece);
-    
+
     // remove to_piece
     if (IsSuperPiece(to_sq))
         super_pieces.erase(to_sq);
@@ -123,7 +126,7 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
         super_pieces[to_sq] = std::move(super_pieces[from_sq]);
         super_pieces.erase(from_sq);
         super_pieces[to_sq]->UpdateSquare(to_sq);
-    }   
+    }
 }
 
 // init
@@ -171,12 +174,21 @@ void SuperChessGame::MakeAbilityVector(std::vector<std::unique_ptr<Ability>> &v,
 bool SuperChessGame::PieceInGraveyard(Color color, Piece piece)
 {
     SuperPieceInfo info;
-    for(const auto& p: graveyard)
+    for (const auto &p : graveyard)
     {
-        if(p.first.second.first == piece)
+        if (p.first.second.first == piece)
             return true;
     }
     return false;
+}
+std::vector<SuperPieceInfo> SuperChessGame::GetPiecesInGraveyard(Color color) const
+{
+    std::vector<SuperPieceInfo> pieces;
+    for (const auto &p : graveyard)
+        if (p.first.first == color && p.second > 0)
+            pieces.push_back(p.first.second);
+
+    return pieces;
 }
 
 // misc
