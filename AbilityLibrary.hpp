@@ -7,6 +7,7 @@
 #include "KingTeleport.cpp"
 #include "KingConvert.cpp"
 #include "BishopResurrect.cpp"
+#include "BishopSwap.cpp"
 #include "Definitions.hpp"
 
 class AbilityLibrary{

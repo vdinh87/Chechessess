@@ -65,6 +65,22 @@ static const std::string SquareStrings[] = {
   "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
 };
 
+std::vector<U64> WhiteSpawnLocations{
+        0x000000000000FF00ULL, 
+        0x0000000000000042ULL, 
+        0x0000000000000024ULL, 
+        0x0000000000000081ULL,
+        0x0000000000000008ULL, 
+        0x0000000000000010ULL };
+
+std::vector<U64> BlackSpawnLocations{
+        0x00FF000000000000ULL,
+        0x4200000000000000ULL,
+        0x2400000000000000ULL,
+        0x8100000000000000ULL,
+        0x0800000000000000ULL,
+        0x1000000000000000ULL};
+
 static std::unordered_map<std::string, Square> const SqStrMap = { 
     {"a1", Square::a1}, {"a2", Square::a2}, {"a3", Square::a3}, {"a4", Square::a4},
     {"a5", Square::a5}, {"a6", Square::a6}, {"a7", Square::a7}, {"a8", Square::a8},

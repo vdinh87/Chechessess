@@ -3,18 +3,19 @@
 #include "Listener.hpp"
 #include "SuperChessGame.cpp"
 
-class BishopResurrect : public Ability, public Listener
+class BishopSwap : public Ability, public Listener
 {
 private:
     AbilityType type = active;
-    std::string name = "Bishop Resurrect";
+    std::string name = "Bishop Swap";
     std::vector<ChessMove> log_;
-    const int cooldown = 6;
-    const int activation_turn = 8;
-    int cooldown_tracker = 6;
+    const int cooldown = 2;
+    const int activation_turn = 2;
+    int cooldown_tracker = 2;
+    U64 blackSquares = 0xAA55AA55AA55AA55ULL;
 public:
-    BishopResurrect(SuperChessGame* game_);
-    ~BishopResurrect() = default;
+    BishopSwap(SuperChessGame* game_);
+    ~BishopSwap() = default;
 
     void Effect(const SuperPiece& piece) override;
     std::unique_ptr<Ability> Clone() const override;
