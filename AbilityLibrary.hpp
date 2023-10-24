@@ -8,7 +8,9 @@
 #include "KingConvert.cpp"
 #include "BishopResurrect.cpp"
 #include "BishopSwap.cpp"
+#include "RookSwap.cpp"
 #include "Definitions.hpp"
+
 
 class AbilityLibrary{
 private:
