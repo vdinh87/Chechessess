@@ -91,14 +91,15 @@ void Play()
 
 int main()
 {
-    SuperPieceInfo king = std::make_pair(Piece::King, Tier::T4);
+    SuperPieceInfo king = std::make_pair(Piece::Bishop, Tier::T4);
     SuperChessGame* spg = new SuperChessGame(king, king);
     // spg->PrintBoard();
     U64 everythn = ~0ULL;
-    U64 blackSquares = 0xAA55AA55AA55AA55ULL; // Black squares bitboard
-    U64 whiteSquares = 0x55AA55AA55AA55AAULL; // White squares bitboard
 
-    PrintGoard();
+    spg->PrintBoard();
+    spg->Swap(f1, a1);
+    spg->PrintBoard();
+
 
     // spg->RemovePiece(a1);
     // auto graveyard = spg->GetPiecesInGraveyard(white);

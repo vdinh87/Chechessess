@@ -31,13 +31,13 @@ void RookSwap::Effect(const SuperPiece &piece)
 
     
     if ( !game->IsSuperPiece(sq) ){
-        std::cout << "Rook Selected is not a superpiece, cannot swap it.\n"
+        std::cout << "Rook Selected is not a superpiece, cannot swap it.\n";
         return;
     } if ( king_board & rook_rows_and_cols == 0ULL ){
-        std::cout << "King is not in the same Row or Column as the rook.\n"
+        std::cout << "King is not in the same Row or Column as the rook.\n";
         return;
     } if (game->InCheck(rook_color)){
-        std::cout << "King Currently in Check! Cannot swap.\n"
+        std::cout << "King Currently in Check! Cannot swap.\n";
         return;
     } if (cooldown_tracker < cooldown){
         std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - cooldown_tracker << "\n" ;
@@ -51,20 +51,7 @@ void RookSwap::Effect(const SuperPiece &piece)
     }
     Square swapsquare = static_cast<Square>get_LSB(king_board); // king qsuare
     
-    game->RemovePiece(swapsquare);
-    SuperPieceInfo info = piece.GetInfo(); // need to get it before i delete it.
-    game->RemovePiece(sq);
-    game->AddSuperPiece(info, swapsquare, rook_color, false);
-    
-    if (game->IsSuperPiece(swapsquare)){
-        SuperPieceInfo info = std::make_pair(Piece::King, Tier::T0); //TODO: Temporarily t0 since i can't get tier from piece im not accessing
-        game->AddSuperPiece( info , sq, rook_color, false)
-    } else {
-        game->AddPiece(sq, rook_color, King);
-    }
-
-
-
+    game->Swap(sq ,swapsquare);
     std::cout << "Rook Swapped!! \n";
 
 }

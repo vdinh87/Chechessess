@@ -169,6 +169,23 @@ void SuperChessGame::MakeAbilityVector(std::vector<std::unique_ptr<Ability>> &v,
     //  }
 }
 
+void SuperChessGame::Swap(Square from, Square to)
+{
+    SuperPieceInfo from_info, to_info;
+    Color from_color = GetColor(1ULL << from), to_color = GetColor(1ULL << to);
+
+    //Using superpiece info to store even non-superpieces.
+    from_info = IsSuperPiece(from) ? super_pieces[from]->GetInfo() : std::make_pair(GetPieceType(1ULL << from), not_superpiece);
+    to_info = IsSuperPiece(to) ? super_pieces[to]->GetInfo() : std::make_pair(GetPieceType(1ULL << to), not_superpiece);
+    
+    RemovePiece(from);
+    RemovePiece(to);
+    //Using addsuperpiece if it's a superpiece, and add piece if it's not.
+    to_info.second != not_superpiece ? AddSuperPiece(to_info, from, to_color, false) : AddPiece(from, to_color, to_info.first);
+    from_info.second != not_superpiece ? AddSuperPiece(from_info, to, from_color, false) : AddPiece(to, from_color, from_info.first);
+}
+
+
 // graveyard functions
 void SuperChessGame::AddToGraveyard(Color color, Square sq, Piece piece)
 {
