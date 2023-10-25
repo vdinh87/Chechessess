@@ -135,11 +135,7 @@ U64 SuperChessGame::GetBoardOf(Piece piece, Color color)
 // utility
 bool SuperChessGame::IsSuperPiece(const Square &key) const
 {
-    auto it = super_pieces.find(key);
-    if (it != super_pieces.end())
-        return true;
-
-    return false;
+    return super_pieces.count(key);
 }
 
 bool SuperChessGame::InCheck(Color color) const
