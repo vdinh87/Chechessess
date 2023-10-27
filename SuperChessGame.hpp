@@ -24,10 +24,12 @@ public:
     bool UpgradeSuperPieceTier(Square square, Tier to_tier);
 
     //utility
-    bool IsSuperPiece(const Square& key) const;
+    U64 GetBoardOf(Piece piece, Color color);
+    bool IsSuperPiece(const Square &key) const;
     bool InCheck(Color color) const;
     void CapTier(Tier& t, Piece p_type) const;
     void MakeAbilityVector(std::vector<std::unique_ptr<Ability>>& v, SuperPieceInfo info);
+    void Swap(Square from, Square to);
 
     //graveyard functions
     void AddToGraveyard(Color color, Square sq, Piece piece);

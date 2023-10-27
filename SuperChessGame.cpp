@@ -39,7 +39,7 @@ bool SuperChessGame::RemovePiece(Square square)
     U64 p = 1ULL << square;
     Piece p_type = GetPieceType(p);
 
-    if( board & p )
+    if (board & p)
         AddToGraveyard(GetColor(p_type), square, p_type);
 
     if (!ChessGame::RemovePiece(square))
@@ -127,14 +127,15 @@ void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white, const SuperPie
 {
 }
 
+U64 SuperChessGame::GetBoardOf(Piece piece, Color color)
+{
+    return (color == white) ? WhitePiecesArray[piece] : BlackPiecesArray[piece];
+}
+
 // utility
 bool SuperChessGame::IsSuperPiece(const Square &key) const
 {
-    auto it = super_pieces.find(key);
-    if (it != super_pieces.end())
-        return true;
-
-    return false;
+    return super_pieces.count(key);
 }
 
 bool SuperChessGame::InCheck(Color color) const
@@ -164,7 +165,24 @@ void SuperChessGame::MakeAbilityVector(std::vector<std::unique_ptr<Ability>> &v,
     //  }
 }
 
-//graveyard functions
+void SuperChessGame::Swap(Square from, Square to)
+{
+    SuperPieceInfo from_info, to_info;
+    Color from_color = GetColor(1ULL << from), to_color = GetColor(1ULL << to);
+
+    //Using superpiece info to store even non-superpieces.
+    from_info = IsSuperPiece(from) ? super_pieces[from]->GetInfo() : std::make_pair(GetPieceType(1ULL << from), not_superpiece);
+    to_info = IsSuperPiece(to) ? super_pieces[to]->GetInfo() : std::make_pair(GetPieceType(1ULL << to), not_superpiece);
+    
+    RemovePiece(from);
+    RemovePiece(to);
+    //Using addsuperpiece if it's a superpiece, and add piece if it's not.
+    to_info.second != not_superpiece ? AddSuperPiece(to_info, from, to_color, false) : AddPiece(from, to_color, to_info.first);
+    from_info.second != not_superpiece ? AddSuperPiece(from_info, to, from_color, false) : AddPiece(to, from_color, from_info.first);
+}
+
+
+// graveyard functions
 void SuperChessGame::AddToGraveyard(Color color, Square sq, Piece piece)
 {
     SuperPieceInfo info = std::make_pair(piece, Tier::not_superpiece);
@@ -181,10 +199,10 @@ void SuperChessGame::AddToGraveyard(Color color, Square sq, Piece piece)
         graveyard[key] = 1;
 }
 
-void SuperChessGame::RemoveFromGraveYard(const std::pair<Color, SuperPieceInfo>& key)
+void SuperChessGame::RemoveFromGraveYard(const std::pair<Color, SuperPieceInfo> &key)
 {
     auto it = graveyard.find(key);
-    if( it != graveyard.end() && it->second >= 0)
+    if (it != graveyard.end() && it->second >= 0)
     {
         it->second--;
     }
@@ -210,7 +228,6 @@ std::vector<SuperPieceInfo> SuperChessGame::GetPiecesInGraveyard(Color color) co
 
     return pieces;
 }
-
 
 // misc
 void SuperChessGame::Do(Square sq, Tier t)
