@@ -27,7 +27,7 @@ void BishopSwap::Effect(const SuperPiece &piece)
     int current_turn = (log_.size() + 1) / 2;
 
     if (bishop_spawn & game->GetBoard() == 0ULL){
-        std::cout << "Opposite bishop Spawnlocation is currently inhabited by other piece\n"
+        std::cout << "Opposite bishop Spawnlocation is currently inhabited by other piece\n";
         return;
     } if (cooldown_tracker < cooldown){
         std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - cooldown_tracker << "\n" ;

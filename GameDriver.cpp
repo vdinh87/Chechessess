@@ -91,14 +91,15 @@ void Play()
 
 int main()
 {
-    SuperPieceInfo king = std::make_pair(Piece::King, Tier::T4);
-    SuperChessGame* spg = new SuperChessGame(king, king);
-    // spg->PrintBoard();
-    U64 everythn = ~0ULL;
-    U64 blackSquares = 0xAA55AA55AA55AA55ULL; // Black squares bitboard
-    U64 whiteSquares = 0x55AA55AA55AA55AAULL; // White squares bitboard
+    //CHECKMATE NEEDS TWEAKING: GAME ENDS WHEN KING HAS NO MOVES, BUT SHOULD BE IF THE PLAYER HAS NO MORE MOVES: CONSIDER OTHER PIECES
+    // SuperPieceInfo king = std::make_pair(Piece::King, Tier::T4);
+    // SuperChessGame* spg = new SuperChessGame(king, king);
+    // // spg->PrintBoard();
+    // U64 everythn = ~0ULL;
+    // U64 blackSquares = 0xAA55AA55AA55AA55ULL; // Black squares bitboard
+    // U64 whiteSquares = 0x55AA55AA55AA55AAULL; // White squares bitboard
 
-    PrintGoard();
+    // PrintGoard();
 
     // spg->RemovePiece(a1);
     // auto graveyard = spg->GetPiecesInGraveyard(white);
