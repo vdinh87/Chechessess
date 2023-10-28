@@ -151,7 +151,7 @@ virtual U64 SuperChessGame::GetAttacks(Square square_, const U64 occupancy_, int
     }
 
     // if (IsSuperPiece(square_)) //probably something like this right?
-    //     attacks |= super_pieces.find(square_).second->GetModifier();
+    //     attacks |= super_pieces[square_]->GetModifier();
 
     return attacks;
 }
