@@ -188,6 +188,7 @@ U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_functi
         break;
     }
 
+
     return attacks;
 }
 

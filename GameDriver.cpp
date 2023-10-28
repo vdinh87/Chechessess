@@ -97,7 +97,7 @@ int main()
     U64 everythn = ~0ULL;
 
     spg->PrintBoard();
-    spg->Swap(f1, a1);
+    spg->SwapSuperPieces(f1, a1);
     spg->PrintBoard();
 
 

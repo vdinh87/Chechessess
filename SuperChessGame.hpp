@@ -30,6 +30,7 @@ public:
     void CapTier(Tier& t, Piece p_type) const;
     void MakeAbilityVector(std::vector<std::unique_ptr<Ability>>& v, SuperPieceInfo info);
     void Swap(Square from, Square to);
+    void SwapSuperPieces(Square from, Square to);
 
     //graveyard functions
     void AddToGraveyard(Color color, Square sq, Piece piece);
