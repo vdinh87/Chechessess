@@ -41,7 +41,10 @@ public:
     // Move functions
     std::vector<Action> Move(Square from_sq, Square to_sq) override;
     void ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece) override;
-    
+    U64 GetAttacks(Square square_, const U64 occupancy_, int which_function = -1) const;
+
+
+
     //misc
     void Do(Square sq, Tier t);
 };

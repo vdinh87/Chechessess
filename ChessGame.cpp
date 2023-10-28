@@ -160,7 +160,7 @@ U64 ChessGame::GetKingAttacks(Square square_, const U64 occupancy_) const
     return attacks;
 }
 
-U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_function) const
+virtual U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_function) const
 {
     U64 attacks = 0ULL;
 
@@ -216,6 +216,7 @@ U64 ChessGame::GetAttacks(Square square_) const
 
     return attacks;
 }
+
 
 U64 ChessGame::GetCastling(Color color) const
 {

@@ -122,6 +122,42 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
     }
 }
 
+virtual U64 SuperChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_function) const
+{
+    U64 attacks = 0ULL;
+
+    switch (which_function)
+    {
+    case 0:
+        attacks = GetPawnAttacks(square_, occupancy_);
+        break;
+    case 1:
+        attacks = GetKnightAttacks(square_, occupancy_);
+        break;
+    case 2:
+        attacks = GetBishopAttacks(square_, occupancy_);
+        break;
+    case 3:
+        attacks = GetRookAttacks(square_, occupancy_);
+        break;
+    case 4:
+        attacks = GetQueenAttacks(square_, occupancy_);
+        break;
+    case 5:
+        attacks = GetKingAttacks(square_, occupancy_);
+        break;
+    case -1:
+        break;
+    }
+
+    // if (IsSuperPiece(square_)) //probably something like this right?
+    //     attacks |= super_pieces.find(square_).second->GetModifier();
+
+    return attacks;
+}
+
+
+
 // init
 void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white, const SuperPieceInfo &black)
 {
