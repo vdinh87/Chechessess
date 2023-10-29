@@ -720,11 +720,6 @@ bool ChessGame::RemovePiece(Square square)
     // no piece on board
     if (!(p & board))
         return false;
-    if ((p & PieceTypeArray[King]))
-    {
-        std::cout << "You may not remove the King from the Board!!\n";
-        return false;
-    }
 
     Color color = GetColor(p);
     if (color == white)
