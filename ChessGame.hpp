@@ -27,7 +27,7 @@ protected:
     U64 GetQueenAttacks(Square square, const U64 occupancy_) const;
     U64 GetKingAttacks(Square square, const U64 occupancy_) const;
     U64 GetPawnAttacks(Square square, const U64 occupancy_) const;
-    U64 GetAttacks(Square square_, const U64 occupancy_, int which_function = -1) const;
+    virtual U64 GetAttacks(Square square_, const U64 occupancy_, int which_function = -1) const;
 
     // checking
     U64 InCheck(const U64 &occupancy_, Color color_of_king, int offset) const;

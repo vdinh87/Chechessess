@@ -160,7 +160,7 @@ U64 ChessGame::GetKingAttacks(Square square_, const U64 occupancy_) const
     return attacks;
 }
 
-U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_function) const
+virtual U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_function) const
 {
     U64 attacks = 0ULL;
 
@@ -187,6 +187,7 @@ U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_functi
     case -1:
         break;
     }
+
 
     return attacks;
 }
@@ -215,6 +216,7 @@ U64 ChessGame::GetAttacks(Square square_) const
 
     return attacks;
 }
+
 
 U64 ChessGame::GetCastling(Color color) const
 {
@@ -718,11 +720,6 @@ bool ChessGame::RemovePiece(Square square)
     // no piece on board
     if (!(p & board))
         return false;
-    if ((p & PieceTypeArray[King]))
-    {
-        std::cout << "You may not remove the King from the Board!!\n";
-        return false;
-    }
 
     Color color = GetColor(p);
     if (color == white)

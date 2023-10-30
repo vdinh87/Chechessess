@@ -127,6 +127,42 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
     }
 }
 
+virtual U64 SuperChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_function) const
+{
+    U64 attacks = 0ULL;
+
+    switch (which_function)
+    {
+    case 0:
+        attacks = GetPawnAttacks(square_, occupancy_);
+        break;
+    case 1:
+        attacks = GetKnightAttacks(square_, occupancy_);
+        break;
+    case 2:
+        attacks = GetBishopAttacks(square_, occupancy_);
+        break;
+    case 3:
+        attacks = GetRookAttacks(square_, occupancy_);
+        break;
+    case 4:
+        attacks = GetQueenAttacks(square_, occupancy_);
+        break;
+    case 5:
+        attacks = GetKingAttacks(square_, occupancy_);
+        break;
+    case -1:
+        break;
+    }
+
+    // if (IsSuperPiece(square_)) //probably something like this right?
+    //     attacks |= super_pieces[square_]->GetModifier();
+
+    return attacks;
+}
+
+
+
 // init
 void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white, const SuperPieceInfo &black)
 {
@@ -185,6 +221,26 @@ void SuperChessGame::Swap(Square from, Square to)
     to_info.second != not_superpiece ? AddSuperPiece(to_info, from, to_color, false) : AddPiece(from, to_color, to_info.first);
     from_info.second != not_superpiece ? AddSuperPiece(from_info, to, from_color, false) : AddPiece(to, from_color, from_info.first);
 }
+
+void SuperChessGame::SwapSuperPieces(Square from, Square to)
+{
+    auto it1 = super_pieces.find(from);
+    auto it2 = super_pieces.find(to);
+    auto end = super_pieces.end();
+
+    if(it1 != end && it2 != end) {
+        std::swap(it1->second, it2->second);
+    }
+    else if(it1 != end) {
+        super_pieces.emplace(std::make_pair(to, std::move(it1->second)));
+        super_pieces.erase(from);
+    }
+    else if(it2 != end) {
+        super_pieces.emplace(std::make_pair(from, std::move(it2->second)));
+        super_pieces.erase(to);
+    }
+}
+
 
 
 // graveyard functions

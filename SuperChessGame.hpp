@@ -30,6 +30,7 @@ public:
     void CapTier(Tier& t, Piece p_type) const;
     void MakeAbilityVector(std::vector<std::unique_ptr<Ability>>& v, SuperPieceInfo info);
     void Swap(Square from, Square to);
+    void SwapSuperPieces(Square from, Square to);
 
     //graveyard functions
     void AddToGraveyard(Color color, Square sq, Piece piece);
@@ -40,7 +41,10 @@ public:
     // Move functions
     std::vector<Action> Move(Square from_sq, Square to_sq) override;
     void ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece) override;
-    
+    U64 GetAttacks(Square square_, const U64 occupancy_, int which_function = -1) const;
+
+
+
     //misc
     void Do(Square sq, Tier t);
 };

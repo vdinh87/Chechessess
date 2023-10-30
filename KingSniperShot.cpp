@@ -23,6 +23,9 @@ void KingSniperShot::Effect(const SuperPiece& piece)
         return;
     }
 
+    U64 king_board = game->GetBoardOf(King, king_color) & (1ULL << sq);
+
+
     int current_turn = (log_.size() + 1) / 2;
     
     if (king_color == game->GetColor(1ULL << sq)) { 
@@ -34,7 +37,10 @@ void KingSniperShot::Effect(const SuperPiece& piece)
     } if ( current_turn < activation_turn ){
         std::cout << name << " is only Available at turn 10. It's currently Turn [" << current_turn << "]\n";
         return;
-    } if (game->RemovePiece(sq) == true){
+    } if (game->GetBoardOf(King, king_color) & (1ULL << sq)) {
+        std::cout << "You may not remove the King from the Board!!\n";
+        return; 
+    }if (game->RemovePiece(sq) == true){
         cooldown_tracker = 0;
         std::cout << "KingSniperShot succeeded" << std::endl;
     }
