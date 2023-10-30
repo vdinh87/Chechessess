@@ -38,7 +38,12 @@ bool SuperChessGame::RemovePiece(Square square)
 {
     U64 p = 1ULL << square;
     Piece p_type = GetPieceType(p);
-
+    if ((p & PieceTypeArray[King]))
+    {
+        std::cout << "You may not remove the King from the Board!!\n";
+        return false;
+    }
+    
     if (board & p)
         AddToGraveyard(GetColor(p_type), square, p_type);
 

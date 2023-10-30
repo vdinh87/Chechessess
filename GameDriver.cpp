@@ -91,24 +91,5 @@ void Play()
 
 int main()
 {
-    SuperPieceInfo king = std::make_pair(Piece::Bishop, Tier::T4);
-    SuperChessGame* spg = new SuperChessGame(king, king);
-    // spg->PrintBoard();
-    U64 everythn = ~0ULL;
-
-    spg->PrintBoard();
-    spg->Swap(f1, a1);
-    spg->PrintBoard();
-
-
-    // spg->RemovePiece(a1);
-    // auto graveyard = spg->GetPiecesInGraveyard(white);
-    // std::cout << "Graveyard empty: " << graveyard.empty() << std::endl;
-
-    // for(const auto& p : graveyard)
-    // {
-    //     std::cout << "Piece: " << PieceStrings[p.first] << ", Tier: " << TierStrings[p.second] << std::endl;
-    // }
-
-    // spg->PrintBoard();
+    Play();
 }
