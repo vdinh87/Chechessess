@@ -2,7 +2,7 @@
 #include "KingTeleport.hpp"
 
 KingTeleport::KingTeleport(SuperChessGame* game_) :
-Ability("King Teleport", game_)
+Ability("King Teleport", AbilityType::active, game_)
 {
 }
 

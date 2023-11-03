@@ -1,7 +1,8 @@
 #pragma once
 #include "BishopSwap.hpp"
 
-BishopSwap::BishopSwap(SuperChessGame *game_) : Ability("Bishop Resurrect", game_)
+BishopSwap::BishopSwap(SuperChessGame *game_) : 
+Ability("Bishop Resurrect", AbilityType::active, game_)
 {
 }
 

@@ -1,7 +1,8 @@
 #pragma once
 #include "RookSwap.hpp"
 
-RookSwap::RookSwap(SuperChessGame *game_) : Ability("Bishop Resurrect", game_)
+RookSwap::RookSwap(SuperChessGame *game_) : 
+Ability("Rook Swap", AbilityType::active,  game_)
 {
 }
 

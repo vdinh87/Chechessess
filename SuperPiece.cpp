@@ -29,6 +29,15 @@ bool SuperPiece::UseAbility(Tier key)
     return false;
 }
 
+void SuperPiece::ModifyMove(U64& move)
+{
+    for(const auto& pair : abilities)
+    {
+        if( pair.second->GetType() == AbilityType::move_modifer )
+            pair.second->Modify(move);
+    }
+}
+
 //updaters
 void SuperPiece::UpdateSquare(Square to_sq)
 {

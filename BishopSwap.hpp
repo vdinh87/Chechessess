@@ -6,7 +6,6 @@
 class BishopSwap : public Ability, public Listener
 {
 private:
-    AbilityType type = active;
     std::string name = "Bishop Swap";
     std::vector<ChessMove> log_;
     const int cooldown = 2;

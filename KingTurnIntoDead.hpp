@@ -6,7 +6,6 @@
 class KingTurnIntoDead : public Ability, public Listener
 {
 private:
-    AbilityType type = active;
     std::string name = "King Turn Into Dead";
     std::vector<ChessMove> log_;
     const int cooldown = 5;

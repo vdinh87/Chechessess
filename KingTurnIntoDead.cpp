@@ -2,7 +2,7 @@
 #include "KingTurnIntoDead.hpp"
 
 KingTurnIntoDead::KingTurnIntoDead(SuperChessGame* game_) :
-Ability("King Turn Into Dead", game_)
+Ability("King Turn Into Dead", AbilityType::active, game_)
 {
 }
 

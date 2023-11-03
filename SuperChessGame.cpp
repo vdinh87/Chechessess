@@ -98,6 +98,37 @@ bool SuperChessGame::UpgradeSuperPieceTier(Square square, Tier to_tier)
     return true;
 }
 
+//move functions
+U64 SuperChessGame::GetAttacks(Square square_) const
+{
+    U64 attacks, piece = 0ULL;
+    set_bit(piece, square_);
+    if (!(piece & board))
+        throw std::invalid_argument("No piece on square");
+
+    int which_function = -1;
+    for (size_t i = 0; i < PieceTypeArray.size(); i++)
+    {
+        if (piece & PieceTypeArray[i])
+            which_function = i;
+    }
+
+    attacks = ChessGame::GetAttacks(square_, board, which_function);
+    
+    //super piece modify
+    const auto it = super_pieces.find(square_);
+    if( it != super_pieces.end() )
+        it->second->ModifyMove(attacks);
+
+    attacks = FilterTeam(attacks, piece);
+    attacks = FilterCheck(attacks, piece);
+    if (GetPieceType(piece) == King)
+        attacks = attacks & FilterLegalKingMoves(attacks, piece);
+    else
+        attacks = attacks & FilterPin(attacks, piece);
+
+    return attacks;
+}
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 {
     // for passive abilities later
@@ -126,42 +157,6 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
         super_pieces[to_sq]->UpdateSquare(to_sq);
     }
 }
-
-virtual U64 SuperChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_function) const
-{
-    U64 attacks = 0ULL;
-
-    switch (which_function)
-    {
-    case 0:
-        attacks = GetPawnAttacks(square_, occupancy_);
-        break;
-    case 1:
-        attacks = GetKnightAttacks(square_, occupancy_);
-        break;
-    case 2:
-        attacks = GetBishopAttacks(square_, occupancy_);
-        break;
-    case 3:
-        attacks = GetRookAttacks(square_, occupancy_);
-        break;
-    case 4:
-        attacks = GetQueenAttacks(square_, occupancy_);
-        break;
-    case 5:
-        attacks = GetKingAttacks(square_, occupancy_);
-        break;
-    case -1:
-        break;
-    }
-
-    // if (IsSuperPiece(square_)) //probably something like this right?
-    //     attacks |= super_pieces[square_]->GetModifier();
-
-    return attacks;
-}
-
-
 
 // init
 void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white, const SuperPieceInfo &black)

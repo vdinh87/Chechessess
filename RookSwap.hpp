@@ -6,8 +6,7 @@
 class RookSwap : public Ability, public Listener
 {
 private:
-    AbilityType type = active;
-    std::string name = "Bishop Swap";
+    std::string name = "Rook Swap";
     std::vector<ChessMove> log_;
     const int cooldown = 2;
     const int activation_turn = 2;

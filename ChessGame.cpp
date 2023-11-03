@@ -160,7 +160,7 @@ U64 ChessGame::GetKingAttacks(Square square_, const U64 occupancy_) const
     return attacks;
 }
 
-virtual U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_function) const
+U64 ChessGame::GetAttacks(Square square_, const U64 occupancy_, int which_function) const
 {
     U64 attacks = 0ULL;
 
@@ -207,6 +207,7 @@ U64 ChessGame::GetAttacks(Square square_) const
     }
 
     attacks = GetAttacks(square_, board, which_function);
+    
     attacks = FilterTeam(attacks, piece);
     attacks = FilterCheck(attacks, piece);
     if (GetPieceType(piece) == King)

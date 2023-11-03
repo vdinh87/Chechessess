@@ -6,7 +6,6 @@
 class KingConvert : public Ability, public Listener
 {
 private:
-    AbilityType type = active;
     std::string name = "King Convert";
     std::vector<ChessMove> log_;
     const int cooldown = 10;

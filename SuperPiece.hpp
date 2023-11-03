@@ -21,6 +21,7 @@ public:
     void AddAbilities(std::vector<std::unique_ptr<Ability>>& abilities_);
 
     //Getters
+    void ModifyMove(U64& move);
     const SuperPieceInfo& GetInfo() const;
     const Square& GetSquare() const;
     const Color& GetColor() const;

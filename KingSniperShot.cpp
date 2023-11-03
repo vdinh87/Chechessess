@@ -2,7 +2,7 @@
 #include "KingSniperShot.hpp"
 
 KingSniperShot::KingSniperShot(SuperChessGame* game_) :
-Ability("King Sniper Shot", game_)
+Ability("King Sniper Shot", AbilityType::active, game_)
 {
 }
 

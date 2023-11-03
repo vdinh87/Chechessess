@@ -6,7 +6,6 @@
 class KingTeleport : public Ability, public Listener
 {
 private:
-    AbilityType type = active;
     std::string name = "King Teleport";
     std::vector<ChessMove> log_;
     const int cooldown = 5;

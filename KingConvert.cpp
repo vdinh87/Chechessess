@@ -2,7 +2,7 @@
 #include "KingConvert.hpp"
 
 KingConvert::KingConvert(SuperChessGame* game_) :
-Ability("King Convert", game_)
+Ability("King Convert", AbilityType::active, game_)
 {
 }
 

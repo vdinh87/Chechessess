@@ -1,7 +1,8 @@
 #pragma once
 #include "BishopResurrect.hpp"
 
-BishopResurrect::BishopResurrect(SuperChessGame *game_) : Ability("Bishop Resurrect", game_)
+BishopResurrect::BishopResurrect(SuperChessGame *game_) : 
+Ability("Bishop Resurrect", AbilityType::active, game_)
 {
 }
 
