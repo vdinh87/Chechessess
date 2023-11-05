@@ -13,6 +13,7 @@ private:
     //init
     void InitSuperPieces(const SuperPieceInfo &white, const SuperPieceInfo &black);
 public:
+    SuperChessGame();
     SuperChessGame(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info);
     ~SuperChessGame() = default;
 

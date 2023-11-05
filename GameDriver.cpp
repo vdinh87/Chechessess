@@ -89,11 +89,27 @@ void Play()
     delete cg;
 }
 
+void TestChessGame()
+{
+    Play();
+}
+
+void TestSuperChessGame()
+{
+    SuperChessGame* spg = new SuperChessGame();
+
+    //ADD TESTING SUPERPIECE
+    Square PieceSquare = Square::b1;
+    auto info = std::make_pair(Piece::Knight, Tier::T0);
+    spg->ConvertToSuperPiece(info, PieceSquare);
+    
+    //TESTING ATTACKS
+    PrintGoard(spg->GetAttacks(PieceSquare));
+}
+
 int main()
 {
-    auto info = std::make_pair(Knight, T0);
-    SuperChessGame* spg = new SuperChessGame(info, info);
-    PrintGoard(spg->GetAttacks(b1));
-
-    // Play();
+    // TestChessGame();
+    TestSuperChessGame();
 }
+

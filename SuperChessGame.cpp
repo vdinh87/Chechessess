@@ -2,6 +2,13 @@
 #include "SuperChessGame.hpp"
 #include "AbilityLibrary.cpp"
 #include "SuperPiece.cpp"
+
+SuperChessGame::SuperChessGame() //testing purposes only
+{
+    // InitSuperPieces(white, black);
+    al = std::make_shared<AbilityLibrary>(this);
+}
+
 SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info)
 {
     // InitSuperPieces(white, black);
