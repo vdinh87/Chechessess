@@ -8,6 +8,7 @@
 #include "KingConvert.cpp"
 #include "BishopResurrect.cpp"
 #include "BishopSwap.cpp"
+#include "KnightBigL.cpp"
 #include "RookSwap.cpp"
 #include "Definitions.hpp"
 

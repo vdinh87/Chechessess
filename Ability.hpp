@@ -16,7 +16,7 @@ public:
     
     //methods
     virtual void Effect(const SuperPiece& piece);
-    virtual void Modify(U64& move);
+    virtual void Modify(U64& move, Square piece);
     virtual std::unique_ptr<Ability> Clone() const = 0;
     void UpdateLocation(const Square &square);
 
@@ -44,7 +44,7 @@ void Ability::Effect(const SuperPiece& piece)
     std::cout << "Normal effect" << std::endl;
 }
 
-void Ability::Modify(U64& move)
+void Ability::Modify(U64& move, Square piece)
 {
 
 }

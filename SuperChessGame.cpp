@@ -7,8 +7,8 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
     // InitSuperPieces(white, black);
     al = std::make_shared<AbilityLibrary>(this);
 
-    // AddSuperPiece(white_info, Square::b3, Color::white);
-    // ConvertToSuperPiece(white_info, Square::e1);
+    // AddSuperPiece(white_info, Square::b1, Color::white);
+    ConvertToSuperPiece(white_info, Square::b1);
 }
 
 bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion)
@@ -129,6 +129,7 @@ U64 SuperChessGame::GetAttacks(Square square_) const
 
     return attacks;
 }
+
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 {
     // for passive abilities later

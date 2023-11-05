@@ -91,5 +91,9 @@ void Play()
 
 int main()
 {
-    Play();
+    auto info = std::make_pair(Knight, T0);
+    SuperChessGame* spg = new SuperChessGame(info, info);
+    PrintGoard(spg->GetAttacks(b1));
+
+    // Play();
 }
