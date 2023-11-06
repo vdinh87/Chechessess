@@ -109,7 +109,17 @@ void TestSuperChessGame()
 
 int main()
 {
+    ChessGame cg;
+    U64 occupancy = cg.GetBoard();
     // TestChessGame();
-    TestSuperChessGame();
+    // TestSuperChessGame();
+
+    for( int dir = NW; dir <= W; dir++ )
+    {
+        PrintGoard(GetRay(d5, (Direction)dir, occupancy));
+        PrintGoard(GetRay(d4, (Direction)dir, occupancy));
+        PrintGoard(GetRay(e5, (Direction)dir, occupancy));
+        PrintGoard(GetRay(e4, (Direction)dir, occupancy));
+    } 
 }
 

@@ -158,49 +158,49 @@ U64 North(U64 & other_board)
 
 U64 NorthWest(U64 & other_board)
 {
-  if( ~(other_board & RANK_8) | ~(other_board & FILE_A) )
+  if( !(other_board & RANK_8) && !(other_board & FILE_A) )
       return other_board << 7;
   return 0ULL;
 }
 
 U64 NorthEast(U64 & other_board)
 {
-  if( ~(other_board & RANK_8) | ~(other_board & FILE_H) )
+  if( !(other_board & RANK_8) && !(other_board & FILE_H) )
       return other_board << 9;
   return 0ULL;
 }
 
 U64 East(U64 & other_board)
 {
-  if( ~(other_board & FILE_H) )
+  if( !(other_board & FILE_H) )
       return other_board << 1;
   return 0ULL;
 }
 
 U64 South(U64 & other_board)
 {
-  if( ~(other_board & RANK_1) )
+  if( !(other_board & RANK_1) )
       return other_board >> 8;
   return 0ULL;
 }
 
 U64 SouthWest(U64 & other_board)
 {
-  if( ~(other_board & RANK_1) | ~(other_board & FILE_A) )
+  if( !(other_board & RANK_1) && !(other_board & FILE_A) )
       return other_board >> 9;
   return 0ULL;
 }
 
 U64 SouthEast(U64 & other_board)
 {
-  if( ~(other_board & RANK_1) | ~(other_board & FILE_H) )
+  if( !(other_board & RANK_1) && !(other_board & FILE_H) )
       return other_board >> 7;
   return 0ULL;
 }
 
 U64 West(U64 & other_board)
 {
-  if( ~(other_board & FILE_A) )
+  if( !(other_board & FILE_A) )
       return other_board >> 1;
   return 0ULL;
 }
@@ -278,6 +278,26 @@ U64 GetRay(Square from_sq, Square to_sq)
 
   // Clean up ray
   ray = (ray & ~from) & (ray & ~to);
+  return ray;
+}
+
+//In a direction or until it hits occupied bit, inclusive with bit
+U64 GetRay(Square from_sq, Direction dir, U64 occupancy = 0ULL)
+{
+  U64 from = 1ULL << from_sq;
+  U64 ray = from;
+
+  // form ray
+  while(GoInDirection( dir, from ) != 0ULL)
+  {
+    from = GoInDirection( dir, from );
+    ray |= from;
+
+    if(from & occupancy)
+      break;
+  }
+
+  ray &= ~(1ULL << from_sq);
   return ray;
 }
 
