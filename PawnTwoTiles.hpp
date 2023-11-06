@@ -3,17 +3,15 @@
 #include "Listener.hpp"
 #include "SuperChessGame.cpp"
 
-class PawnTwoTiles : public Ability, public Listener
+class PawnTwoTiles : public Ability
 {
 private:
     std::string name = "Pawn Two Tiles";
-    std::vector<ChessMove> log_;
 public:
     PawnTwoTiles(SuperChessGame* game_);
     ~PawnTwoTiles() = default;
 
-    void Effect(const SuperPiece& piece) override;
+    void Modify(U64& move, Square piece) override;
     std::unique_ptr<Ability> Clone() const override;
-    void Notify(const std::vector<ChessMove>& log) override;
 };
 
