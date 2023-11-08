@@ -96,49 +96,19 @@ void TestChessGame()
 
 void TestSuperChessGame()
 {
+    Square dest = Square::h5;
+    SuperPieceInfo info(Piece::Bishop, Tier::T1);
     SuperChessGame* spg = new SuperChessGame();
-
-    // //ADD TESTING SUPERPIECE
-    // Square PieceSquare = Square::b1;
-    // auto info = std::make_pair(Piece::Knight, Tier::T0);
-    // spg->ConvertToSuperPiece(info, PieceSquare);
-    // Play();
-    // //TESTING ATTACKS
-    // PrintGoard(spg->GetAttacks(PieceSquare));
-    U64 attacks = 0ULL;
-    U64 board = 1ULL << e3;
-    U64 pawn = 1ULL << e2;
-
-    //woluld be board by itself in normal function
-    if (pawn & RANK_2 && !(North(pawn) & board) ){
-        attacks |= pawn << 16 & ~board;
-    }
-
-    Color color = black; //set later. to piece.getcolr
-    if (color == white && !(pawn & RANK_7) && !(North(pawn) & board)) //if white and not at rank 7.
-        attacks |= pawn << 16 & ~board;
-    else if(color == black && !(pawn & RANK_2) && !(South(pawn) & board))
-        attacks |= pawn >> 16 & ~board;
-
-    PrintGoard(pawn);
-    PrintGoard(attacks);
-
-
+    spg->ConvertToSuperPiece(info, Square::c1);
+    spg->Move(c1,dest);
+    spg->Move(e2,f3);
+    spg->Do(dest, Tier::T1);
+    spg->PrintBoard();
 }
 
 int main()
 {
-    ChessGame cg;
-    U64 occupancy = cg.GetBoard();
     // TestChessGame();
-    // TestSuperChessGame();
-
-    for( int dir = NW; dir <= W; dir++ )
-    {
-        PrintGoard(GetRay(d5, (Direction)dir, occupancy));
-        PrintGoard(GetRay(d4, (Direction)dir, occupancy));
-        PrintGoard(GetRay(e5, (Direction)dir, occupancy));
-        PrintGoard(GetRay(e4, (Direction)dir, occupancy));
-    } 
+    TestSuperChessGame();
 }
 

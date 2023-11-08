@@ -8,8 +8,9 @@ AbilityLibrary::AbilityLibrary(SuperChessGame *game_)
     lib[std::make_pair(King, T2)] = std::make_unique<KingTeleport>(game_);
     lib[std::make_pair(King, T3)] = std::make_unique<KingSniperShot>(game_);
     lib[std::make_pair(King, T4)] = std::make_unique<KingConvert>(game_);
-    lib[std::make_pair(Bishop, T2)] = std::make_unique<BishopResurrect>(game_);
     lib[std::make_pair(Bishop, T0)] = std::make_unique<BishopSwap>(game_);
+    lib[std::make_pair(Bishop, T1)] = std::make_unique<BishopTakeCover>(game_);
+    lib[std::make_pair(Bishop, T2)] = std::make_unique<BishopResurrect>(game_);
     lib[std::make_pair(Rook, T0)] = std::make_unique<RookSwap>(game_);
     lib[std::make_pair(Knight, T0)] = std::make_unique<KnightBigL>(game_);
 

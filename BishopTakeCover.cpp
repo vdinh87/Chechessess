@@ -23,13 +23,43 @@ void BishopTakeCover::Effect(const SuperPiece &piece)
         return;
     }
     
-    std::vector<Direction> WhiteDirections = {SouthEast, SouthWest};
-    std::vector<Direction> BlackDirections = {NorthEast, NorthWest};
+    U64 moves = 0ULL;
+    std::vector<Direction> WhiteDirections = {Direction::SE, Direction::SW};
+    std::vector<Direction> BlackDirections = {Direction::NE, Direction::NW};
 
     auto dirArr = piece.GetColor() == Color::white ? WhiteDirections : BlackDirections;
     for(int i = 0; i < dirArr.size(); i++)
-        GetRay(piece.GetSquare(), )
+    {
+        U64 collision = GetFirstCollision(piece.GetSquare(), dirArr[i], game->GetBoard());
+        if( collision == 0ULL )
+            continue;
+        if( game->GetColor(collision) != bishop_color )
+            continue;
+        else if( !(GoInDirection(dirArr[i], collision) & game->GetBoard()) )
+            moves |= GoInDirection(dirArr[i], collision);
+    }
+    
+    if(moves == 0ULL)
+    {
+        std::cout << "No possible moves" << std::endl;
+        return;
+    }
+    PrintGoard(moves);
 
+    Square sq = GetInputSquare();
+    if(sq == Square::invalid)
+        return;
+
+    if( !((1ULL << sq) & moves) )
+    {
+        std::cout << "Square not in moveset" << std::endl;
+        return;
+    }
+
+    game->Move(piece.GetSquare(), sq);
+    std::cout << "Bishop Took Cover Woahhhh" << std::endl;
+
+    // return true;
 }
 
 std::unique_ptr<Ability> BishopTakeCover::Clone() const

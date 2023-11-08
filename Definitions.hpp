@@ -301,8 +301,50 @@ U64 GetRay(Square from_sq, Direction dir, U64 occupancy = 0ULL)
   return ray;
 }
 
+//In a direction until it hits occupied bit, 0ULL otherwise
+U64 GetFirstCollision(Square from_sq, Direction dir, U64 occupancy)
+{
+  U64 collision = 1ULL << from_sq;
+
+  // form ray
+  while(GoInDirection( dir, collision ) != 0ULL)
+  {
+    collision = GoInDirection( dir, collision );
+
+    if(collision & occupancy)
+      return collision;
+  }
+
+  return 0ULL;
+}
+
 Square GetSquare(const U64 &bitboard)
 {
   return static_cast<Square>(get_LSB(bitboard));
 }
 
+// PrintBoard with a g
+void PrintGoard(U64 board)
+{
+    std::string boardString;
+    U64 square;
+    for (int i = 63; i >= 0; i--)
+    {
+        square = get_bit(board, i);
+        if (square)
+            boardString += "1 ";
+        else
+            boardString += "0 ";
+
+        // new line + reverse
+        if ((i % 8) == 0)
+        {
+            boardString += " " + std::to_string(i / 8 + 1);
+            std::reverse(boardString.begin(), boardString.end());
+            std::cout << boardString << std::endl;
+            boardString.clear();
+        }
+    }
+    std::cout << "   a b c d e f g h\n"
+              << std::endl;
+}

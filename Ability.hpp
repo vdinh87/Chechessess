@@ -18,8 +18,7 @@ public:
     virtual void Effect(const SuperPiece& piece);
     virtual void Modify(U64& move, Square piece);
     virtual std::unique_ptr<Ability> Clone() const = 0;
-    void UpdateLocation(const Square &square);
-
+    Square GetInputSquare() const;
     //accessors
     const std::string& GetName() const;
     const AbilityType& GetType() const;
@@ -46,7 +45,24 @@ void Ability::Effect(const SuperPiece& piece)
 
 void Ability::Modify(U64& move, Square piece)
 {
+}
 
+Square Ability::GetInputSquare() const
+{
+    std::string input_str;
+    Square sq;
+    std::cout << "Choose square to move to: ";
+    
+    std::cin >> input_str;
+    std::cout << std::endl;
+    auto it = SqStrMap.find(input_str);
+    if (it != SqStrMap.end())
+        sq = it->second;
+    else {
+        std::cout << "Invalid square" << std::endl;
+        return Square::invalid;
+    }
+    return sq;
 }
 
 std::unique_ptr<Ability> Ability::Clone() const

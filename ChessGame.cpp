@@ -1,31 +1,7 @@
 #pragma once
 #include "ChessGame.hpp"
 
-// PrintBoard with a g
-void PrintGoard(U64 board)
-{
-    std::string boardString;
-    U64 square;
-    for (int i = 63; i >= 0; i--)
-    {
-        square = get_bit(board, i);
-        if (square)
-            boardString += "1 ";
-        else
-            boardString += "0 ";
 
-        // new line + reverse
-        if ((i % 8) == 0)
-        {
-            boardString += " " + std::to_string(i / 8 + 1);
-            std::reverse(boardString.begin(), boardString.end());
-            std::cout << boardString << std::endl;
-            boardString.clear();
-        }
-    }
-    std::cout << "   a b c d e f g h\n"
-              << std::endl;
-}
 
 ChessGame::ChessGame(/* args */)
 {
@@ -438,7 +414,7 @@ Color ChessGame::GetColor(U64 piece) const
 {
     if ((piece & WhitePieces) && (piece & BlackPieces))
         throw std::invalid_argument("Inputted board, not piece.");
-
+    
     if (piece & WhitePieces)
         return white;
     return black;
