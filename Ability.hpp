@@ -16,8 +16,8 @@ protected:
     const int cooldown = 0;
     const int activation_turn = 0;
     int turn_last_used_ability = 0;
+
 public:
-    Ability() = default;
     Ability(const std::string &name_, const AbilityType &type_, SuperChessGame& game_, Logger& log_);
     Ability(
             const std::string &name_, 
@@ -45,8 +45,6 @@ public:
 
     //cloning
     virtual std::unique_ptr<Ability> Clone() const = 0;
-
-    
 };
 
 Ability::Ability(const std::string &name_, const AbilityType &type_, SuperChessGame& game_, Logger& log_) : 

@@ -2,6 +2,8 @@
 
 #include "SuperChessGame.fwd.hpp"
 #include "Ability.hpp"
+
+#include "PawnTwoTiles.cpp"
 #include "KingTurnIntoDead.cpp"
 #include "KingSniperShot.cpp"
 #include "KingTeleport.cpp"
@@ -13,14 +15,23 @@
 #include "RookSwap.cpp"
 #include "Definitions.hpp"
 
+//TO BE REPLACED
+// #include "PawnTier1.hpp"
+// #include "PawnTier2.hpp"
+// #include "PawnTier3.hpp"
+// #include "KingTier0.hpp"
+// #include "KnightTier1.hpp"
+// #include "KnightTier2.hpp"
+// #include "RookTier1.hpp"
+// #include "QueenTier0.hpp"
+// #include "QueenTier1.hpp"
 
 class AbilityLibrary{
 private:
-    SuperChessGame* game;
     std::unordered_map<SuperPieceInfo, std::unique_ptr<Ability>, PairEnumHash> lib;
     const std::vector<Tier> MAX_TIERS = {Tier::T3, Tier::T2, Tier::T2, Tier::T2, Tier::T1, Tier::T4};
 public:
-    AbilityLibrary(SuperChessGame* game_);
+    AbilityLibrary(SuperChessGame& game_, Logger& log_);
     ~AbilityLibrary() = default;
     std::unique_ptr<Ability> GetAbility(const SuperPieceInfo& key);
     Tier GetMaxTier(const Piece p_type) const;
