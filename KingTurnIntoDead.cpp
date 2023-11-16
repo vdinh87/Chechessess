@@ -1,38 +1,31 @@
 #pragma once
 #include "KingTurnIntoDead.hpp"
 
-KingTurnIntoDead::KingTurnIntoDead(SuperChessGame* game_) :
-Ability("King Turn Into Dead", AbilityType::active, game_)
+KingTurnIntoDead::KingTurnIntoDead(SuperChessGame& game_, Logger& log_) :
+Ability("King Turn Into Dead", AbilityType::active, game_, log_, 5, 0)
 {
 }
 
 void KingTurnIntoDead::Effect(const SuperPiece& piece)
 {
-    std::string input_str;
-    Square sq;
-    std::cout << "Choose piece to turn into dead: ";
-
-    std::cin >> input_str;
-    std::cout << std::endl;
-    auto it = SqStrMap.find(input_str);
-    if (it != SqStrMap.end())
-        sq = it->second;
-    else {
+    Square sq = GetInputSquare("Choose piece to turn into dead: ");
+    if(sq == Square::invalid)
+    {
         std::cout << "Invalid square" << std::endl;
         return;
     }
 
-    int current_turn = (log_.size() + 1) / 2;
+    int current_turn = log.GetCurrentTurn();
 
     if( sq == piece.GetSquare() ){
         std::cout << "Cannot choose yourself\n";
         return;
     }
-    if (piece.GetColor() != game->GetColor(1ULL << sq)) { 
+    if (piece.GetColor() != game.GetColor(1ULL << sq)) { 
         std::cout << "Invalid square different color piece." << std::endl;
         return;
-    } if (cooldown_tracker < cooldown){
-        std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - cooldown_tracker << "\n" ;
+    } if (GetCooldownTracker() < cooldown){
+        std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - GetCooldownTracker() << "\n" ;
         return;
     } if ( current_turn < activation_turn ){
         std::cout << name << " is only Available at turn 10. It's currently Turn [" << current_turn << "]\n";
@@ -40,7 +33,7 @@ void KingTurnIntoDead::Effect(const SuperPiece& piece)
     } 
     
     //ability time 
-    std::vector<SuperPieceInfo> graveyard = game->GetPiecesInGraveyard( piece.GetColor() );
+    std::vector<SuperPieceInfo> graveyard = game.GetPiecesInGraveyard( piece.GetColor() );
 
     if( graveyard.empty() )
     {
@@ -73,13 +66,13 @@ void KingTurnIntoDead::Effect(const SuperPiece& piece)
         return;
     }
 
-    game->RemovePiece(sq);
-    game->RemoveFromGraveYard( std::make_pair(piece.GetColor(), key) );
+    game.RemovePiece(sq);
+    game.RemoveFromGraveYard( std::make_pair(piece.GetColor(), key) );
     
     if( key.second != Tier::not_superpiece ) //if dead piece was superpiece
-        game->AddSuperPiece(key, sq, piece.GetColor());
+        game.AddSuperPiece(key, sq, piece.GetColor());
     else
-        game->AddPiece(sq, piece.GetColor(), key.first);
+        game.AddPiece(sq, piece.GetColor(), key.first);
 
     std::cout << "King Turn Into Dead successful";
 }
@@ -87,10 +80,4 @@ void KingTurnIntoDead::Effect(const SuperPiece& piece)
 std::unique_ptr<Ability> KingTurnIntoDead::Clone() const
 {
     return std::make_unique<KingTurnIntoDead>(*this);
-}
-
-void KingTurnIntoDead::Notify(const std::vector<ChessMove>& log)
-{
-    log_ = log;
-    cooldown_tracker++;
 }
