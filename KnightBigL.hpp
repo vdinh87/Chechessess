@@ -1,14 +1,14 @@
 #pragma once
 #include "Ability.hpp"
-#include "Listener.hpp"
 #include "SuperChessGame.cpp"
 
 class KnightBigL : public Ability
 {
 private:
-    std::string name = "Knight Big L";
+    // std::string name = "Knight Big L";
+    
 public:
-    KnightBigL(SuperChessGame* game_);
+    KnightBigL(SuperChessGame& game_, Logger& log_);
     ~KnightBigL() = default;
 
     void Modify(U64& move, Square piece) override;

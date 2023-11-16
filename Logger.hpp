@@ -1,16 +1,19 @@
 #pragma once
 #include "Definitions.hpp"
-#include "Listener.hpp"
 class Logger{
 private:
     std::vector<ChessMove> log;
-    std::vector<Listener*> listeners;
 public:
     Logger() = default;
-    ~Logger();
-    void AddListener(Listener* l);
-    void RemoveListener(Listener* l);
-    void Log(ChessMove move);
+    ~Logger() = default;
+
+    void AddToLog(ChessMove move);
+    const std::vector<ChessMove>& ReadLog() const;
+    int GetCurrentTurn() const;
+    int CalculateTurnDiff(int other_turn) const;
+    
+    bool IsEmpty() const;
+    ChessMove GetLastMove() const;
     void PrintLog();
 
 };

@@ -1,22 +1,22 @@
 #pragma once
 #include "BishopResurrect.hpp"
 
-BishopResurrect::BishopResurrect(SuperChessGame *game_) : 
-Ability("Bishop Resurrect", AbilityType::active, game_)
+BishopResurrect::BishopResurrect(SuperChessGame& game_, Logger& log_) : 
+Ability("Bishop Resurrect", AbilityType::active, game_, log_, 6, 8)
 {
 }
 
 void BishopResurrect::Effect(const SuperPiece &piece)
 {
-    int current_turn = (log_.size() + 1) / 2;
+    int current_turn = log.GetCurrentTurn();
 
     const Color bishop_color = piece.GetColor();
 
-    std::vector<SuperPieceInfo> graveyard = game->GetPiecesInGraveyard(bishop_color);
+    std::vector<SuperPieceInfo> graveyard = game.GetPiecesInGraveyard(bishop_color);
 
-    if (cooldown_tracker < cooldown)
+    if (GetCooldownTracker() < cooldown)
     {
-        std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - cooldown_tracker << "\n";
+        std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - GetCooldownTracker() << "\n";
         return;
     }
     if (current_turn < activation_turn)
@@ -32,7 +32,7 @@ void BishopResurrect::Effect(const SuperPiece &piece)
 
     int counter = 0;
     std::string output;
-    U64 board = game->GetBoard();
+    U64 board = game.GetBoard();
 
     std::vector<U64> spawnlocations = (bishop_color == white) ? WhiteSpawnLocations : BlackSpawnLocations;
     for (const auto &p : graveyard) // showing options
@@ -98,23 +98,17 @@ void BishopResurrect::Effect(const SuperPiece &piece)
 
 
     if (key.second != Tier::not_superpiece)
-        game->AddSuperPiece(key, sq, bishop_color, false);
+        game.AddSuperPiece(key, sq, bishop_color, false);
     else
-        game->AddPiece(sq, bishop_color, key.first);
+        game.AddPiece(sq, bishop_color, key.first);
 
-    game->RemoveFromGraveYard( std::make_pair(bishop_color, key) );
+    game.RemoveFromGraveYard( std::make_pair(bishop_color, key) );
 
     std::cout << "☆⌒(*^-゜)v huzzah Resurrection!!\n";
-
+    turn_last_used_ability = log.GetCurrentTurn();
 }
 
 std::unique_ptr<Ability> BishopResurrect::Clone() const
 {
     return std::make_unique<BishopResurrect>(*this);
-}
-
-void BishopResurrect::Notify(const std::vector<ChessMove> &log)
-{
-    log_ = log;
-    cooldown_tracker++;
 }

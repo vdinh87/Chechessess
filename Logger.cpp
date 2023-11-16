@@ -1,33 +1,34 @@
 #pragma once
 #include "Logger.hpp"
 
-Logger::~Logger()
-{
-    for (auto listener : listeners)
-        delete listener;
-    listeners.clear();
-}
-
-void Logger::Log(ChessMove move)
+void Logger::AddToLog(ChessMove move)
 {
     log.push_back(move);
-    for (auto listener : listeners)
-        listener->Notify(log);
 }
 
-void Logger::AddListener(Listener *l)
+const std::vector<ChessMove>& Logger::ReadLog() const
 {
-    listeners.push_back(l);
+    return log;
 }
 
-void Logger::RemoveListener(Listener *l)
+int Logger::CalculateTurnDiff(int other_turn) const
 {
-    auto it = std::remove(listeners.begin(), listeners.end(), l);
-    if (it != listeners.end())
-    {
-        listeners.erase(it);
-        delete l; // Remember to clean up the removed listener
-    }
+    return GetCurrentTurn() - other_turn;
+}
+
+int Logger::GetCurrentTurn() const
+{
+    return (log.size() + 1) / 2;
+}
+
+bool Logger::IsEmpty() const
+{
+    return log.empty();
+}
+
+ChessMove Logger::GetLastMove() const
+{
+    return log.back();
 }
 
 void Logger::PrintLog()

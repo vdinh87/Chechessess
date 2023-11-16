@@ -1,40 +1,40 @@
 #pragma once
 #include "KingConvert.hpp"
 
-KingConvert::KingConvert(SuperChessGame* game_) :
-Ability("King Convert", AbilityType::active, game_)
+KingConvert::KingConvert(SuperChessGame& game_, Logger& log_) :
+Ability("King Convert", AbilityType::active, game_, log_, 10, 15)
 {
 }
 
 void KingConvert::Effect(const SuperPiece& piece)
 {
-    std::string input_str;
-    Square sq;
-    std::cout << "Choose piece to convert: ";
-    
-    std::cin >> input_str;
-    std::cout << std::endl;
-    auto it = SqStrMap.find(input_str);
-    if (it != SqStrMap.end())
-        sq = it->second;
-    else {
+    Square sq = GetInputSquare("Choose piece to convert: ");
+    if(sq == Square::invalid)
+    {
         std::cout << "Invalid square" << std::endl;
         return;
     }
 
-    int current_turn = (log_.size() + 1) / 2;
+    int current_turn = log.GetCurrentTurn();
 
-    if (cooldown_tracker < cooldown){
-        std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - cooldown_tracker << "\n" ;
+    if (GetCooldownTracker() < cooldown)
+    {
+        std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - GetCooldownTracker() << "\n" ;
         return;
-    } if ( current_turn < activation_turn ){
+    } 
+
+    if ( current_turn < activation_turn )
+    {
         std::cout << name << " is only Available at turn 15. It's currently Turn [" << current_turn << "]\n";
         return;
-    } if ( (game->ConvertPieceToSide(sq, piece.GetColor()) &&
-            game->ConvertToSuperPiece(std::make_pair(game->GetPieceType(1ULL << sq), piece.GetInfo().second), sq)) || 
-            (game->ConvertPieceToSide(sq, piece.GetColor()) &&
-            game->UpgradeSuperPieceTier(sq, piece.GetInfo().second)) ) {
-        cooldown_tracker = 0;
+    } 
+
+    if ( (game.ConvertPieceToSide(sq, piece.GetColor()) &&
+            game.ConvertToSuperPiece(std::make_pair(game.GetPieceType(1ULL << sq), piece.GetInfo().second), sq)) || 
+            (game.ConvertPieceToSide(sq, piece.GetColor()) &&
+            game.UpgradeSuperPieceTier(sq, piece.GetInfo().second)) ) 
+    {
+        turn_last_used_ability = 0;
         std::cout << "KingConvert succeeded" << std::endl;
     }
 }
@@ -42,10 +42,4 @@ void KingConvert::Effect(const SuperPiece& piece)
 std::unique_ptr<Ability> KingConvert::Clone() const
 {
     return std::make_unique<KingConvert>(*this);
-}
-
-void KingConvert::Notify(const std::vector<ChessMove>& log)
-{
-    log_ = log;
-    cooldown_tracker++;
 }

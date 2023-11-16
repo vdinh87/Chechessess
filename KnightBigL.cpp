@@ -1,8 +1,8 @@
 #pragma once
 #include "KnightBigL.hpp"
 
-KnightBigL::KnightBigL(SuperChessGame *game_) : 
-Ability("Knight Big L", AbilityType::move_modifer, game_)
+KnightBigL::KnightBigL(SuperChessGame& game_, Logger& log_) : 
+Ability("Knight Big L", AbilityType::move_modifer, game_, log_)
 {
 }
 

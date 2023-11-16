@@ -1,12 +1,13 @@
 #pragma once
 #include "Definitions.hpp"
 #include "Magics.cpp"
-#include "Listener.hpp"
-class ChessGame : public Listener
+#include "Logger.hpp"
+class ChessGame
 {
 protected:
     // log
-    std::vector<ChessMove> log_;
+    Logger log;
+    
     // board
     std::vector<U64> WhitePiecesArray;
     std::vector<U64> BlackPiecesArray;
@@ -78,7 +79,11 @@ public:
     //board editing
     virtual bool RemovePiece(Square square);
     virtual bool AddPiece(Square square, Color color, Piece piece);
-    
-    void Notify(const std::vector<ChessMove> &log) override;
+
+    //log
+    void Log(ChessMove move);
+    void PrintTheLog();
+
     void PrintBoard() const;
+
 };

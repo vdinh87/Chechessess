@@ -1,25 +1,23 @@
 #pragma once
 #include "BishopTakeCover.hpp"
 
-BishopTakeCover::BishopTakeCover(SuperChessGame *game_) : 
-Ability("Bishop Resurrect", AbilityType::active, game_)
+BishopTakeCover::BishopTakeCover(SuperChessGame& game_, Logger& log_) : 
+Ability("Bishop Resurrect", AbilityType::active, game_, log_)
 {
 }
 
 void BishopTakeCover::Effect(const SuperPiece &piece)
 {
-    int current_turn = (log_.size() + 1) / 2;
-
     const Color bishop_color = piece.GetColor();
 
-    if (cooldown_tracker < cooldown)
+    if (GetCooldownTracker() < cooldown)
     {
-        std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - cooldown_tracker << "\n";
+        std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - GetCooldownTracker() << "\n";
         return;
     }
-    if (current_turn < activation_turn)
+    if (log.GetCurrentTurn() < activation_turn)
     {
-        std::cout << name << " is only Available at turn 8. It's currently Turn [" << current_turn << "]\n";
+        std::cout << name << " is only Available at turn 8. It's currently Turn [" << log.GetCurrentTurn() << "]\n";
         return;
     }
     
@@ -30,12 +28,12 @@ void BishopTakeCover::Effect(const SuperPiece &piece)
     auto dirArr = piece.GetColor() == Color::white ? WhiteDirections : BlackDirections;
     for(int i = 0; i < dirArr.size(); i++)
     {
-        U64 collision = GetFirstCollision(piece.GetSquare(), dirArr[i], game->GetBoard());
+        U64 collision = GetFirstCollision(piece.GetSquare(), dirArr[i], game.GetBoard());
         if( collision == 0ULL )
             continue;
-        if( game->GetColor(collision) != bishop_color )
+        if( game.GetColor(collision) != bishop_color )
             continue;
-        else if( !(GoInDirection(dirArr[i], collision) & game->GetBoard()) )
+        else if( !(GoInDirection(dirArr[i], collision) & game.GetBoard()) )
             moves |= GoInDirection(dirArr[i], collision);
     }
     
@@ -46,17 +44,19 @@ void BishopTakeCover::Effect(const SuperPiece &piece)
     }
     PrintGoard(moves);
 
-    Square sq = GetInputSquare();
+    Square sq = GetInputSquare("Choose square to move to: ");
     if(sq == Square::invalid)
+    {
+        std::cout << "Invalid square" << std::endl;
         return;
-
+    }
     if( !((1ULL << sq) & moves) )
     {
         std::cout << "Square not in moveset" << std::endl;
         return;
     }
 
-    game->Move(piece.GetSquare(), sq);
+    game.Move(piece.GetSquare(), sq);
     std::cout << "Bishop Took Cover Woahhhh" << std::endl;
 
     // return true;
@@ -65,10 +65,4 @@ void BishopTakeCover::Effect(const SuperPiece &piece)
 std::unique_ptr<Ability> BishopTakeCover::Clone() const
 {
     return std::make_unique<BishopTakeCover>(*this);
-}
-
-void BishopTakeCover::Notify(const std::vector<ChessMove> &log)
-{
-    log_ = log;
-    cooldown_tracker++;
 }

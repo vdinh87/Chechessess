@@ -145,6 +145,7 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 
 void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)
 {
+    
     // If piece is removed, add to Graveyard
     if (board & (1ULL << to_sq))
     {
