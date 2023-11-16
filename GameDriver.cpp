@@ -5,9 +5,7 @@
 void Play()
 {
     ChessGame* cg = new ChessGame();
-    Logger chess_game_logger;
-    chess_game_logger.AddListener(cg);
-    
+        
     while( !cg->IsWin(white) && !cg->IsWin(black) )
     {
         ChessMove move;
@@ -71,12 +69,12 @@ void Play()
             {
                 action_list.push_back(Action::Checkmate);
                 move.actions = action_list;
-                chess_game_logger.Log(move);
+                cg->Log(move);
                 break;
             }
-
+            
             move.actions = action_list;
-            chess_game_logger.Log(move);
+            cg->Log(move);
         }
     }
     
@@ -84,7 +82,7 @@ void Play()
         std::cout << "White win!" << std::endl;
     else
         std::cout << "Black win!" << std::endl;
-    chess_game_logger.PrintLog();
+    cg->PrintTheLog();
 
     delete cg;
 }

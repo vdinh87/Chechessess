@@ -6,13 +6,13 @@
 SuperChessGame::SuperChessGame() //testing purposes only
 {
     // InitSuperPieces(white, black);
-    al = std::make_shared<AbilityLibrary>(this);
+    al = std::make_shared<AbilityLibrary>(*this, log);
 }
 
 SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info)
 {
     // InitSuperPieces(white, black);
-    al = std::make_shared<AbilityLibrary>(this);
+    al = std::make_shared<AbilityLibrary>(*this, log);
 
     // AddSuperPiece(white_info, Square::b1, Color::white);
     ConvertToSuperPiece(white_info, Square::b1);
@@ -145,6 +145,8 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 
 void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)
 {
+    //PLACE FOR ON CAPTURE EFFECT
+
     // If piece is removed, add to Graveyard
     if (board & (1ULL << to_sq))
     {
@@ -243,8 +245,6 @@ void SuperChessGame::SwapSuperPieces(Square from, Square to)
         super_pieces.erase(to);
     }
 }
-
-
 
 // graveyard functions
 void SuperChessGame::AddToGraveyard(Color color, Square sq, Piece piece)

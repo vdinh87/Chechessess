@@ -446,18 +446,27 @@ bool ChessGame::IsSlider(const U64 board_) const
 
 bool ChessGame::CheckIfMoved(Square original_square) const
 {
-    for (const auto &move : log_)
+    for (const auto &move : log.ReadLog())
         if (move.from == original_square)
             return true;
     return false;
 }
 ChessMove ChessGame::GetPreviousMove() const
 {
-    if (!log_.empty())
-        return log_.back();
+    if (!log.IsEmpty())
+        return log.GetLastMove();
     return ChessMove();
 }
 
+void ChessGame::Log(ChessMove move)
+{
+    log.AddToLog(move);
+}
+
+void ChessGame::PrintTheLog()
+{
+    log.PrintLog();
+}
 void ChessGame::PrintBoard() const
 {
     std::string boardString;
@@ -668,12 +677,6 @@ bool ChessGame::IsWin(Color color) const
 
     return (!(GetAttacks(GetSquare(WhitePiecesArray[King]))) &&
             InCheck(board, white, WhitePiecesArray[King]));
-}
-
-// logger stuff
-void ChessGame::Notify(const std::vector<ChessMove> &log)
-{
-    log_ = log;
 }
 
 // board editing
