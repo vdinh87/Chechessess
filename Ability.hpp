@@ -7,7 +7,7 @@ class SuperPiece;
 class Ability
 {
 protected:
-    std::string name;
+    std::string name = "";
     AbilityType type;
     SuperChessGame& game;
 
@@ -30,7 +30,7 @@ public:
     virtual ~Ability() = default;
     
     //methods
-    virtual void Effect(const SuperPiece& piece);
+    virtual bool Effect(const SuperPiece& piece);
     virtual void Modify(U64& move, Square piece);
     virtual void OnCapture(SuperPiece& piece, SuperPiece& other_piece);
 
@@ -72,9 +72,10 @@ const AbilityType& Ability::GetType() const
     return type;
 }
 
-void Ability::Effect(const SuperPiece& piece)
+bool Ability::Effect(const SuperPiece& piece)
 {
     std::cout << "Normal effect" << std::endl;
+    return true;
 }
 
 void Ability::Modify(U64& move, Square piece)

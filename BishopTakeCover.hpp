@@ -12,7 +12,7 @@ public:
     BishopTakeCover(SuperChessGame& game_, Logger& log_);
     ~BishopTakeCover() = default;
 
-    void Effect(const SuperPiece& piece) override;
+    bool Effect(const SuperPiece& piece) override;
     std::unique_ptr<Ability> Clone() const override;
 };
 

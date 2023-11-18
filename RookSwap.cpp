@@ -6,7 +6,7 @@ Ability("Rook Swap", AbilityType::active,  game_, log_, 2, 2)
 {
 }
 
-void RookSwap::Effect(const SuperPiece &piece)
+bool RookSwap::Effect(const SuperPiece &piece)
 {
     Color rook_color = piece.GetColor();
 
@@ -14,7 +14,7 @@ void RookSwap::Effect(const SuperPiece &piece)
     if(sq == Square::invalid || game.GetPieceType(1ULL << sq) == Piece::Rook || game.GetColor(1ULL << sq) == rook_color)
     {
         std::cout << "Invalid square" << std::endl;
-        return;
+        return false;
     }
     U64 king_board = game.GetBoardOf(King, rook_color);
 
@@ -24,33 +24,33 @@ void RookSwap::Effect(const SuperPiece &piece)
 
     if ( !game.IsSuperPiece(sq) ){
         std::cout << "Rook Selected is not a superpiece, cannot swap it.\n";
-        return;
+        return false;
     } 
     if ( king_board & rook_rows_and_cols == 0ULL ){
         std::cout << "King is not in the same Row or Column as the rook.\n";
-        return;
+        return false;
     } 
     if (game.InCheck(rook_color)){
         std::cout << "King Currently in Check! Cannot swap.\n";
-        return;
+        return false;
     } 
     if (GetCooldownTracker() < cooldown){
         std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - GetCooldownTracker() << "\n" ;
-        return;
+        return false;
     } 
     if ( current_turn < activation_turn ){
         std::cout << name << " is only Available at turn 10. It's currently Turn [" << current_turn << "]\n";
-        return;
+        return false;
     } 
     if (game.RemovePiece(sq) == true){
         turn_last_used_ability = 0;
-        std::cout << "KingSniperShot succeeded" << std::endl;
     }
 
     Square swapsquare = static_cast<Square>get_LSB(king_board); // king qsuare
     
     game.Swap(sq ,swapsquare);
     std::cout << "Rook Swapped!! \n";
+    return true;
 }
 
 std::unique_ptr<Ability> RookSwap::Clone() const

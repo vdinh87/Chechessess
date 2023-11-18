@@ -43,6 +43,10 @@ public:
     U64 GetAttacks(Square square_) const override;
     std::vector<Action> Move(Square from_sq, Square to_sq) override;
     void ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece) override;
+
     //misc
     void Do(Square sq, Tier t);
+
+    //to be removed
+    void PrintNumAbilities(Square sq);
 };

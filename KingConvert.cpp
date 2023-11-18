@@ -6,13 +6,13 @@ Ability("King Convert", AbilityType::active, game_, log_, 10, 15)
 {
 }
 
-void KingConvert::Effect(const SuperPiece& piece)
+bool KingConvert::Effect(const SuperPiece& piece)
 {
     Square sq = GetInputSquare("Choose piece to convert: ");
     if(sq == Square::invalid)
     {
         std::cout << "Invalid square" << std::endl;
-        return;
+        return false;
     }
 
     int current_turn = log.GetCurrentTurn();
@@ -20,23 +20,24 @@ void KingConvert::Effect(const SuperPiece& piece)
     if (GetCooldownTracker() < cooldown)
     {
         std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - GetCooldownTracker() << "\n" ;
-        return;
+        return false;
     } 
 
     if ( current_turn < activation_turn )
     {
         std::cout << name << " is only Available at turn 15. It's currently Turn [" << current_turn << "]\n";
-        return;
+        return false;
     } 
 
-    if ( (game.ConvertPieceToSide(sq, piece.GetColor()) &&
-            game.ConvertToSuperPiece(std::make_pair(game.GetPieceType(1ULL << sq), piece.GetInfo().second), sq)) || 
-            (game.ConvertPieceToSide(sq, piece.GetColor()) &&
-            game.UpgradeSuperPieceTier(sq, piece.GetInfo().second)) ) 
+    if ( game.ConvertPieceToSide(sq, piece.GetColor()) &&
+        (game.ConvertToSuperPiece( {game.GetPieceType(1ULL << sq), piece.GetInfo().second} , sq) || 
+         game.UpgradeSuperPieceTier(sq, piece.GetInfo().second)) ) 
     {
         turn_last_used_ability = 0;
         std::cout << "KingConvert succeeded" << std::endl;
+        return true;
     }
+    return false;
 }
 
 std::unique_ptr<Ability> KingConvert::Clone() const

@@ -12,6 +12,7 @@ public:
     SuperPiece(std::vector<std::unique_ptr<Ability>>& abilities_, SuperPieceInfo info_, Square sq_, Color color_);
     ~SuperPiece() = default;
     
+    //Ability use
     bool UseAbility(Tier key);
 
     //updaters
@@ -22,7 +23,10 @@ public:
 
     //Getters
     void ModifyMove(U64& move);
-    const SuperPieceInfo& GetInfo() const;
-    const Square& GetSquare() const;
-    const Color& GetColor() const;
+    SuperPieceInfo GetInfo() const;
+    Square GetSquare() const;
+    Color GetColor() const;
+
+    //to be removed? just for testing tbh
+    void GetAbilityNames() const;
 };

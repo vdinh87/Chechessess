@@ -16,15 +16,15 @@
 #include "Definitions.hpp"
 
 //TO BE REPLACED
-// #include "PawnTier1.hpp"
-// #include "PawnTier2.hpp"
-// #include "PawnTier3.hpp"
-// #include "KingTier0.hpp"
-// #include "KnightTier1.hpp"
-// #include "KnightTier2.hpp"
-// #include "RookTier1.hpp"
-// #include "QueenTier0.hpp"
-// #include "QueenTier1.hpp"
+#include "PawnTier1.hpp"
+#include "PawnTier2.hpp"
+#include "PawnTier3.hpp"
+#include "KingTier0.hpp"
+#include "KnightTier1.hpp"
+#include "KnightTier2.hpp"
+#include "RookTier1.hpp"
+#include "QueenTier0.hpp"
+#include "QueenTier1.hpp"
 
 class AbilityLibrary{
 private:

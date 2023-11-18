@@ -2,17 +2,17 @@
 #include "BishopSwap.hpp"
 
 BishopSwap::BishopSwap(SuperChessGame& game_, Logger& log_) : 
-Ability("Bishop Resurrect", AbilityType::active, game_, log_, 2, 2)
+Ability("Bishop Swap", AbilityType::active, game_, log_, 2, 2)
 {
 }
 
-void BishopSwap::Effect(const SuperPiece &piece)
+bool BishopSwap::Effect(const SuperPiece &piece)
 {
     Square sq = GetInputSquare("Choose Bishop to Swap ");
     if(sq == Square::invalid || game.GetPieceType(1ULL << sq) != Piece::Bishop)
     {
         std::cout << "Invalid square" << std::endl;
-        return;
+        return false;
     }
 
     Color bishop_color = piece.GetColor();
@@ -23,22 +23,22 @@ void BishopSwap::Effect(const SuperPiece &piece)
 
     if (bishop_spawn & game.GetBoard() == 0ULL){
         std::cout << "Opposite bishop Spawnlocation is currently inhabited by other piece\n";
-        return;
+        return false;
     } if (GetCooldownTracker() < cooldown){
         std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - GetCooldownTracker() << "\n" ;
-        return;
+        return false;
     } if ( current_turn < activation_turn ){
         std::cout << name << " is only Available at turn 10. It's currently Turn [" << current_turn << "]\n";
-        return;
+        return false;
     } if (game.RemovePiece(sq) == true){
         turn_last_used_ability = 0;
-        std::cout << "Bishopswap succeeded" << std::endl;
     }
 
     Square swapsquare = static_cast<Square>get_LSB(bishop_spawn);
     game.AddSuperPiece(piece.GetInfo(), swapsquare, piece.GetColor(), false);
     
     std::cout << "Bishop Swapped!! \n";
+    return true;
 }
 
 std::unique_ptr<Ability> BishopSwap::Clone() const

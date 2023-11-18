@@ -2,18 +2,9 @@
 #include "SuperPiece.hpp"
 
 SuperPiece::SuperPiece(std::vector<std::unique_ptr<Ability>> &abilities_, SuperPieceInfo info_, Square sq_, Color color_) : 
-info(info_),
-sq(sq_),
-color(color_)
+info(info_), sq(sq_), color(color_)
 {
-    // to remove
-    for (auto &a : abilities_) {
-        abilities[info_.second] = std::move(a);
-    }
-    abilities_.clear();
-    
-    //to add
-    // AddAbilities(abilities_);
+    AddAbilities(abilities_);
 }
 
 bool SuperPiece::UseAbility(Tier key)
@@ -67,15 +58,21 @@ void SuperPiece::AddAbilities(std::vector<std::unique_ptr<Ability>> &abilities_)
 }
 
 //getters
-const SuperPieceInfo &SuperPiece::GetInfo() const
+SuperPieceInfo SuperPiece::GetInfo() const
 {
     return info;
 }
-const Square &SuperPiece::GetSquare() const
+Square SuperPiece::GetSquare() const
 {
     return sq;
 }
-const Color &SuperPiece::GetColor() const
+Color SuperPiece::GetColor() const
 {
     return color;
+}
+
+void SuperPiece::GetAbilityNames() const
+{
+    for(auto& a : abilities)
+        std::cout << "Tier: " << TierStrings[a.first] << " | Ability: " << a.second->GetName() << std::endl;
 }

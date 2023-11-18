@@ -145,8 +145,6 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 
 void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)
 {
-    //PLACE FOR ON CAPTURE EFFECT
-
     // If piece is removed, add to Graveyard
     if (board & (1ULL << to_sq))
     {
@@ -200,15 +198,11 @@ void SuperChessGame::CapTier(Tier &t, Piece p_type) const
 void SuperChessGame::MakeAbilityVector(std::vector<std::unique_ptr<Ability>> &v, SuperPieceInfo info)
 {
     CapTier(info.second, info.first);
-    // to remove
-    v.push_back(al->GetAbility(info));
-
-    // to add
-    //  for(int i = 0; i < info.second; i++)
-    //  {
-    //      info.second = static_cast<Tier>(i);
-    //      v.push_back(al->GetAbility(info));
-    //  }
+     
+    for(int i = 0; i <= info.second; i++)
+    {
+        v.push_back(al->GetAbility( {info.first, static_cast<Tier>(i)} ));
+    }
 }
 
 void SuperChessGame::Swap(Square from, Square to)
@@ -297,4 +291,10 @@ std::vector<SuperPieceInfo> SuperChessGame::GetPiecesInGraveyard(Color color) co
 void SuperChessGame::Do(Square sq, Tier t)
 {
     super_pieces[sq]->UseAbility(t);
+}
+
+//to be removed
+void SuperChessGame::PrintNumAbilities(Square sq)
+{
+    super_pieces[sq]->GetAbilityNames();
 }

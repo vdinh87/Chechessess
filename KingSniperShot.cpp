@@ -6,13 +6,13 @@ Ability("King Sniper Shot", AbilityType::active, game_, log_, 10, 0)
 {
 }
 
-void KingSniperShot::Effect(const SuperPiece& piece)
+bool KingSniperShot::Effect(const SuperPiece& piece)
 {
     Square sq = GetInputSquare("Choose piece to delete to: ");
     if(sq == Square::invalid)
     {
         std::cout << "Invalid square" << std::endl;
-        return;
+        return false;
     }
 
     Color king_color = piece.GetColor();
@@ -23,31 +23,34 @@ void KingSniperShot::Effect(const SuperPiece& piece)
     
     if (king_color == game.GetColor(1ULL << sq)) { 
         std::cout << "Invalid square Same color piece." << std::endl;
-        return;
+        return false;
     }
 
     if (GetCooldownTracker() < cooldown)
     {
         std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - GetCooldownTracker() << "\n" ;
-        return;
+        return false;
     }
 
     if ( current_turn < activation_turn )
     {
         std::cout << name << " is only Available at turn 10. It's currently Turn [" << current_turn << "]\n";
-        return;
+        return false;
     } 
     
     if (game.GetBoardOf(King, king_color) & (1ULL << sq)) {
         std::cout << "You may not remove the King from the Board!!\n";
-        return; 
+        return false; 
     }
     
     if (game.RemovePiece(sq) == true)
     {
         turn_last_used_ability = 0;
         std::cout << "KingSniperShot succeeded" << std::endl;
+        return true;
     }
+    
+    return false;
 }
 
 std::unique_ptr<Ability> KingSniperShot::Clone() const

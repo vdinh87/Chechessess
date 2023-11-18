@@ -1,1 +1,0 @@
-shared ptr, inline variable, maybe static

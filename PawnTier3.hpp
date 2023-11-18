@@ -12,7 +12,6 @@ public:
     PawnTier3(SuperChessGame& game_, Logger& log_);
     ~PawnTier3() = default;
 
-    void Effect(const SuperPiece& piece) override;
     std::unique_ptr<Ability> Clone() const override;
 };
 

@@ -2,23 +2,23 @@
 #include "BishopTakeCover.hpp"
 
 BishopTakeCover::BishopTakeCover(SuperChessGame& game_, Logger& log_) : 
-Ability("Bishop Resurrect", AbilityType::active, game_, log_)
+Ability("Bishop Take Cover", AbilityType::active, game_, log_)
 {
 }
 
-void BishopTakeCover::Effect(const SuperPiece &piece)
+bool BishopTakeCover::Effect(const SuperPiece &piece)
 {
     const Color bishop_color = piece.GetColor();
 
     if (GetCooldownTracker() < cooldown)
     {
         std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - GetCooldownTracker() << "\n";
-        return;
+        return false;
     }
     if (log.GetCurrentTurn() < activation_turn)
     {
         std::cout << name << " is only Available at turn 8. It's currently Turn [" << log.GetCurrentTurn() << "]\n";
-        return;
+        return false;
     }
     
     U64 moves = 0ULL;
@@ -40,7 +40,7 @@ void BishopTakeCover::Effect(const SuperPiece &piece)
     if(moves == 0ULL)
     {
         std::cout << "No possible moves" << std::endl;
-        return;
+        return false;
     }
     PrintGoard(moves);
 
@@ -48,18 +48,18 @@ void BishopTakeCover::Effect(const SuperPiece &piece)
     if(sq == Square::invalid)
     {
         std::cout << "Invalid square" << std::endl;
-        return;
+        return false;
     }
     if( !((1ULL << sq) & moves) )
     {
         std::cout << "Square not in moveset" << std::endl;
-        return;
+        return false;
     }
 
     game.Move(piece.GetSquare(), sq);
     std::cout << "Bishop Took Cover Woahhhh" << std::endl;
 
-    // return true;
+    return true;
 }
 
 std::unique_ptr<Ability> BishopTakeCover::Clone() const

@@ -12,7 +12,6 @@ public:
     QueenTier0(SuperChessGame& game_, Logger& log_);
     ~QueenTier0() = default;
 
-    void Effect(const SuperPiece& piece) override;
     std::unique_ptr<Ability> Clone() const override;
 };
 

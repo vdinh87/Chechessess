@@ -6,7 +6,7 @@ Ability("Bishop Resurrect", AbilityType::active, game_, log_, 6, 8)
 {
 }
 
-void BishopResurrect::Effect(const SuperPiece &piece)
+bool BishopResurrect::Effect(const SuperPiece &piece)
 {
     int current_turn = log.GetCurrentTurn();
 
@@ -17,17 +17,17 @@ void BishopResurrect::Effect(const SuperPiece &piece)
     if (GetCooldownTracker() < cooldown)
     {
         std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - GetCooldownTracker() << "\n";
-        return;
+        return false;
     }
     if (current_turn < activation_turn)
     {
         std::cout << name << " is only Available at turn 8. It's currently Turn [" << current_turn << "]\n";
-        return;
+        return false;
     }
     if (graveyard.empty())
     {
         std::cout << "Graveyard is empty.\n";
-        return;
+        return false;
     }
 
     int counter = 0;
@@ -65,7 +65,7 @@ void BishopResurrect::Effect(const SuperPiece &piece)
         if ((spawn & ~board) == 0ULL)
         {
             std::cout << "Invalid Selection. Please choose from the provided options." << std::endl;
-            return;
+            return false;
         }
     }
 
@@ -93,9 +93,8 @@ void BishopResurrect::Effect(const SuperPiece &piece)
     Square sq = SqStrMap.at(userSelection);
     if (spawnlocations[key.first] & static_cast<U64>(1ULL<<sq) == 0ULL) { //couldn't use spawn since I modified it iterating.
         std::cout << "Invalid selection. Please choose a valid square." << std::endl;
-        return;
+        return false;
     }
-
 
     if (key.second != Tier::not_superpiece)
         game.AddSuperPiece(key, sq, bishop_color, false);
@@ -106,6 +105,7 @@ void BishopResurrect::Effect(const SuperPiece &piece)
 
     std::cout << "☆⌒(*^-゜)v huzzah Resurrection!!\n";
     turn_last_used_ability = log.GetCurrentTurn();
+    return true;
 }
 
 std::unique_ptr<Ability> BishopResurrect::Clone() const

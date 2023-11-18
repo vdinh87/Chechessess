@@ -12,7 +12,7 @@ public:
     BishopResurrect(SuperChessGame& game_, Logger& log_);
     ~BishopResurrect() = default;
 
-    void Effect(const SuperPiece& piece) override;
+    bool Effect(const SuperPiece& piece) override;
     std::unique_ptr<Ability> Clone() const override;
 };
 

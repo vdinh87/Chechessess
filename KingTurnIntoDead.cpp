@@ -6,30 +6,30 @@ Ability("King Turn Into Dead", AbilityType::active, game_, log_, 5, 0)
 {
 }
 
-void KingTurnIntoDead::Effect(const SuperPiece& piece)
+bool KingTurnIntoDead::Effect(const SuperPiece& piece)
 {
     Square sq = GetInputSquare("Choose piece to turn into dead: ");
     if(sq == Square::invalid)
     {
         std::cout << "Invalid square" << std::endl;
-        return;
+        return false;
     }
 
     int current_turn = log.GetCurrentTurn();
 
     if( sq == piece.GetSquare() ){
         std::cout << "Cannot choose yourself\n";
-        return;
+        return false;
     }
     if (piece.GetColor() != game.GetColor(1ULL << sq)) { 
         std::cout << "Invalid square different color piece." << std::endl;
-        return;
+        return false;
     } if (GetCooldownTracker() < cooldown){
         std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - GetCooldownTracker() << "\n" ;
-        return;
+        return false;
     } if ( current_turn < activation_turn ){
         std::cout << name << " is only Available at turn 10. It's currently Turn [" << current_turn << "]\n";
-        return;
+        return false;
     } 
     
     //ability time 
@@ -38,7 +38,7 @@ void KingTurnIntoDead::Effect(const SuperPiece& piece)
     if( graveyard.empty() )
     {
         std::cout << "Graveyard is empty.\n";
-        return;
+        return false;
     }
 
     int counter = 0;
@@ -63,7 +63,7 @@ void KingTurnIntoDead::Effect(const SuperPiece& piece)
         key = graveyard[selection];    
     else{
         std::cout << "Not valid selection\n";
-        return;
+        return false;
     }
 
     game.RemovePiece(sq);
@@ -75,6 +75,8 @@ void KingTurnIntoDead::Effect(const SuperPiece& piece)
         game.AddPiece(sq, piece.GetColor(), key.first);
 
     std::cout << "King Turn Into Dead successful";
+    turn_last_used_ability = 0;
+    return true;
 }
 
 std::unique_ptr<Ability> KingTurnIntoDead::Clone() const
