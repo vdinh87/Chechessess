@@ -29,7 +29,7 @@ public:
     Color GetColor() const;
 
     //to be removed? just for testing tbh
-    // std::vector<std::string> GetAbilityNames() const;
+    std::vector<std::string> GetAbilityNames() const;
     int GetNumberOfAbilities() const;
 };
 
