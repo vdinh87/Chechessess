@@ -18,7 +18,7 @@ int Logger::CalculateTurnDiff(int other_turn) const
 
 int Logger::GetCurrentTurn() const
 {
-    return (log.size() + 1) / 2;
+    return (log.size() + 2) / 2;
 }
 
 bool Logger::IsEmpty() const

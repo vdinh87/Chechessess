@@ -14,7 +14,8 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
     // InitSuperPieces(white, black);
     al = std::make_shared<AbilityLibrary>(*this, log);
 
-    ConvertToSuperPiece(white_info, Square::e1);
+    ConvertSuperPiecesofType(white_info, Color::white);
+    ConvertSuperPiecesofType(black_info, Color::black);
 }
 
 bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion)
@@ -33,11 +34,6 @@ bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color col
     super_pieces[square] = std::make_shared<SuperPiece>(v, info, square, color);
 
     return true;
-}
-
-bool SuperChessGame::AddSuperPiecesofType(SuperPieceInfo info, Color color)
-{
-    return false;
 }
 
 bool SuperChessGame::RemovePiece(Square square)
@@ -89,6 +85,23 @@ bool SuperChessGame::ConvertToSuperPiece(SuperPieceInfo info, Square square)
     if (it != super_pieces.end())
         return false;
     return AddSuperPiece(info, square, GetColor(1ULL << square), true);
+}
+
+bool SuperChessGame::ConvertSuperPiecesofType(SuperPieceInfo info, Color color)
+{
+    CapTier(info.second, info.first);
+    std::vector<std::unique_ptr<Ability>> v;
+    MakeAbilityVector(v, info);
+
+    std::pair<Color, Piece> key = std::make_pair(color, info.first);
+    std::vector<Square> start_loc = StartingSquares[key];
+    for(int i = 0; i < start_loc.size(); i++)
+    {
+        Square sq = start_loc[i];
+        super_pieces[sq] = std::make_shared<SuperPiece>(v, info, sq, color);
+    }
+
+    return true;
 }
 
 bool SuperChessGame::UpgradeSuperPieceTier(Square square, Tier to_tier)

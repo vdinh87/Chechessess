@@ -162,7 +162,7 @@ void PlaySuperChessGame(SuperPieceInfo white)
                         std::cout << "Abilities: ";
                         spg->PrintAbilityNames(selected_square);
                     }
-                }   
+                }
 
                 //ability 
                 if( ability_selected )

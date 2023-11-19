@@ -100,6 +100,7 @@ static std::unordered_map<std::string, Square> const SqStrMap = {
     {"h1", Square::h1}, {"h2", Square::h2}, {"h3", Square::h3}, {"h4", Square::h4},
     {"h5", Square::h5}, {"h6", Square::h6}, {"h7", Square::h7}, {"h8", Square::h8}
 };
+
 enum Piece : unsigned char { 
   Pawn, Knight, Bishop, Rook, Queen, King 
 };
@@ -138,13 +139,13 @@ struct EnumClassComparer {
     }
 };
 
-typedef std::pair<Piece, Tier> SuperPieceInfo; 
+using SuperPieceInfo = std::pair<Piece, Tier>; 
 struct PairEnumHash
 {
     template <typename Enum1, typename Enum2>
     std::size_t operator()(std::pair<Enum1, Enum2> t) const
     {
-        return static_cast<std::size_t>(t.first)*2 + static_cast<std::size_t>(t.second);
+      return static_cast<std::size_t>(t.first)*2 + static_cast<std::size_t>(t.second);
     }
 };
 
@@ -155,6 +156,22 @@ struct PairInsidePairEnumHash
     {
         return static_cast<std::size_t>(t.first)*2 + static_cast<std::size_t>(t.second.first);
     }
+};
+
+std::unordered_map<std::pair<Color, Piece>, std::vector<Square>, PairEnumHash> StartingSquares = {
+  {{Color::white, Piece::Pawn},   { Square::a2, Square::b2, Square::c2, Square::d2, Square::e2, Square::f2, Square::g2, Square::h2 }},
+  {{Color::white, Piece::Knight}, { Square::b1, Square::g1 }},
+  {{Color::white, Piece::Bishop}, { Square::c1, Square::f1 }},
+  {{Color::white, Piece::Rook},   { Square::a1, Square::h1 }},
+  {{Color::white, Piece::Queen},  { Square::d1 }},
+  {{Color::white, Piece::King},   { Square::e1 }},
+
+  {{Color::black, Piece::Pawn},   { Square::a7, Square::b7, Square::c7, Square::d7, Square::e7, Square::f7, Square::g7, Square::h7 }},
+  {{Color::black, Piece::Knight}, { Square::b8, Square::g8 }},
+  {{Color::black, Piece::Bishop}, { Square::c8, Square::f8 }},
+  {{Color::black, Piece::Rook},   { Square::a8, Square::h8 }},
+  {{Color::black, Piece::Queen},  { Square::d8 }},
+  {{Color::black, Piece::King},   { Square::e8 }},
 };
 
 U64 North(U64 & other_board)
