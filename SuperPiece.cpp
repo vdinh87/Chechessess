@@ -12,9 +12,7 @@ bool SuperPiece::UseAbility(Tier key)
     auto it = abilities.find(key);
     if (it != abilities.end())
     {
-
-        it->second->Effect(*this);
-        return true;
+        return it->second->Effect(*this);
     }
 
     return false;

@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <bitset>
 #include <unordered_map>
+#include <map>
 #include <utility>
 #include <memory>
 
@@ -128,6 +129,13 @@ struct ChessMove
   Piece type;
   std::vector<Action> actions;
   bool is_pawn; // To be replaced
+};
+
+struct EnumClassComparer {
+    template <typename T>
+    bool operator()(T lhs, T rhs) const {
+        return static_cast<int>(lhs) < static_cast<int>(rhs);
+    }
 };
 
 typedef std::pair<Piece, Tier> SuperPieceInfo; 

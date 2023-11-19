@@ -4,8 +4,8 @@
 class SuperPiece
 {
 private:
-    // std::map<Tier, std::unique_ptr<Ability>, EnumClassComparer> abilities;
-    std::unordered_map<Tier, std::unique_ptr<Ability>> abilities;
+    std::map<Tier, std::unique_ptr<Ability>, EnumClassComparer> abilities;
+    // std::unordered_map<Tier, std::unique_ptr<Ability>> abilities;
     SuperPieceInfo info;
     Square sq;
     Color color;

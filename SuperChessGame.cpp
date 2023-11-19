@@ -14,8 +14,7 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
     // InitSuperPieces(white, black);
     al = std::make_shared<AbilityLibrary>(*this, log);
 
-    // AddSuperPiece(white_info, Square::b1, Color::white);
-    ConvertToSuperPiece(white_info, Square::b1);
+    ConvertToSuperPiece(white_info, Square::e1);
 }
 
 bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion)

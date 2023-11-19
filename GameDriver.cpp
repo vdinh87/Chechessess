@@ -87,15 +87,15 @@ void PlayChessGame()
     delete cg;
 }
 
-void PlaySuperChessGame()
+void PlaySuperChessGame(SuperPieceInfo white)
 {
-    SuperChessGame* spg = new SuperChessGame();
+    SuperChessGame* spg = new SuperChessGame(white, white);
         
-    while( !spg->IsWin(white) && !spg->IsWin(black) )
+    while( !spg->IsWin(Color::white) && !spg->IsWin(black) )
     {
         ChessMove move;
 
-        for( int i = white; i <= black && ( !spg->IsWin(white) && !spg->IsWin(black) ); i++)
+        for( int i = Color::white; i <= Color::black && ( !spg->IsWin(Color::white) && !spg->IsWin(Color::black) ); i++)
         {
             Color color = static_cast<Color>(i);
             std::string input_str;
@@ -124,11 +124,11 @@ void PlaySuperChessGame()
                     // Input
                     std::cin >> input_str;
                     std::cout << std::endl;
-
+                    
                     auto it = SqStrMap.find(input_str);
                     if (it != SqStrMap.end())
                         selected_square = it->second;
-                    else if( is_super && (std::stoi(input_str) >= 0 && std::stoi(input_str) <= spg->GetNumAbilities()) )
+                    else if( is_super && (std::stoi(input_str) >= 0 && (std::stoi(input_str) <= spg->GetNumAbilities(piece))) )
                     {
                         ability_selected = true;
                         break;
@@ -156,25 +156,25 @@ void PlaySuperChessGame()
                     std::cout << "Movelist of piece at square: " << input_str << std::endl;
                     PrintGoard(move_list);
                     //Ability prompt
-                    is_super = spg->IsSuperPiece(square)
+                    is_super = spg->IsSuperPiece(selected_square);
                     if( is_super )
                     {
                         std::cout << "Abilities: ";
-                        spg->PrintAbilityNames();
+                        spg->PrintAbilityNames(selected_square);
                     }
                 }   
 
                 //ability 
                 if( ability_selected )
                 {
-                    move.type = spg->GetPieceType(selected_square);
-                    move.from = selected_square;
+                    move.type = spg->GetPieceType(piece);
+                    move.from = piece;
                     move.to = Square::invalid;
-                    action_list = {Action::Ability}
+                    action_list = {Action::Abilityes};
 
                     Tier t = static_cast<Tier>( std::stoi(input_str) );
 
-                    bool ability_success = spg->UseAbility(selected_square, t);
+                    bool ability_success = spg->UseAbility(piece, t);
                     if( ability_success )
                     {
                         break;
@@ -182,7 +182,7 @@ void PlaySuperChessGame()
                     else
                     {
                         ability_selected = false;
-                        std::cout << "Ability failed";
+                        std::cout << "Ability failed" << std::endl;
                     }
                 }
             }
@@ -196,7 +196,7 @@ void PlaySuperChessGame()
             }
 
             // checkmate actions
-            if( spg->IsWin(white) || spg->IsWin(black) )
+            if( spg->IsWin(Color::white) || spg->IsWin(black) )
             {
                 action_list.push_back(Action::Checkmate);
                 move.actions = action_list;
@@ -209,7 +209,7 @@ void PlaySuperChessGame()
         }
     }
     
-    if( spg->IsWin(white) )
+    if( spg->IsWin(Color::white) )
         std::cout << "White win!" << std::endl;
     else
         std::cout << "Black win!" << std::endl;
@@ -232,5 +232,7 @@ int main()
 {
     // TestChessGame();
     // TestSuperChessGame();
-    // PlaySuperChessGame();
+    SuperPieceInfo info = std::make_pair(Piece::King, Tier::T3);
+    PlaySuperChessGame( info );
+
 }
