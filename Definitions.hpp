@@ -120,7 +120,7 @@ const std::string TierStrings[] = { "T0", "T1", "T2", "T3", "T4" };
 enum AbilityType : unsigned char { active, move_modifer, on_capture };
 
 enum Action :unsigned char {
-  Capture, Check, Castle, Checkmate, Promotion, Move, Ability
+  Capture, Check, Castle, Checkmate, Promotion, Move, Abilityes
 };
 struct ChessMove
 {
