@@ -288,13 +288,23 @@ std::vector<SuperPieceInfo> SuperChessGame::GetPiecesInGraveyard(Color color) co
 }
 
 // misc
-void SuperChessGame::Do(Square sq, Tier t)
+bool SuperChessGame::UseAbility(Square sq, Tier t)
 {
-    super_pieces[sq]->UseAbility(t);
+    return super_pieces[sq]->UseAbility(t);
 }
 
 //to be removed
-void SuperChessGame::PrintNumAbilities(Square sq)
+int SuperChessGame::GetNumAbilities(Square sq)
 {
-    super_pieces[sq]->GetAbilityNames();
+    return super_pieces[sq]->GetNumberOfAbilities();
+}
+
+void SuperChessGame::PrintAbilityNames(Square sq)
+{
+    auto names = super_pieces[sq]->GetAbilityNames();
+    for(int i = 0; i < names.size(); i++)
+    {
+        std::cout << "(" << i << ")" << " " << names[i] << " ";
+    }
+    std::cout << std::endl;
 }

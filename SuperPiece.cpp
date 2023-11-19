@@ -71,8 +71,16 @@ Color SuperPiece::GetColor() const
     return color;
 }
 
-void SuperPiece::GetAbilityNames() const
+std::vector<std::string> SuperPiece::GetAbilityNames() const
 {
+    std::vector<std::string> v;
     for(auto& a : abilities)
-        std::cout << "Tier: " << TierStrings[a.first] << " | Ability: " << a.second->GetName() << std::endl;
+        v.push_back(a.second->GetName());
+    
+    return v;
+}
+
+int SuperPiece::GetNumberOfAbilities() const
+{
+    return abilities.size();
 }

@@ -24,8 +24,6 @@ void RookRamBuff::OnCapture(SuperPiece& piece, SuperPiece& other_piece)
         std::cout << "No buff" << std::endl;
         return;
     }
-
-
 }
 
 bool RookRamBuff::HasBuff(SuperPiece& piece) const

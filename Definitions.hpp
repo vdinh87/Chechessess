@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <bitset>
 #include <unordered_map>
+#include <map>
 #include <utility>
 #include <memory>
 
@@ -119,7 +120,7 @@ const std::string TierStrings[] = { "T0", "T1", "T2", "T3", "T4" };
 enum AbilityType : unsigned char { active, move_modifer, on_capture };
 
 enum Action :unsigned char {
-  Capture, Check, Castle, Checkmate, Promotion, Move
+  Capture, Check, Castle, Checkmate, Promotion, Move, Ability
 };
 struct ChessMove
 {
@@ -146,6 +147,13 @@ struct PairInsidePairEnumHash
     std::size_t operator()(std::pair<Enum, Pair> t) const
     {
         return static_cast<std::size_t>(t.first)*2 + static_cast<std::size_t>(t.second.first);
+    }
+};
+
+struct EnumClassComparer {
+    template <typename T>
+    bool operator()(T lhs, T rhs) const {
+        return static_cast<int>(lhs) < static_cast<int>(rhs);
     }
 };
 

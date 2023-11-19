@@ -4,6 +4,7 @@
 class SuperPiece
 {
 private:
+    // std::map<Tier, std::unique_ptr<Ability>, EnumClassComparer> abilities;
     std::unordered_map<Tier, std::unique_ptr<Ability>> abilities;
     SuperPieceInfo info;
     Square sq;
@@ -28,5 +29,7 @@ public:
     Color GetColor() const;
 
     //to be removed? just for testing tbh
-    void GetAbilityNames() const;
+    // std::vector<std::string> GetAbilityNames() const;
+    int GetNumberOfAbilities() const;
 };
+
