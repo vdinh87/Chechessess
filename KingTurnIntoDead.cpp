@@ -21,10 +21,15 @@ bool KingTurnIntoDead::Effect(const SuperPiece& piece)
         std::cout << "Cannot choose yourself\n";
         return false;
     }
+    if ( !((1ULL << sq) & game.GetBoard()) ) { 
+        std::cout << "Invalid square not a piece." << std::endl;
+        return false;
+    }
     if (piece.GetColor() != game.GetColor(1ULL << sq)) { 
         std::cout << "Invalid square different color piece." << std::endl;
         return false;
-    } if (GetCooldownTracker() < cooldown){
+    } 
+    if (GetCooldownTracker() < cooldown){
         std::cout << name << " is Still on CoolDown... Turns till Cooldown: " << cooldown - GetCooldownTracker() << "\n" ;
         return false;
     } if ( current_turn < activation_turn ){
@@ -49,9 +54,10 @@ bool KingTurnIntoDead::Effect(const SuperPiece& piece)
         if( p.second != Tier::not_superpiece )
             sp_str = TierStrings[p.second] + " Super";
         
-        output += "(" + std::to_string(counter) + ") " + sp_str + PieceStrings[piece.GetInfo().first] + " ";
+        output += "(" + std::to_string(counter) + ") " + sp_str + PieceStrings[p.first] + " ";
         ++counter;
     }
+    std::cout << output << std::endl;
 
     std::cout << "Select piece to resurrect: ";
     int selection;
@@ -74,8 +80,8 @@ bool KingTurnIntoDead::Effect(const SuperPiece& piece)
     else
         game.AddPiece(sq, piece.GetColor(), key.first);
 
-    std::cout << "King Turn Into Dead successful";
-    turn_last_used_ability = 0;
+    std::cout << "King Turn Into Dead successful" << std::endl;
+    turn_last_used_ability = current_turn;
     return true;
 }
 

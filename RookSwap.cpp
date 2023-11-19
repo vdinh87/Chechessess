@@ -43,7 +43,7 @@ bool RookSwap::Effect(const SuperPiece &piece)
         return false;
     } 
     if (game.RemovePiece(sq) == true){
-        turn_last_used_ability = 0;
+        turn_last_used_ability = current_turn;
     }
 
     Square swapsquare = static_cast<Square>get_LSB(king_board); // king qsuare

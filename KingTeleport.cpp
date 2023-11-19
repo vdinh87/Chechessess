@@ -36,7 +36,7 @@ bool KingTeleport::Effect(const SuperPiece& piece)
     }
     else {
         game.Move(piece.GetSquare(), sq);
-        turn_last_used_ability = 0;
+        turn_last_used_ability = current_turn;
         std::cout << "Teleportation Succeeded _-=* mgic" << std::endl;
         return true;
     }

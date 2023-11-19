@@ -45,7 +45,7 @@ bool KingSniperShot::Effect(const SuperPiece& piece)
     
     if (game.RemovePiece(sq) == true)
     {
-        turn_last_used_ability = 0;
+        turn_last_used_ability = current_turn;
         std::cout << "KingSniperShot succeeded" << std::endl;
         return true;
     }

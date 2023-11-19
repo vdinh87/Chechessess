@@ -4,7 +4,7 @@
 
 void PlayChessGame()
 {
-    ChessGame* cg = new ChessGame();
+    std::unique_ptr<ChessGame> cg = std::make_unique<ChessGame>();
         
     while( !cg->IsWin(white) && !cg->IsWin(black) )
     {
@@ -83,13 +83,11 @@ void PlayChessGame()
     else
         std::cout << "Black win!" << std::endl;
     cg->PrintTheLog();
-
-    delete cg;
 }
 
-void PlaySuperChessGame(SuperPieceInfo white)
+void PlaySuperChessGame(SuperPieceInfo white_info, SuperPieceInfo black_info)
 {
-    SuperChessGame* spg = new SuperChessGame(white, white);
+    std::unique_ptr<SuperChessGame> spg = std::make_unique<SuperChessGame>(white_info, black_info);
         
     while( !spg->IsWin(Color::white) && !spg->IsWin(black) )
     {
@@ -214,8 +212,6 @@ void PlaySuperChessGame(SuperPieceInfo white)
     else
         std::cout << "Black win!" << std::endl;
     spg->PrintTheLog();
-
-    delete spg;
 }
 
 void TestChessGame()
@@ -233,6 +229,6 @@ int main()
     // TestChessGame();
     // TestSuperChessGame();
     SuperPieceInfo info = std::make_pair(Piece::King, Tier::T3);
-    PlaySuperChessGame( info );
+    PlaySuperChessGame( info, info );
 
 }

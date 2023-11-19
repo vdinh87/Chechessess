@@ -5,17 +5,14 @@
 
 SuperChessGame::SuperChessGame() //testing purposes only
 {
-    // InitSuperPieces(white, black);
     al = std::make_shared<AbilityLibrary>(*this, log);
 }
 
 SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info)
 {
-    // InitSuperPieces(white, black);
     al = std::make_shared<AbilityLibrary>(*this, log);
-
-    ConvertSuperPiecesofType(white_info, Color::white);
-    ConvertSuperPiecesofType(black_info, Color::black);
+    
+    InitSuperPieces(white_info, black_info);
 }
 
 bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion)
@@ -47,7 +44,7 @@ bool SuperChessGame::RemovePiece(Square square)
     }
     
     if (board & p)
-        AddToGraveyard(GetColor(p_type), square, p_type);
+        AddToGraveyard(GetColor(p), square, p_type);
 
     if (!ChessGame::RemovePiece(square))
         return false;
@@ -95,11 +92,8 @@ bool SuperChessGame::ConvertSuperPiecesofType(SuperPieceInfo info, Color color)
 
     std::pair<Color, Piece> key = std::make_pair(color, info.first);
     std::vector<Square> start_loc = StartingSquares[key];
-    for(int i = 0; i < start_loc.size(); i++)
-    {
-        Square sq = start_loc[i];
+    for(const auto& sq : start_loc)
         super_pieces[sq] = std::make_shared<SuperPiece>(v, info, sq, color);
-    }
 
     return true;
 }
@@ -179,8 +173,10 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
 }
 
 // init
-void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white, const SuperPieceInfo &black)
+void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info)
 {
+    ConvertSuperPiecesofType(white_info, Color::white);
+    ConvertSuperPiecesofType(black_info, Color::black);
 }
 
 U64 SuperChessGame::GetBoardOf(Piece piece, Color color)
@@ -261,7 +257,7 @@ void SuperChessGame::AddToGraveyard(Color color, Square sq, Piece piece)
         info.second = super_pieces[sq]->GetInfo().second;
     }
 
-    auto key = std::make_pair(GetColor(piece), info);
+    auto key = std::make_pair(color, info);
 
     if (graveyard.find(key) != graveyard.end())
         graveyard[key]++;
@@ -294,8 +290,10 @@ std::vector<SuperPieceInfo> SuperChessGame::GetPiecesInGraveyard(Color color) co
     std::vector<SuperPieceInfo> pieces;
     for (const auto &p : graveyard)
         if (p.first.first == color && p.second > 0)
+        {
+            std::cout << "COLOR: " << ColorStrings[p.first.first] << "\n";
             pieces.push_back(p.first.second);
-
+        }
     return pieces;
 }
 

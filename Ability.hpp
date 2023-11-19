@@ -15,7 +15,7 @@ protected:
 
     const int cooldown = 0;
     const int activation_turn = 0;
-    int turn_last_used_ability = 0;
+    int turn_last_used_ability = -999;
 
 public:
     Ability(const std::string &name_, const AbilityType &type_, SuperChessGame& game_, Logger& log_);

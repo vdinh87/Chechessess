@@ -33,7 +33,7 @@ bool KingConvert::Effect(const SuperPiece& piece)
         (game.ConvertToSuperPiece( {game.GetPieceType(1ULL << sq), piece.GetInfo().second} , sq) || 
          game.UpgradeSuperPieceTier(sq, piece.GetInfo().second)) ) 
     {
-        turn_last_used_ability = 0;
+        turn_last_used_ability = current_turn;
         std::cout << "KingConvert succeeded" << std::endl;
         return true;
     }

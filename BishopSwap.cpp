@@ -31,7 +31,7 @@ bool BishopSwap::Effect(const SuperPiece &piece)
         std::cout << name << " is only Available at turn 10. It's currently Turn [" << current_turn << "]\n";
         return false;
     } if (game.RemovePiece(sq) == true){
-        turn_last_used_ability = 0;
+        turn_last_used_ability = current_turn;
     }
 
     Square swapsquare = static_cast<Square>get_LSB(bishop_spawn);
