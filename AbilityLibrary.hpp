@@ -16,9 +16,9 @@
 #include "Definitions.hpp"
 
 //TO BE REPLACED
-#include "PawnTier1.hpp"
-#include "PawnTier2.hpp"
-#include "PawnTier3.hpp"
+#include "PawnConvert.hpp"
+#include "PawnTwoTilesBackwards.hpp"
+#include "PawnConvertSuper.hpp"
 #include "KingTier0.hpp"
 #include "KnightTier1.hpp"
 #include "KnightTier2.hpp"

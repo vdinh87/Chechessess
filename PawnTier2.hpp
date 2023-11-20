@@ -2,26 +2,26 @@
 #include "Ability.hpp"
 #include "SuperChessGame.cpp"
 
-class PawnTier2 : public Ability
+class PawnTwoTilesBackwards : public Ability
 {
 private:
     // std::string name = "King Convert";
     // const int cooldown = 10;
     // const int activation_turn = 15;
 public:
-    PawnTier2(SuperChessGame& game_, Logger& log_);
-    ~PawnTier2() = default;
+    PawnTwoTilesBackwards(SuperChessGame& game_, Logger& log_);
+    ~PawnTwoTilesBackwards() = default;
 
     std::unique_ptr<Ability> Clone() const override;
 };
 
-PawnTier2::PawnTier2(SuperChessGame& game_, Logger& log_):
-Ability("PawnTier2", AbilityType::active, game_, log_)
+PawnTwoTilesBackwards::PawnTwoTilesBackwards(SuperChessGame& game_, Logger& log_):
+Ability("PawnTwoTilesBackwards", AbilityType::active, game_, log_)
 {
 }
 
-std::unique_ptr<Ability> PawnTier2::Clone() const
+std::unique_ptr<Ability> PawnTwoTilesBackwards::Clone() const
 {
-    return std::make_unique<PawnTier2>(*this);
+    return std::make_unique<PawnTwoTilesBackwards>(*this);
 }
 

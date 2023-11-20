@@ -25,7 +25,7 @@ public:
     bool UpgradeSuperPieceTier(Square square, Tier to_tier);
 
     //utility
-    U64 GetBoardOf(Piece piece, Color color);
+    U64& GetBoardOf(Piece piece, Color color);
     bool IsSuperPiece(const Square &key) const;
     bool InCheck(Color color) const;
     void CapTier(Tier& t, Piece p_type) const;

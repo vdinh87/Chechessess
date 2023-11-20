@@ -3,7 +3,7 @@
 #include "AbilityLibrary.cpp"
 #include "SuperPiece.cpp"
 
-SuperChessGame::SuperChessGame() //testing purposes only
+SuperChessGame::SuperChessGame() // testing purposes only
 {
     al = std::make_shared<AbilityLibrary>(*this, log);
 }
@@ -11,7 +11,7 @@ SuperChessGame::SuperChessGame() //testing purposes only
 SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info)
 {
     al = std::make_shared<AbilityLibrary>(*this, log);
-    
+
     InitSuperPieces(white_info, black_info);
 }
 
@@ -42,7 +42,7 @@ bool SuperChessGame::RemovePiece(Square square)
         std::cout << "You may not remove the King from the Board!!\n";
         return false;
     }
-    
+
     if (board & p)
         AddToGraveyard(GetColor(p), square, p_type);
 
@@ -92,7 +92,7 @@ bool SuperChessGame::ConvertSuperPiecesofType(SuperPieceInfo info, Color color)
 
     std::pair<Color, Piece> key = std::make_pair(color, info.first);
     std::vector<Square> start_loc = StartingSquares[key];
-    for(const auto& sq : start_loc)
+    for (const auto &sq : start_loc)
         super_pieces[sq] = std::make_shared<SuperPiece>(v, info, sq, color);
 
     return true;
@@ -111,7 +111,7 @@ bool SuperChessGame::UpgradeSuperPieceTier(Square square, Tier to_tier)
     return true;
 }
 
-//move functions
+// move functions
 U64 SuperChessGame::GetAttacks(Square square_) const
 {
     U64 attacks, piece = 0ULL;
@@ -127,10 +127,10 @@ U64 SuperChessGame::GetAttacks(Square square_) const
     }
 
     attacks = ChessGame::GetAttacks(square_, board, which_function);
-    
-    //super piece modify
+
+    // super piece modify
     const auto it = super_pieces.find(square_);
-    if( it != super_pieces.end() )
+    if (it != super_pieces.end())
         it->second->ModifyMove(attacks);
 
     attacks = FilterTeam(attacks, piece);
@@ -179,7 +179,7 @@ void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white_info, const Sup
     ConvertSuperPiecesofType(black_info, Color::black);
 }
 
-U64 SuperChessGame::GetBoardOf(Piece piece, Color color)
+U64 &SuperChessGame::GetBoardOf(Piece piece, Color color)
 {
     return (color == white) ? WhitePiecesArray[piece] : BlackPiecesArray[piece];
 }
@@ -206,10 +206,10 @@ void SuperChessGame::CapTier(Tier &t, Piece p_type) const
 void SuperChessGame::MakeAbilityVector(std::vector<std::unique_ptr<Ability>> &v, SuperPieceInfo info)
 {
     CapTier(info.second, info.first);
-     
-    for(int i = 0; i <= info.second; i++)
+
+    for (int i = 0; i <= info.second; i++)
     {
-        v.push_back(al->GetAbility( {info.first, static_cast<Tier>(i)} ));
+        v.push_back(al->GetAbility({info.first, static_cast<Tier>(i)}));
     }
 }
 
@@ -218,13 +218,13 @@ void SuperChessGame::Swap(Square from, Square to)
     SuperPieceInfo from_info, to_info;
     Color from_color = GetColor(1ULL << from), to_color = GetColor(1ULL << to);
 
-    //Using superpiece info to store even non-superpieces.
+    // Using superpiece info to store even non-superpieces.
     from_info = IsSuperPiece(from) ? super_pieces[from]->GetInfo() : std::make_pair(GetPieceType(1ULL << from), not_superpiece);
     to_info = IsSuperPiece(to) ? super_pieces[to]->GetInfo() : std::make_pair(GetPieceType(1ULL << to), not_superpiece);
-    
+
     RemovePiece(from);
     RemovePiece(to);
-    //Using addsuperpiece if it's a superpiece, and add piece if it's not.
+    // Using addsuperpiece if it's a superpiece, and add piece if it's not.
     to_info.second != not_superpiece ? AddSuperPiece(to_info, from, to_color, false) : AddPiece(from, to_color, to_info.first);
     from_info.second != not_superpiece ? AddSuperPiece(from_info, to, from_color, false) : AddPiece(to, from_color, from_info.first);
 }
@@ -235,14 +235,17 @@ void SuperChessGame::SwapSuperPieces(Square from, Square to)
     auto it2 = super_pieces.find(to);
     auto end = super_pieces.end();
 
-    if(it1 != end && it2 != end) {
+    if (it1 != end && it2 != end)
+    {
         std::swap(it1->second, it2->second);
     }
-    else if(it1 != end) {
+    else if (it1 != end)
+    {
         super_pieces.emplace(std::make_pair(to, std::move(it1->second)));
         super_pieces.erase(from);
     }
-    else if(it2 != end) {
+    else if (it2 != end)
+    {
         super_pieces.emplace(std::make_pair(from, std::move(it2->second)));
         super_pieces.erase(to);
     }
@@ -303,7 +306,7 @@ bool SuperChessGame::UseAbility(Square sq, Tier t)
     return super_pieces[sq]->UseAbility(t);
 }
 
-//to be removed
+// to be removed
 int SuperChessGame::GetNumAbilities(Square sq)
 {
     return super_pieces[sq]->GetNumberOfAbilities();
@@ -312,9 +315,10 @@ int SuperChessGame::GetNumAbilities(Square sq)
 void SuperChessGame::PrintAbilityNames(Square sq)
 {
     auto names = super_pieces[sq]->GetAbilityNames();
-    for(int i = 0; i < names.size(); i++)
+    for (int i = 0; i < names.size(); i++)
     {
-        std::cout << "(" << i << ")" << " " << names[i] << " ";
+        std::cout << "(" << i << ")"
+                  << " " << names[i] << " ";
     }
     std::cout << std::endl;
 }
