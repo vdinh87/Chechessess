@@ -2,4 +2,7 @@
 Chess in chess
 
 
-hi viet
+Credit:
+Viet Dinh (Dev)
+Kevin Wander (Dev)
+Christopher Nguyen (Playtested, Logic)
