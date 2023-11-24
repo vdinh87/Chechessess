@@ -552,12 +552,16 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
             ExecuteMove(from_color, from_sq, static_cast<Square>(static_cast<int>(GetPreviousMove().to) + 8), from_piece, to_piece);
             // clear_bit(BlackPiecesArray[to_piece], GetPreviousMove().to);
             RemovePiece(GetPreviousMove().to);
-            actions.push_back(Capture);
+            actions.push_back(Action::Capture);
         }
         else // Normal Move
         {
             ExecuteMove(from_color, from_sq, to_sq, from_piece, to_piece);
-            actions.push_back(Action::Move);
+            //if capturing
+            if(board & (1ULL << to_sq))
+                actions.push_back(Action::Capture);
+            else
+                actions.push_back(Action::Move);
         }
     }
     else if (from_color == black)
@@ -591,7 +595,11 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
         else
         {
             ExecuteMove(from_color, from_sq, to_sq, from_piece, to_piece);
-            actions.push_back(Action::Move);
+            //if capturing
+            if(board & (1ULL << to_sq))
+                actions.push_back(Action::Capture);
+            else
+                actions.push_back(Action::Move);
         }
     }
 

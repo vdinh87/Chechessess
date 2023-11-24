@@ -24,9 +24,13 @@ public:
 
     //Getters
     void ModifyMove(U64& move);
+
+    bool OnCaptureEffects(Square to_capture);
     SuperPieceInfo GetInfo() const;
     Square GetSquare() const;
     Color GetColor() const;
+    Piece GetPieceType() const;
+    Tier GetTier() const;
 
     //to be removed? just for testing tbh
     std::vector<std::string> GetAbilityNames() const;

@@ -1,6 +1,5 @@
 #pragma once
 #include "Ability.hpp"
-#include "Listener.hpp"
 #include "SuperChessGame.cpp"
 
 class RookRamBuff : public Ability
@@ -13,9 +12,8 @@ public:
     RookRamBuff(SuperChessGame& game_, Logger& log_);
     ~RookRamBuff() = default;
 
-    void OnCapture(SuperPiece& piece, SuperPiece& other_piece) override;
+    bool OnCapture(SuperPiece& piece, Square to_capture) override;
     std::unique_ptr<Ability> Clone() const override;
-    void Notify(const std::vector<ChessMove>& log) override;
     
     bool HasBuff(SuperPiece& piece) const;
 };

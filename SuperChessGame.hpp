@@ -38,7 +38,7 @@ public:
     void RemoveFromGraveYard(const std::pair<Color, SuperPieceInfo>& key);
     bool PieceInGraveyard(Color color, Piece piece);
     std::vector<SuperPieceInfo> GetPiecesInGraveyard(Color color) const;
-
+    
     // Move functions
     U64 GetAttacks(Square square_) const override;
     std::vector<Action> Move(Square from_sq, Square to_sq) override;

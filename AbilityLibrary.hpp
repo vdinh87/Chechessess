@@ -4,6 +4,9 @@
 #include "Ability.hpp"
 
 #include "PawnTwoTiles.cpp"
+#include "PawnConvert.cpp"
+#include "PawnConvertSuper.cpp"
+#include "PawnTwoTilesBackwards.cpp"
 #include "KingTurnIntoDead.cpp"
 #include "KingSniperShot.cpp"
 #include "KingTeleport.cpp"
@@ -13,16 +16,13 @@
 #include "BishopResurrect.cpp"
 #include "KnightBigL.cpp"
 #include "RookSwap.cpp"
+#include "RookRamBuff.cpp"
 #include "Definitions.hpp"
 
 //TO BE REPLACED
-#include "PawnConvert.hpp"
-#include "PawnTwoTilesBackwards.hpp"
-#include "PawnConvertSuper.hpp"
 #include "KingTier0.hpp"
 #include "KnightTier1.hpp"
 #include "KnightTier2.hpp"
-#include "RookTier1.hpp"
 #include "QueenTier0.hpp"
 #include "QueenTier1.hpp"
 

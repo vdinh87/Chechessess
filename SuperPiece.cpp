@@ -27,6 +27,20 @@ void SuperPiece::ModifyMove(U64& move)
     }
 }
 
+bool SuperPiece::OnCaptureEffects(Square to_capture)
+{
+    bool success = false;
+
+    for(const auto& pair : abilities)
+    {
+        if( (pair.second->GetType() == AbilityType::on_capture) && pair.second->OnCapture(*this, to_capture) )
+        {
+            success = true;
+        }
+    }
+    return success;
+}
+
 //updaters
 void SuperPiece::UpdateSquare(Square to_sq)
 {
@@ -67,6 +81,14 @@ Square SuperPiece::GetSquare() const
 Color SuperPiece::GetColor() const
 {
     return color;
+}
+Piece SuperPiece::GetPieceType() const
+{
+    return info.first;
+}
+Tier SuperPiece::GetTier() const
+{
+    return info.second;
 }
 
 std::vector<std::string> SuperPiece::GetAbilityNames() const

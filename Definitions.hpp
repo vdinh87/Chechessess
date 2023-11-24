@@ -123,6 +123,8 @@ enum AbilityType : unsigned char { active, move_modifer, on_capture };
 enum Action :unsigned char {
   Capture, Check, Castle, Checkmate, Promotion, Move, Abilityes
 };
+const std::string ActionStrings[] = { "Capture", "Check", "Castle", "Checkmate", "Promotion", "Move", "Ability" };
+
 struct ChessMove
 {
   Square from = Square::invalid;

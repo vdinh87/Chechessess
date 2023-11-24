@@ -32,17 +32,18 @@ public:
     //methods
     virtual bool Effect(const SuperPiece& piece);
     virtual void Modify(U64& move, Square piece);
-    virtual void OnCapture(SuperPiece& piece, SuperPiece& other_piece);
+    virtual bool OnCapture(SuperPiece& piece, Square to_capture);
 
     //temp?
     Square GetInputSquare(const std::string& prompt) const;
 
     //
     int GetCooldownTracker() const;
-    //accessors
-    const std::string& GetName() const;
-    const AbilityType& GetType() const;
 
+    //accessors
+    std::string GetName() const;
+    AbilityType GetType() const;
+    
     //cloning
     virtual std::unique_ptr<Ability> Clone() const = 0;
 };
@@ -62,12 +63,12 @@ Ability::Ability(
 name(name_), type(type_), game(game_), log(log_), cooldown(cooldown_), activation_turn(activation_turn_)
 {}
 
-const std::string &Ability::GetName() const
+std::string Ability::GetName() const
 {
     return name;
 }
 
-const AbilityType& Ability::GetType() const
+AbilityType Ability::GetType() const
 {
     return type;
 }
@@ -83,9 +84,10 @@ void Ability::Modify(U64& move, Square piece)
     std::cout << "Normal modify" << std::endl;
 }
 
-void Ability::OnCapture(SuperPiece& piece, SuperPiece& other_piece)
+bool Ability::OnCapture(SuperPiece& piece, Square to_capture)
 {
     std::cout << "Normal on capture" << std::endl;
+    return false;
 }
 
 Square Ability::GetInputSquare(const std::string& prompt) const

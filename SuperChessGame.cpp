@@ -88,12 +88,15 @@ bool SuperChessGame::ConvertSuperPiecesofType(SuperPieceInfo info, Color color)
 {
     CapTier(info.second, info.first);
     std::vector<std::unique_ptr<Ability>> v;
-    MakeAbilityVector(v, info);
+    
 
     std::pair<Color, Piece> key = std::make_pair(color, info.first);
     std::vector<Square> start_loc = StartingSquares[key];
     for (const auto &sq : start_loc)
+    {
+        MakeAbilityVector(v, info);
         super_pieces[sq] = std::make_shared<SuperPiece>(v, info, sq, color);
+    }
 
     return true;
 }
@@ -151,24 +154,40 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 
 void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)
 {
-    // If piece is removed, add to Graveyard
-    if (board & (1ULL << to_sq))
+    bool do_normal_capture = true;
+    // If piece is removed, check on capture effect
+    if( board & (1ULL << to_sq) )
     {
-        AddToGraveyard(color, to_sq, to_piece);
+        for( const auto& sp: super_pieces)
+        {            
+            if( sp.second->OnCaptureEffects(to_sq) )
+            {    
+                do_normal_capture = false;
+            }
+        }
     }
 
-    ChessGame::ExecuteMove(color, from_sq, to_sq, from_piece, to_piece);
-
-    // remove to_piece
-    if (IsSuperPiece(to_sq))
-        super_pieces.erase(to_sq);
-    // move from_piece
-    if (IsSuperPiece(from_sq))
+    if(do_normal_capture)
     {
-        super_pieces.erase(to_sq);
-        super_pieces[to_sq] = std::move(super_pieces[from_sq]);
-        super_pieces.erase(from_sq);
-        super_pieces[to_sq]->UpdateSquare(to_sq);
+        // If piece is removed, add to Graveyard
+        if (board & (1ULL << to_sq))
+        {
+            AddToGraveyard(color, to_sq, to_piece);
+        }
+
+        ChessGame::ExecuteMove(color, from_sq, to_sq, from_piece, to_piece);
+
+        // remove to_piece
+        if (IsSuperPiece(to_sq))
+            super_pieces.erase(to_sq);
+        // move from_piece
+        if (IsSuperPiece(from_sq))
+        {
+            super_pieces.erase(to_sq);
+            super_pieces[to_sq] = std::move(super_pieces[from_sq]);
+            super_pieces.erase(from_sq);
+            super_pieces[to_sq]->UpdateSquare(to_sq);
+        }
     }
 }
 
@@ -207,7 +226,7 @@ void SuperChessGame::MakeAbilityVector(std::vector<std::unique_ptr<Ability>> &v,
 {
     CapTier(info.second, info.first);
 
-    for (int i = 0; i <= info.second; i++)
+    for (int i = 0; i < static_cast<int>(info.second); i++)
     {
         v.push_back(al->GetAbility({info.first, static_cast<Tier>(i)}));
     }
@@ -294,7 +313,6 @@ std::vector<SuperPieceInfo> SuperChessGame::GetPiecesInGraveyard(Color color) co
     for (const auto &p : graveyard)
         if (p.first.first == color && p.second > 0)
         {
-            std::cout << "COLOR: " << ColorStrings[p.first.first] << "\n";
             pieces.push_back(p.first.second);
         }
     return pieces;

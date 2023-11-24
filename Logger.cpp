@@ -21,6 +21,12 @@ int Logger::GetCurrentTurn() const
     return (log.size() + 2) / 2;
 }
 
+int Logger::GetSize() const
+{
+    return log.size();
+}
+
+
 bool Logger::IsEmpty() const
 {
     return log.empty();
