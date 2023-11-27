@@ -7,9 +7,8 @@ PawnConvert::PawnConvert(SuperChessGame &game_, Logger &log_) : Ability("Pawn Co
 
 void PawnConvert::OnCapture(SuperPiece &piece, Square to_capture)
 {
-    int current_turn = log.GetCurrentTurn(); // gets turn.
-    const Color color = piece.GetColor();    // gets color
-    Square sq = piece.GetSquare();           // gets square.
+    const Color color = piece.GetColor(); // gets color
+    Square sq = piece.GetSquare();        // gets square.
     Piece enemy_piece = game.GetPieceType(1ULL << to_capture);
 
     game.RemovePiece(to_capture);
