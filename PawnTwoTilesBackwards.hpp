@@ -4,13 +4,10 @@
 
 class PawnTwoTilesBackwards : public Ability
 {
-private:
-    std::string name = "Pawn Two Tiles Backwards";
 public:
-    PawnTwoTilesBackwards(SuperChessGame& game_, Logger& log_);
+    PawnTwoTilesBackwards(SuperChessGame &game_, Logger &log_);
     ~PawnTwoTilesBackwards() = default;
 
-    void Modify(U64& move, Square piece) override;
+    void Modify(U64 &move, Square piece) override;
     std::unique_ptr<Ability> Clone() const override;
 };
-
