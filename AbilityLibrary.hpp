@@ -17,6 +17,7 @@
 #include "KnightBigL.cpp"
 #include "RookSwap.cpp"
 #include "RookRamBuff.cpp"
+#include "QueenKamikaze.cpp"
 #include "Definitions.hpp"
 
 //TO BE REPLACED
@@ -24,7 +25,6 @@
 #include "KnightTier1.hpp"
 #include "KnightTier2.hpp"
 #include "QueenTier0.hpp"
-#include "QueenTier1.hpp"
 
 class AbilityLibrary{
 private:

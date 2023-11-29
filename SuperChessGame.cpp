@@ -88,7 +88,6 @@ bool SuperChessGame::ConvertSuperPiecesofType(SuperPieceInfo info, Color color)
 {
     CapTier(info.second, info.first);
     std::vector<std::unique_ptr<Ability>> v;
-    
 
     std::pair<Color, Piece> key = std::make_pair(color, info.first);
     std::vector<Square> start_loc = StartingSquares[key];
@@ -198,9 +197,14 @@ void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white_info, const Sup
     ConvertSuperPiecesofType(black_info, Color::black);
 }
 
-U64 &SuperChessGame::GetBoardOf(Piece piece, Color color)
+U64 SuperChessGame::GetBoardOf(Piece piece, Color color)
 {
     return (color == white) ? WhitePiecesArray[piece] : BlackPiecesArray[piece];
+}
+
+U64 SuperChessGame::GetBoardOf(Color color)
+{
+    return (color == white) ? WhitePieces : BlackPieces;
 }
 
 // utility
@@ -226,7 +230,7 @@ void SuperChessGame::MakeAbilityVector(std::vector<std::unique_ptr<Ability>> &v,
 {
     CapTier(info.second, info.first);
 
-    for (int i = 0; i < static_cast<int>(info.second); i++)
+    for (int i = 0; i <= static_cast<int>(info.second); i++)
     {
         v.push_back(al->GetAbility({info.first, static_cast<Tier>(i)}));
     }

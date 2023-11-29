@@ -1,0 +1,18 @@
+#pragma once
+#include "Ability.hpp"
+#include "SuperChessGame.cpp"
+
+class QueenKamikaze : public Ability
+{
+private:
+    // std::string name = "Queen Kamikaze";
+    // const int cooldown = 0;
+    // const int activation_turn = 0;
+public:
+    QueenKamikaze(SuperChessGame& game_, Logger& log_);
+    ~QueenKamikaze() = default;
+
+    bool OnCapture(SuperPiece& piece, Square to_capture) override;
+    std::unique_ptr<Ability> Clone() const override;
+};
+

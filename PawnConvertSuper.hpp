@@ -8,7 +8,7 @@ public:
     PawnConvertSuper(SuperChessGame& game_, Logger& log_);
     ~PawnConvertSuper() = default;
 
-    void OnCapture(SuperPiece& piece, Square to_capture) override;
+    bool OnCapture(SuperPiece& piece, Square to_capture) override;
     std::unique_ptr<Ability> Clone() const override;
 };
 

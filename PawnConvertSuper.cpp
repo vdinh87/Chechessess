@@ -1,11 +1,11 @@
 #pragma once
 #include "PawnConvertSuper.hpp"
 
-PawnConvertSuper::PawnConvertSuper(SuperChessGame &game_, Logger &log_) : Ability("Pawn Convert Piece", AbilityType::active, game_, log_, 0, 0)
+PawnConvertSuper::PawnConvertSuper(SuperChessGame &game_, Logger &log_) : Ability("Pawn Convert Piece", AbilityType::active, game_, log_)
 {
 }
 
-void PawnConvertSuper::OnCapture(SuperPiece &piece, Square to_capture)
+bool PawnConvertSuper::OnCapture(SuperPiece &piece, Square to_capture)
 {
     const Color color = piece.GetColor(); // gets color
     Square sq = piece.GetSquare();        // gets square.
@@ -16,7 +16,7 @@ void PawnConvertSuper::OnCapture(SuperPiece &piece, Square to_capture)
     game.RemovePiece(sq);
 
     Tier new_piece_tier = std::min(piece.GetTier() - 1, GetMaxTier(enemy_piece));
-    SuperPieceInfo info = std::pair<enemy_piece, new_piece_tier>;
+    SuperPieceInfo info = std::make_pair(enemy_piece, new_piece_tier);
     game.ConvertToSuperPiece(info, to_capture);
 }
 

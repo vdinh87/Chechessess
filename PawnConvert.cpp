@@ -1,11 +1,11 @@
 #pragma once
 #include "PawnConvert.hpp"
 
-PawnConvert::PawnConvert(SuperChessGame &game_, Logger &log_) : Ability("Pawn Convert Piece", AbilityType::active, game_, log_, 0, 0)
+PawnConvert::PawnConvert(SuperChessGame &game_, Logger &log_) : Ability("Pawn Convert Piece", AbilityType::active, game_, log_)
 {
 }
 
-void PawnConvert::OnCapture(SuperPiece &piece, Square to_capture)
+bool PawnConvert::OnCapture(SuperPiece &piece, Square to_capture)
 {
     const Color color = piece.GetColor(); // gets color
     Square sq = piece.GetSquare();        // gets square.

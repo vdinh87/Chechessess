@@ -208,9 +208,15 @@ void PlaySuperChessGame(SuperPieceInfo white_info, SuperPieceInfo black_info)
     }
     
     if( spg->IsWin(Color::white) )
+    {
+        spg->PrintBoard();
         std::cout << "White win!" << std::endl;
+    }
     else
+    {
+        spg->PrintBoard();
         std::cout << "Black win!" << std::endl;
+    }
     spg->PrintTheLog();
 }
 
@@ -230,7 +236,7 @@ void TestSuperChessGame()
 
 int main()
 {
-    SuperPieceInfo info = std::make_pair(Piece::Rook, Tier::T4);
+    SuperPieceInfo info = std::make_pair(Piece::Queen, Tier::T0);
     PlaySuperChessGame( info, info );
     // TestSuperChessGame();
 }

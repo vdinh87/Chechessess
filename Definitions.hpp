@@ -193,7 +193,7 @@ U64 NorthWest(U64 & other_board)
 U64 NorthEast(U64 & other_board)
 {
   if( !(other_board & RANK_8) && !(other_board & FILE_H) )
-      return other_board << 9;
+    return other_board << 9;
   return 0ULL;
 }
 
