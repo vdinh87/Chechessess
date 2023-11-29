@@ -28,7 +28,6 @@ bool RookRamBuff::OnCapture(SuperPiece& piece, Square to_capture)
     //effect
     if( !HasBuff(piece) )
     {
-        std::cout << "No buff" << std::endl;
         return false;
     }
 
@@ -70,7 +69,6 @@ bool RookRamBuff::HasBuff(SuperPiece& piece) const
     {
         if( GetFirstCollision(piece.GetSquare(), d, game.GetBoard()) & game.GetBoardOf(Piece::Rook, piece.GetColor()) )
         {
-            std::cout << "HAS BUFF\n";
             return true;
         }
     }

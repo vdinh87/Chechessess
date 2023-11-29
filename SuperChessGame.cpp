@@ -145,6 +145,37 @@ U64 SuperChessGame::GetAttacks(Square square_) const
     return attacks;
 }
 
+U64 SuperChessGame::GetAttacks(Square square_, U64 team_filter) const
+{
+    U64 attacks, piece = 0ULL;
+    set_bit(piece, square_);
+    if (!(piece & board))
+        throw std::invalid_argument("No piece on square");
+
+    int which_function = -1;
+    for (size_t i = 0; i < PieceTypeArray.size(); i++)
+    {
+        if (piece & PieceTypeArray[i])
+            which_function = i;
+    }
+
+    attacks = ChessGame::GetAttacks(square_, board, which_function);
+
+    // super piece modify
+    const auto it = super_pieces.find(square_);
+    if (it != super_pieces.end())
+        it->second->ModifyMove(attacks);
+
+    attacks = attacks & ~team_filter;
+    attacks = FilterCheck(attacks, piece);
+    if (GetPieceType(piece) == King)
+        attacks = attacks & FilterLegalKingMoves(attacks, piece);
+    else
+        attacks = attacks & FilterPin(attacks, piece);
+
+    return attacks;
+}
+
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 {
     // for passive abilities later

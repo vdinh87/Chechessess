@@ -15,6 +15,7 @@
 #include "BishopTakeCover.cpp"
 #include "BishopResurrect.cpp"
 #include "KnightBigL.cpp"
+#include "KnightProtection.cpp"
 #include "RookSwap.cpp"
 #include "RookRamBuff.cpp"
 #include "QueenKamikaze.cpp"
@@ -22,7 +23,6 @@
 
 //TO BE REPLACED
 #include "KingTier0.hpp"
-#include "KnightTier1.hpp"
 #include "KnightTier2.hpp"
 #include "QueenTier0.hpp"
 
