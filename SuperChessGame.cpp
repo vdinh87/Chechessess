@@ -14,7 +14,6 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
 
     InitSuperPieces(white_info, black_info);
     InitGameStartEffects();
-    std::cout << "NUM SP" << super_pieces.size() << "\n";
 }
 
 bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion)
@@ -235,7 +234,6 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
             super_pieces.erase(from_sq);
             super_pieces[to_sq]->UpdateSquare(to_sq);
         }
-        std::cout << "NUM SP" << super_pieces.size() << "\n";
     }
 
 }

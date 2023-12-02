@@ -87,7 +87,6 @@ void PlayChessGame()
 
 void PlaySuperChessGame(SuperPieceInfo white_info, SuperPieceInfo black_info)
 {
-    std::cout << "I AM ALIVE Alive\n";
     std::unique_ptr<SuperChessGame> spg = std::make_unique<SuperChessGame>(white_info, black_info);
     while( !spg->IsWin(Color::white) && !spg->IsWin(black) )
     {
@@ -233,16 +232,11 @@ void TestSuperChessGame()
     spg->Move(a1,a4);
     spg->Move(h1,a3);
     spg->PrintBoard();
-
-
-
 }
 
 int main()
 {
-    SuperPieceInfo info = std::make_pair(Piece::Queen, Tier::T1);
+    SuperPieceInfo info = std::make_pair(Piece::King, Tier::T1);
     PlaySuperChessGame( info, info );
-
-
-    // TestSuperChessGame();
+    
 }

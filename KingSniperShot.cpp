@@ -1,7 +1,8 @@
 #pragma once
 #include "KingSniperShot.hpp"
 
-KingSniperShot::KingSniperShot(SuperChessGame &game_, Logger &log_) : Ability("King Sniper Shot", AbilityType::active, game_, log_, 10, 0)
+KingSniperShot::KingSniperShot(SuperChessGame &game_, Logger &log_) : 
+Ability("King Sniper Shot", AbilityType::active, game_, log_, 10, 0)
 {
 }
 

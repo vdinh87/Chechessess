@@ -1,7 +1,8 @@
 #pragma once
 #include "PawnConvertSuper.hpp"
 
-PawnConvertSuper::PawnConvertSuper(SuperChessGame &game_, Logger &log_) : Ability("Pawn Convert Piece", AbilityType::active, game_, log_)
+PawnConvertSuper::PawnConvertSuper(SuperChessGame &game_, Logger &log_) : 
+Ability("Pawn Convert Super", AbilityType::active, game_, log_)
 {
 }
 
