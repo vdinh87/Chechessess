@@ -87,8 +87,8 @@ void PlayChessGame()
 
 void PlaySuperChessGame(SuperPieceInfo white_info, SuperPieceInfo black_info)
 {
+    std::cout << "I AM ALIVE Alive\n";
     std::unique_ptr<SuperChessGame> spg = std::make_unique<SuperChessGame>(white_info, black_info);
-        
     while( !spg->IsWin(Color::white) && !spg->IsWin(black) )
     {
         ChessMove move;
@@ -151,6 +151,7 @@ void PlaySuperChessGame(SuperPieceInfo white_info, SuperPieceInfo black_info)
                 if( move_to_square == invalid && !ability_selected)
                 {
                     move_list = spg->GetAttacks(selected_square);
+
                     std::cout << "Movelist of piece at square: " << input_str << std::endl;
                     PrintGoard(move_list);
                     //Ability prompt
@@ -232,11 +233,16 @@ void TestSuperChessGame()
     spg->Move(a1,a4);
     spg->Move(h1,a3);
     spg->PrintBoard();
+
+
+
 }
 
 int main()
 {
-    SuperPieceInfo info = std::make_pair(Piece::Knight, Tier::T1);
+    SuperPieceInfo info = std::make_pair(Piece::Pawn, Tier::T3);
     PlaySuperChessGame( info, info );
+
+
     // TestSuperChessGame();
 }

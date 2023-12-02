@@ -15,8 +15,7 @@ bool PawnConvertSuper::OnCapture(SuperPiece &piece, Square to_capture)
     game.AddPiece(to_capture, color, enemy_piece);
     game.RemovePiece(sq);
 
-    Tier new_piece_tier = std::min(piece.GetTier() - 1, GetMaxTier(enemy_piece));
-    SuperPieceInfo info = std::make_pair(enemy_piece, new_piece_tier);
+    SuperPieceInfo info = std::make_pair(enemy_piece, piece.GetTier());
     game.ConvertToSuperPiece(info, to_capture);
 }
 

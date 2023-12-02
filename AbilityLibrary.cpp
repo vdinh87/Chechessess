@@ -3,6 +3,7 @@
 
 AbilityLibrary::AbilityLibrary(SuperChessGame& game_, Logger& log_)
 {
+    lib[std::make_pair(Piece::Pawn, Tier::T0)] = std::make_unique<PawnConvert>(game_, log_);
     lib[std::make_pair(Piece::Pawn, Tier::T1)] = std::make_unique<PawnConvert>(game_, log_);
     lib[std::make_pair(Piece::Pawn, Tier::T2)] = std::make_unique<PawnTwoTilesBackwards>(game_, log_);
     lib[std::make_pair(Piece::Pawn, Tier::T3)] = std::make_unique<PawnConvertSuper>(game_, log_);
