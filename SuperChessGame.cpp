@@ -140,7 +140,6 @@ U64 SuperChessGame::GetAttacks(Square square_) const
         if (piece & PieceTypeArray[i])
             which_function = i;
     }
-
     attacks = ChessGame::GetAttacks(square_, board, which_function);
     // super piece modify
     const auto it = super_pieces.find(square_);
