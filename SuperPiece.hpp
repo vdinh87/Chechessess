@@ -15,17 +15,17 @@ public:
     
     //Ability use
     bool UseAbility(Tier key);
-
+    void ModifyMove(U64& move);
+    bool OnCaptureEffects(Square to_capture);
+    void OnGameStartEffects();
     //updaters
     void UpdateSquare(Square to_sq);
     void UpdateColor(Color new_color);
     void UpdateTier(Tier t);
     void AddAbilities(std::vector<std::unique_ptr<Ability>>& abilities_);
 
+    
     //Getters
-    void ModifyMove(U64& move);
-
-    bool OnCaptureEffects(Square to_capture);
     SuperPieceInfo GetInfo() const;
     Square GetSquare() const;
     Color GetColor() const;

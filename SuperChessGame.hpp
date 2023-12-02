@@ -12,6 +12,7 @@ private:
     std::unordered_map<std::pair<Color, SuperPieceInfo>, int, PairInsidePairEnumHash> graveyard;
     //init
     void InitSuperPieces(const SuperPieceInfo &white, const SuperPieceInfo &black);
+    void InitGameStartEffects();
 public:
     SuperChessGame();
     SuperChessGame(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info);
@@ -19,6 +20,7 @@ public:
 
     bool RemovePiece(Square square) override;
     bool AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion = 0);
+    bool UnSuper(Square square);
     bool ConvertPieceToSide(Square square, Color side);
     bool ConvertToSuperPiece(SuperPieceInfo info, Square square);
     bool ConvertSuperPiecesofType(SuperPieceInfo info, Color color);

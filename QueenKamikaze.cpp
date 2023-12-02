@@ -4,6 +4,7 @@
 QueenKamikaze::QueenKamikaze(SuperChessGame& game_, Logger& log_) : 
 Ability("Queen Kamikaze", AbilityType::on_capture, game_, log_)
 {
+    
 }
 
 bool QueenKamikaze::OnCapture(SuperPiece& piece, Square to_capture)
@@ -38,6 +39,7 @@ bool QueenKamikaze::OnCapture(SuperPiece& piece, Square to_capture)
 
     explode_list &= game.GetBoard() & ~game.GetBoardOf(piece.GetColor());
 
+    to_explode = explode_list;
     //remove all pieces in explode radius
     while(explode_list != 0ULL)
     {
@@ -48,6 +50,8 @@ bool QueenKamikaze::OnCapture(SuperPiece& piece, Square to_capture)
 
     //remove queen
     game.RemovePiece(to_capture);
+
+    std::cout << "BOOM!" << std::endl;
     return true;
 }
 

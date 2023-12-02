@@ -41,6 +41,17 @@ bool SuperPiece::OnCaptureEffects(Square to_capture)
     return success;
 }
 
+void SuperPiece::OnGameStartEffects()
+{
+    for(const auto& pair : abilities)
+    {
+        if( pair.second->GetType() == AbilityType::on_game_start )
+        {
+            pair.second->OnGameStart(*this);
+        }
+    }
+}
+
 //updaters
 void SuperPiece::UpdateSquare(Square to_sq)
 {

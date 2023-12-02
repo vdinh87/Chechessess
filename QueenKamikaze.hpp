@@ -5,6 +5,7 @@
 class QueenKamikaze : public Ability
 {
 private:
+    U64 to_explode = 0ULL;
     // std::string name = "Queen Kamikaze";
     // const int cooldown = 0;
     // const int activation_turn = 0;

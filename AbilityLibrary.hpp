@@ -18,13 +18,13 @@
 #include "KnightProtection.cpp"
 #include "RookSwap.cpp"
 #include "RookRamBuff.cpp"
+#include "QueenInspire.cpp"
 #include "QueenKamikaze.cpp"
 #include "Definitions.hpp"
 
 //TO BE REPLACED
 #include "KingTier0.hpp"
 #include "KnightTier2.hpp"
-#include "QueenTier0.hpp"
 
 class AbilityLibrary{
 private:
