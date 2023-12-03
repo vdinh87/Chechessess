@@ -9,14 +9,17 @@ Ability("Queen Inspire", AbilityType::on_game_start, game_, log_)
 QueenInspire::~QueenInspire()
 {
     //strip knights of their super abilities
-    U64 knights = game.GetBoardOf(Piece::Knight, color);
-    while(knights != 0ULL)
+    if( !game.IsWin(Color::white) && !game.IsWin(Color::black) )
     {
-        int lsb = get_LSB(knights);
-        game.UnSuper( GetSquare(knights) );
-        clear_bit(knights, lsb);
+        U64 knights = game.GetBoardOf(Piece::Knight, color);
+        while(knights != 0ULL)
+        {
+            int lsb = get_LSB(knights);
+            game.UnSuper( GetSquare(knights) );
+            clear_bit(knights, lsb);
+        }
+        std::cout << "QUEEN INSPIRE!!!!!\n";
     }
-    std::cout << "QUEEN INSPIRE\n";
 }
 
 void QueenInspire::OnGameStart(SuperPiece& piece)
