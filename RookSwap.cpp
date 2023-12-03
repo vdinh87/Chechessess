@@ -11,7 +11,6 @@ bool RookSwap::Effect(const SuperPiece &piece)
     Color rook_color = piece.GetColor();
 
     Square sq = piece.GetSquare();
-    
 
     U64 king_board = game.GetBoardOf(King, rook_color);
 

@@ -25,7 +25,7 @@ public:
     bool ConvertToSuperPiece(SuperPieceInfo info, Square square);
     bool ConvertSuperPiecesofType(SuperPieceInfo info, Color color);
     bool UpgradeSuperPieceTier(Square square, Tier to_tier);
-
+    
     //utility
     U64 GetBoardOf(Piece piece, Color color);
     U64 GetBoardOf(Color color);
