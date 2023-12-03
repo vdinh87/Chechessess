@@ -7,7 +7,7 @@ Ability("Queen Kamikaze", AbilityType::on_capture, game_, log_)
     
 }
 
-bool QueenKamikaze::OnCapture(SuperPiece& piece, Square to_capture)
+bool QueenKamikaze::OnCapture(SuperPiece& piece, Square to_capture, Square from_sq)
 {
     //captured square isn't the queen, ignore
     if( piece.GetSquare() != to_capture )

@@ -16,7 +16,7 @@ public:
     //Ability use
     bool UseAbility(Tier key);
     void ModifyMove(U64& move);
-    bool OnCaptureEffects(Square to_capture);
+    bool OnCaptureEffects(Square to_capture, Square from_sq);
     void OnGameStartEffects();
     //updaters
     void UpdateSquare(Square to_sq);

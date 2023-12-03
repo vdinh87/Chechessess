@@ -47,6 +47,8 @@ bool SuperChessGame::UnSuper(Square square)
 
 bool SuperChessGame::RemovePiece(Square square)
 {
+    std::cout <<"Test: 3\n";
+
     U64 p = 1ULL << square;
     Piece p_type = GetPieceType(p);
     if ((p & PieceTypeArray[King]))
@@ -204,10 +206,12 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
     if( board & (1ULL << to_sq) )
     {
         for(const auto& k : keys)
-        {            
+        {
+            std::cout << "Loop on: " << SquareStrings[k] << std::endl;
             auto it = super_pieces.find(k);
-            if ( it != super_pieces.end() && it->second->OnCaptureEffects(to_sq) )
+            if ( it != super_pieces.end() && it->second->OnCaptureEffects(to_sq, from_sq) )
             {
+                std::cout <<"In if statemnt\n";
                 do_normal_capture = false;
             }
         }

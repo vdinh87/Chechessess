@@ -12,7 +12,7 @@ public:
     RookRamBuff(SuperChessGame& game_, Logger& log_);
     ~RookRamBuff() = default;
 
-    bool OnCapture(SuperPiece& piece, Square to_capture) override;
+    bool OnCapture(SuperPiece& piece, Square to_capture, Square from_sq) override;
     std::unique_ptr<Ability> Clone() const override;
     
     bool HasBuff(SuperPiece& piece) const;
