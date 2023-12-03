@@ -11,12 +11,11 @@ bool PawnConvertSuper::OnCapture(SuperPiece &piece, Square to_capture)
     Square sq = piece.GetSquare();        // gets square.
     Piece enemy_piece = game.GetPieceType(1ULL << to_capture);
 
-    game.RemovePiece(to_capture);
-    game.AddPiece(to_capture, color, enemy_piece);
-    game.RemovePiece(sq);
+    if ( game.RemovePiece(to_capture) && game.AddPiece(to_capture, color, enemy_piece) && game.RemovePiece(sq) && game.ConvertToSuperPiece(std::make_pair(enemy_piece, piece.GetTier()), to_capture))
+        return true;
+    
+    return false;
 
-    SuperPieceInfo info = std::make_pair(enemy_piece, piece.GetTier());
-    game.ConvertToSuperPiece(info, to_capture);
 }
 
 std::unique_ptr<Ability> PawnConvertSuper::Clone() const

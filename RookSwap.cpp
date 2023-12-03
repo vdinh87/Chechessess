@@ -10,12 +10,9 @@ bool RookSwap::Effect(const SuperPiece &piece)
 {
     Color rook_color = piece.GetColor();
 
-    Square sq = GetInputSquare("Choose Rook to Swap: ");
-    if(sq == Square::invalid || game.GetPieceType(1ULL << sq) == Piece::Rook || game.GetColor(1ULL << sq) == rook_color)
-    {
-        std::cout << "Invalid square" << std::endl;
-        return false;
-    }
+    Square sq = piece.GetSquare();
+    
+
     U64 king_board = game.GetBoardOf(King, rook_color);
 
     int current_turn = log.GetCurrentTurn();
