@@ -2,7 +2,7 @@
 #include "PawnConvertSuper.hpp"
 
 PawnConvertSuper::PawnConvertSuper(SuperChessGame &game_, Logger &log_) : 
-Ability("Pawn Convert Super", AbilityType::active, game_, log_)
+Ability("Pawn Convert Super", AbilityType::on_capture, game_, log_)
 {
 }
 

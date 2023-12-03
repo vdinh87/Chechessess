@@ -54,4 +54,5 @@ public:
     //to be removed
     int GetNumAbilities(Square sq);
     void PrintAbilityNames(Square sq);
+    void PrintAbilityNames(Square sq, AbilityType type);
 };

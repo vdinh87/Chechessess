@@ -111,6 +111,18 @@ std::vector<std::string> SuperPiece::GetAbilityNames() const
     return v;
 }
 
+std::vector<std::string> SuperPiece::GetAbilityNames(AbilityType type) const
+{
+    std::vector<std::string> v;
+    for(auto& a : abilities)
+    {
+        if(a.second->GetType() == type)
+            v.push_back(a.second->GetName());
+    }
+    
+    return v;
+}
+
 int SuperPiece::GetNumberOfAbilities() const
 {
     return abilities.size();

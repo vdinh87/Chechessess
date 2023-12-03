@@ -395,8 +395,22 @@ void SuperChessGame::PrintAbilityNames(Square sq)
     auto names = super_pieces[sq]->GetAbilityNames();
     for (int i = 0; i < names.size(); i++)
     {
-        std::cout << "(" << i << ")"
-                  << " " << names[i] << " ";
+        std::cout << "(" << i << ")" << " " << names[i] << " ";
+    }
+    std::cout << std::endl;
+}
+
+void SuperChessGame::PrintAbilityNames(Square sq, AbilityType type)
+{
+    auto all_names = super_pieces[sq]->GetAbilityNames();
+    auto names = super_pieces[sq]->GetAbilityNames(type);
+    for (int i = 0; i < all_names.size(); i++)
+    {
+        auto it = std::find(names.begin(), names.end(), all_names[i]);
+        if(it != names.end())
+        {
+            std::cout << "(" << i << ")" << " " << all_names[i] << " ";
+        }
     }
     std::cout << std::endl;
 }

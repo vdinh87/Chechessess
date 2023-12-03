@@ -34,6 +34,8 @@ public:
 
     //to be removed? just for testing tbh
     std::vector<std::string> GetAbilityNames() const;
+    std::vector<std::string> GetAbilityNames(AbilityType type) const;
+
     int GetNumberOfAbilities() const;
 };
 

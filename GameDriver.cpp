@@ -158,7 +158,9 @@ void PlaySuperChessGame(SuperPieceInfo white_info, SuperPieceInfo black_info)
                     if( is_super )
                     {
                         std::cout << "Abilities: ";
-                        spg->PrintAbilityNames(selected_square);
+                        spg->PrintAbilityNames(selected_square, AbilityType::active);
+                        // Uncomment if you want to see list of ALL abilities
+                        // spg->PrintAbilityNames(selected_square);
                     }
                 }
 
@@ -236,7 +238,7 @@ void TestSuperChessGame()
 
 int main()
 {
-    SuperPieceInfo info = std::make_pair(Piece::King, Tier::T1);
+    SuperPieceInfo info = std::make_pair(Piece::Rook, Tier::T4);
     PlaySuperChessGame( info, info );
     
 }
