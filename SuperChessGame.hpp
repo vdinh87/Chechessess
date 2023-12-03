@@ -22,6 +22,7 @@ public:
     bool AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion = 0);
     bool UnSuper(Square square);
     bool ConvertPieceToSide(Square square, Color side);
+    bool ConvertPiece(Piece from_piece, Color from_color, Square square, Piece to_piece);  
     bool ConvertToSuperPiece(SuperPieceInfo info, Square square);
     bool ConvertSuperPiecesofType(SuperPieceInfo info, Color color);
     bool UpgradeSuperPieceTier(Square square, Tier to_tier);
