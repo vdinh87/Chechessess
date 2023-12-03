@@ -6,7 +6,7 @@ Ability("Pawn Convert Super", AbilityType::on_capture, game_, log_)
 {
 }
 
-bool PawnConvertSuper::OnCapture(SuperPiece &piece, Square to_capture, Square from_sq)
+bool PawnConvertSuper::OnCapture(SuperPiece &piece, Square to_capture, Square from_sq, std::vector<Square> &keys_to_remove)
 {
     const Color color = piece.GetColor(); // gets color
     Square sq = piece.GetSquare();        // gets square.

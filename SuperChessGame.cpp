@@ -203,13 +203,15 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
         keys.push_back(sp.first);
     }
 
+    std::vector<Square> keys_to_remove;
+    
     if( board & (1ULL << to_sq) )
     {
         for(const auto& k : keys)
         {
             std::cout << "Loop on: " << SquareStrings[k] << std::endl;
             auto it = super_pieces.find(k);
-            if ( it != super_pieces.end() && it->second->OnCaptureEffects(to_sq, from_sq) )
+            if ( it != super_pieces.end() && it->second->OnCaptureEffects(to_sq, from_sq, keys_to_remove) )
             {
                 std::cout <<"In if statemnt\n";
                 do_normal_capture = false;
@@ -217,6 +219,11 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
         }
     }
 
+    for(const auto &k : keys_to_remove)
+    {
+        RemovePiece(k);
+    }
+    
     if(do_normal_capture)
     {
         // If piece is removed, add to Graveyard

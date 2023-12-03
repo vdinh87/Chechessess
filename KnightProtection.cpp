@@ -6,7 +6,7 @@ Ability("Knight Protection", AbilityType::on_capture, game_, log_)
 {
 }
 
-bool KnightProtection::OnCapture(SuperPiece& piece, Square to_capture, Square from_sq)
+bool KnightProtection::OnCapture(SuperPiece& piece, Square to_capture, Square from_sq, std::vector<Square> &keys_to_remove)
 {
     // one time protect already used
     if(!can_protect)

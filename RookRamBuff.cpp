@@ -6,7 +6,7 @@ Ability("Rook Ram Buff", AbilityType::on_capture, game_, log_, 6, 0)
 {
 }
 
-bool RookRamBuff::OnCapture(SuperPiece& piece, Square to_capture, Square from_sq)
+bool RookRamBuff::OnCapture(SuperPiece& piece, Square to_capture, Square from_sq, std::vector<Square> &keys_to_remove)
 {
     //captured square isn't the rook, ignore
     if( piece.GetSquare() != to_capture )

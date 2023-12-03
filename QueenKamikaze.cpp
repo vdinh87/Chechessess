@@ -7,7 +7,7 @@ Ability("Queen Kamikaze", AbilityType::on_capture, game_, log_)
     
 }
 
-bool QueenKamikaze::OnCapture(SuperPiece& piece, Square to_capture, Square from_sq)
+bool QueenKamikaze::OnCapture(SuperPiece& piece, Square to_capture, Square from_sq, std::vector<Square> &keys_to_remove)
 {
     //captured square isn't the queen, ignore
     if( piece.GetSquare() != to_capture )
@@ -49,7 +49,7 @@ bool QueenKamikaze::OnCapture(SuperPiece& piece, Square to_capture, Square from_
     }
 
     //remove queen
-    game.RemovePiece(to_capture);
+    keys_to_remove.push_back(to_capture);
 
     std::cout << "BOOM!" << std::endl;
     return true;

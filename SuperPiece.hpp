@@ -16,7 +16,7 @@ public:
     //Ability use
     bool UseAbility(Tier key);
     void ModifyMove(U64& move);
-    bool OnCaptureEffects(Square to_capture, Square from_sq);
+    bool OnCaptureEffects(Square to_capture, Square from_sq, std::vector<Square> &keys_to_remove);
     void OnGameStartEffects();
     //updaters
     void UpdateSquare(Square to_sq);
