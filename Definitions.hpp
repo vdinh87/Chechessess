@@ -13,6 +13,7 @@
 #include <bitset>
 #include <unordered_map>
 #include <map>
+#include <random>
 #include <utility>
 #include <memory>
 
@@ -118,7 +119,7 @@ enum Direction : unsigned char {
 
 enum Tier : unsigned char { T0, T1, T2, T3, T4, not_superpiece };
 const std::string TierStrings[] = { "T0", "T1", "T2", "T3", "T4" };
-enum AbilityType : unsigned char { active, move_modifer, on_capture };
+enum AbilityType : unsigned char { active, move_modifer, on_capture, on_game_start };
 
 enum Action :unsigned char {
   Capture, Check, Castle, Checkmate, Promotion, Move, Abilityes

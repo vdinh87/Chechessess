@@ -7,6 +7,7 @@
 #include "PawnConvert.cpp"
 #include "PawnConvertSuper.cpp"
 #include "PawnTwoTilesBackwards.cpp"
+#include "KingInspire.cpp"
 #include "KingTurnIntoDead.cpp"
 #include "KingSniperShot.cpp"
 #include "KingTeleport.cpp"
@@ -18,13 +19,13 @@
 #include "KnightProtection.cpp"
 #include "RookSwap.cpp"
 #include "RookRamBuff.cpp"
+#include "QueenInspire.cpp"
 #include "QueenKamikaze.cpp"
 #include "Definitions.hpp"
 
 //TO BE REPLACED
-#include "KingTier0.hpp"
 #include "KnightTier2.hpp"
-#include "QueenTier0.hpp"
+#include "RookTier2.hpp"
 
 class AbilityLibrary{
 private:

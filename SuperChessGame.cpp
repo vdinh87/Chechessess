@@ -13,6 +13,7 @@ SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPiec
     al = std::make_shared<AbilityLibrary>(*this, log);
 
     InitSuperPieces(white_info, black_info);
+    InitGameStartEffects();
 }
 
 bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color color, bool conversion)
@@ -31,6 +32,17 @@ bool SuperChessGame::AddSuperPiece(SuperPieceInfo info, Square square, Color col
     super_pieces[square] = std::make_shared<SuperPiece>(v, info, square, color);
 
     return true;
+}
+
+bool SuperChessGame::UnSuper(Square square)
+{
+    auto it = super_pieces.find(square);
+    if (it != super_pieces.end())
+    {
+        super_pieces.erase(square);
+        return true;
+    }
+    return false;
 }
 
 bool SuperChessGame::RemovePiece(Square square)
@@ -53,6 +65,7 @@ bool SuperChessGame::RemovePiece(Square square)
         super_pieces.erase(square);
 
     UpdateBoard();
+
     return true;
 }
 
@@ -88,7 +101,7 @@ bool SuperChessGame::ConvertSuperPiecesofType(SuperPieceInfo info, Color color)
 {
     CapTier(info.second, info.first);
     std::vector<std::unique_ptr<Ability>> v;
-
+    
     std::pair<Color, Piece> key = std::make_pair(color, info.first);
     std::vector<Square> start_loc = StartingSquares[key];
     for (const auto &sq : start_loc)
@@ -96,7 +109,6 @@ bool SuperChessGame::ConvertSuperPiecesofType(SuperPieceInfo info, Color color)
         MakeAbilityVector(v, info);
         super_pieces[sq] = std::make_shared<SuperPiece>(v, info, sq, color);
     }
-
     return true;
 }
 
@@ -128,7 +140,6 @@ U64 SuperChessGame::GetAttacks(Square square_) const
             which_function = i;
     }
     attacks = ChessGame::GetAttacks(square_, board, which_function);
-
     // super piece modify
     const auto it = super_pieces.find(square_);
     if (it != super_pieces.end())
@@ -140,7 +151,6 @@ U64 SuperChessGame::GetAttacks(Square square_) const
         attacks = attacks & FilterLegalKingMoves(attacks, piece);
     else
         attacks = attacks & FilterPin(attacks, piece);
-
     return attacks;
 }
 
@@ -185,12 +195,19 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
 {
     bool do_normal_capture = true;
     // If piece is removed, check on capture effect
+    std::vector<Square> keys;
+    for( const auto& sp: super_pieces)
+    {
+        keys.push_back(sp.first);
+    }
+
     if( board & (1ULL << to_sq) )
     {
-        for( const auto& sp: super_pieces)
+        for(const auto& k : keys)
         {            
-            if( sp.second->OnCaptureEffects(to_sq) )
-            {    
+            auto it = super_pieces.find(k);
+            if ( it != super_pieces.end() && it->second->OnCaptureEffects(to_sq) )
+            {
                 do_normal_capture = false;
             }
         }
@@ -218,6 +235,7 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
             super_pieces[to_sq]->UpdateSquare(to_sq);
         }
     }
+
 }
 
 // init
@@ -225,6 +243,14 @@ void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white_info, const Sup
 {
     ConvertSuperPiecesofType(white_info, Color::white);
     ConvertSuperPiecesofType(black_info, Color::black);
+}
+
+void SuperChessGame::InitGameStartEffects()
+{
+    for( const auto& sp: super_pieces)
+    {            
+        sp.second->OnGameStartEffects();
+    }
 }
 
 U64 SuperChessGame::GetBoardOf(Piece piece, Color color)

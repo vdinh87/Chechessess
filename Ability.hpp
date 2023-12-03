@@ -33,6 +33,7 @@ public:
     virtual bool Effect(const SuperPiece& piece);
     virtual void Modify(U64& move, Square piece);
     virtual bool OnCapture(SuperPiece& piece, Square to_capture);
+    virtual void OnGameStart(SuperPiece& piece);
 
     //temp?
     Square GetInputSquare(const std::string& prompt) const;
@@ -89,6 +90,12 @@ bool Ability::OnCapture(SuperPiece& piece, Square to_capture)
     std::cout << "Normal on capture" << std::endl;
     return false;
 }
+
+void Ability::OnGameStart(SuperPiece& piece)
+{
+    std::cout << "Normal on game start" << std::endl;
+}
+
 
 Square Ability::GetInputSquare(const std::string& prompt) const
 {
