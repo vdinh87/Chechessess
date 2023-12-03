@@ -6,7 +6,7 @@ Ability("Pawn Convert Super", AbilityType::on_capture, game_, log_)
 {
 }
 
-bool PawnConvertSuper::OnCapture(SuperPiece &piece, Square to_capture)
+bool PawnConvertSuper::OnCapture(SuperPiece &piece, Square to_capture, Square from_sq)
 {
     const Color color = piece.GetColor(); // gets color
     Square sq = piece.GetSquare();        // gets square.

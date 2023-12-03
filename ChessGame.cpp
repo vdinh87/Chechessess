@@ -689,6 +689,8 @@ bool ChessGame::IsWin(Color color) const
 // board editing
 bool ChessGame::AddPiece(Square square, Color color, Piece piece)
 { 
+    std::cout <<"Test: 4\n";
+
     U64 p = 0ULL;
     set_bit(p, square);
     if (!(board & p) && color == white)

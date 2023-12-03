@@ -32,7 +32,7 @@ public:
     //methods
     virtual bool Effect(const SuperPiece& piece);
     virtual void Modify(U64& move, Square piece);
-    virtual bool OnCapture(SuperPiece& piece, Square to_capture);
+    virtual bool OnCapture(SuperPiece& piece, Square to_capture, Square from_sq);
     virtual void OnGameStart(SuperPiece& piece);
 
     //temp?
@@ -85,7 +85,7 @@ void Ability::Modify(U64& move, Square piece)
     std::cout << "Normal modify" << std::endl;
 }
 
-bool Ability::OnCapture(SuperPiece& piece, Square to_capture)
+bool Ability::OnCapture(SuperPiece& piece, Square to_capture, Square from_sq)
 {
     std::cout << "Normal on capture" << std::endl;
     return false;

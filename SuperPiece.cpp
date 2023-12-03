@@ -27,13 +27,13 @@ void SuperPiece::ModifyMove(U64& move)
     }
 }
 
-bool SuperPiece::OnCaptureEffects(Square to_capture)
+bool SuperPiece::OnCaptureEffects(Square to_capture, Square from_sq)
 {
     bool success = false;
 
     for(const auto& pair : abilities)
     {
-        if( (pair.second->GetType() == AbilityType::on_capture) && pair.second->OnCapture(*this, to_capture) )
+        if( (pair.second->GetType() == AbilityType::on_capture) && pair.second->OnCapture(*this, to_capture, from_sq) )
         {
             success = true;
         }

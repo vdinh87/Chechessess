@@ -6,7 +6,7 @@ Ability("Knight Protection", AbilityType::on_capture, game_, log_)
 {
 }
 
-bool KnightProtection::OnCapture(SuperPiece& piece, Square to_capture)
+bool KnightProtection::OnCapture(SuperPiece& piece, Square to_capture, Square from_sq)
 {
     // one time protect already used
     if(!can_protect)
