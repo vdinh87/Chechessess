@@ -91,6 +91,20 @@ bool SuperChessGame::ConvertPieceToSide(Square square, Color side)
     return true;
 }
 
+bool SuperChessGame::ConvertPiece(Piece from_piece, Color from_color, Square square, Piece to_piece) {
+    if (from_color == black){
+        clear_bit(BlackPiecesArray[from_piece], square);
+        set_bit(BlackPiecesArray[to_piece], square);
+        return true;
+    } else if (from_color == white){
+        clear_bit(WhitePiecesArray[from_piece], square);
+        set_bit(WhitePiecesArray[to_piece], square);
+        return true;
+    } 
+    return false;
+}
+
+
 bool SuperChessGame::ConvertToSuperPiece(SuperPieceInfo info, Square square)
 {
     auto it = super_pieces.find(square);
