@@ -192,6 +192,11 @@ U64 ChessGame::GetAttacks(Square square_) const
 
     return attacks;
 }
+Action ChessGame::Promote(Square from_sq,Square to_sq,Color from_color,Piece to_piece){
+    Piece promoting_to_piece = PromoteInput(from_sq, to_sq, from_color, to_piece);
+    ExecuteMove(from_color, from_sq, to_sq, promoting_to_piece, to_piece);
+    return Action::Promotion;
+}
 
 
 U64 ChessGame::GetCastling(Color color) const
@@ -542,9 +547,7 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
         } // Promotion conditions
         else if (from_piece == Pawn && to_sq >= 56 && to_sq <= 63)
         { // Promotion
-            Piece promoting_to_piece = PromoteInput(from_sq, to_sq, from_color, to_piece);
-            ExecuteMove(from_color, from_sq, to_sq, promoting_to_piece, to_piece);
-            actions.push_back(Action::Promotion);
+            actions.push_back(Promote(from_sq, to_sq, from_color, to_piece));
         } // En passant conditions
         else if (EnPassant(from_sq, from_piece, from_color))
         { // En passant

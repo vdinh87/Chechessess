@@ -48,6 +48,7 @@ protected:
 
     // Move functions
     virtual void ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece);
+    Action Promote(Square from_sq,Square to_sq,Color from_color,Piece to_piece);
     U64 GetCastling(Color color) const;
     U64 GetEnPassant(Square square, const U64 occupancy_, Color color) const;
     bool EnPassant(Square square, Piece type, Color color) const;
