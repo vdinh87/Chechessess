@@ -194,6 +194,7 @@ Action ChessGame::Promote(Square from_sq, Square to_sq, Color from_color, Piece 
 {
     Piece promoting_to_piece = PromoteInput(from_sq, to_sq, from_color, to_piece);
     ExecuteMove(from_color, from_sq, to_sq, promoting_to_piece, to_piece);
+    (from_color == black) ? clear_bit(BlackPiecesArray[Pawn], from_sq) : clear_bit(WhitePiecesArray[Pawn], from_sq);
     return Action::Promotion;
 }
 

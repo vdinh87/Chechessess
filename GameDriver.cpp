@@ -238,7 +238,8 @@ void TestSuperChessGame()
 
 int main()
 {
-    SuperPieceInfo info = std::make_pair(Piece::Queen, Tier::T1);
-    PlaySuperChessGame( info, info );
+
+    // SuperPieceInfo info = std::make_pair(Piece::Queen, Tier::T1);
+    // PlaySuperChessGame( info, info );
     
 }
