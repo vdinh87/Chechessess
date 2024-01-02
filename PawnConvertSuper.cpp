@@ -13,13 +13,9 @@ bool PawnConvertSuper::OnCapture(SuperPiece &piece, Square to_capture, Square fr
     Piece enemy_piece = game.GetPieceType(1ULL << to_capture);
 
 
-    Square sq = piece.GetSquare();
     if (from_sq != sq){
         return false;
     }
-
-    const Color color = piece.GetColor(); // gets color
-    Piece enemy_piece = game.GetPieceType(1ULL << to_capture);
 
     if ( game.RemovePiece(to_capture) && game.AddPiece(to_capture, color, enemy_piece) && game.ConvertToSuperPiece(std::make_pair(enemy_piece, piece.GetTier()), to_capture)){
         keys_to_remove.push_back(sq);
