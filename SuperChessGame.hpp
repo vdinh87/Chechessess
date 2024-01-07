@@ -51,6 +51,7 @@ public:
 
     //misc
     bool UseAbility(Square sq, Tier t);
+    Action Promote(Square from_sq, Square to_sq, Color from_color, Piece to_piece);
 
     //to be removed
     int GetNumAbilities(Square sq);

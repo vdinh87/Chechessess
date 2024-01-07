@@ -201,10 +201,126 @@ U64 SuperChessGame::GetAttacks(Square square_, U64 team_filter) const
     return attacks;
 }
 
+Action SuperChessGame::Promote(Square from_sq, Square to_sq, Color from_color, Piece to_piece)
+{
+    if (!IsSuperPiece(from_sq))
+        return ChessGame::Promote(from_sq, to_sq, from_color, to_piece);
+    Piece promoting_to_piece = PromoteInput(from_sq, to_sq, from_color, to_piece);
+    ExecuteMove(from_color, from_sq, to_sq, promoting_to_piece, to_piece);
+    RemovePiece(from_sq);
+
+    // piece tier of current tier - 1 static_cast<Tier>(static_cast<int>(super_pieces.at(from_sq)->GetTier()) - 1)
+    SuperPieceInfo info = std::make_pair(promoting_to_piece, T1);
+    ConvertToSuperPiece(info, to_sq);
+
+    return Action::Promotion;
+}
+
+
+
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 {
-    // for passive abilities later
-    return ChessGame::Move(from_sq, to_sq);
+    std::vector<Action> actions;
+    U64 from = 0ULL;
+    U64 to = 0ULL;
+    set_bit(from, from_sq);
+    set_bit(to, to_sq);
+
+    U64 ally_pieces = ChessGame::GetColor(from) == white ? WhitePieces : BlackPieces;
+
+    // no piece on board or parameters are same square
+    if (!(from & board) || (from_sq == to_sq) || (to & ally_pieces))
+        return actions;
+
+    Color from_color = ChessGame::GetColor(from);
+    Piece from_piece = ChessGame::GetPieceType(from);
+    Piece to_piece = ChessGame::GetPieceType(to);
+
+    if (from_color == white)
+    { // Castling Conditions
+        if ((from_piece == King) && (ChessGame::GetCastling(from_color) != 0) &&
+            ((to_sq == c1) || (to_sq == c8) || (to_sq == g1) || (to_sq == g8)))
+        {                                                         // Castling
+            U64 valid_moves = ChessGame::GetCastling(from_color); // does null check and InCheck
+            ChessGame::ExecuteMove(from_color, from_sq, to_sq, from_piece, to_piece);
+            // Checks which way
+            if (to_sq == c1 && get_bit(valid_moves, c1))
+            {
+                ChessGame::ExecuteMove(from_color, a1, static_cast<Square>(static_cast<int>(to_sq) + 1), Rook, King);
+            }
+            else if (to_sq == g1 && get_bit(valid_moves, g1))
+                ChessGame::ExecuteMove(from_color, h1, static_cast<Square>(static_cast<int>(to_sq) - 1), Rook, Rook);
+
+            actions.push_back(Action::Castle);
+        } // Promotion conditions
+        else if (from_piece == Pawn && to_sq >= 56 && to_sq <= 63)
+        { // Promotion
+            actions.push_back(Promote(from_sq, to_sq, from_color, to_piece));
+        } // En passant conditions
+        else if (EnPassant(from_sq, from_piece, from_color))
+        { // En passant
+            ChessGame::ExecuteMove(from_color, from_sq, static_cast<Square>(static_cast<int>(GetPreviousMove().to) + 8), from_piece, to_piece);
+            // clear_bit(BlackPiecesArray[to_piece], GetPreviousMove().to);
+            ChessGame::RemovePiece(GetPreviousMove().to);
+            actions.push_back(Action::Capture);
+        }
+        else // Normal Move
+        {
+            ChessGame::ExecuteMove(from_color, from_sq, to_sq, from_piece, to_piece);
+            // if capturing
+            if (board & (1ULL << to_sq))
+                actions.push_back(Action::Capture);
+            else
+                actions.push_back(Action::Move);
+        }
+    }
+    else if (from_color == black)
+    { // Castling Conditions
+        if ((from_piece == King) && (ChessGame::GetCastling(from_color) != 0) &&
+            ((to_sq == c1) || (to_sq == c8) || (to_sq == g1) || (to_sq == g8)))
+        {                                                         // Castling
+            U64 valid_moves = ChessGame::GetCastling(from_color); // does null check and InCheck
+            ChessGame::ExecuteMove(from_color, from_sq, to_sq, King, King);
+            // Checks which way
+            if (to_sq == c8 && get_bit(valid_moves, c8))
+                ChessGame::ExecuteMove(from_color, a8, static_cast<Square>(static_cast<int>(to_sq) + 1), Rook, Rook);
+            else if (to_sq == g8 && get_bit(valid_moves, g8))
+                ChessGame::ExecuteMove(from_color, h8, static_cast<Square>(static_cast<int>(to_sq) - 1), Rook, Rook);
+
+            actions.push_back(Action::Castle);
+        }
+        else if (from_piece == Pawn && to_sq >= 0 && to_sq <= 7)
+        { // Promotion
+            actions.push_back(Promote(from_sq, to_sq, from_color, to_piece));
+        } // Enpassant conditoins
+        else if (EnPassant(from_sq, from_piece, from_color))
+        { // Enpassant
+            ChessGame::ExecuteMove(from_color, from_sq, static_cast<Square>(static_cast<int>(GetPreviousMove().to) - 8), from_piece, to_piece);
+            // clear_bit(WhitePiecesArray[to_piece], GetPreviousMove().to);
+            ChessGame::RemovePiece(GetPreviousMove().to);
+            actions.push_back(Capture);
+        } // Normal move
+        else
+        {
+            ChessGame::ExecuteMove(from_color, from_sq, to_sq, from_piece, to_piece);
+            // if capturing
+            if (board & (1ULL << to_sq))
+                actions.push_back(Action::Capture);
+            else
+                actions.push_back(Action::Move);
+        }
+    }
+
+    from_color = static_cast<Color>(!static_cast<bool>(from_color));
+    if (ChessGame::InCheck(board, from_color, 0)) // const U64 &occupany_, Color color_of_king, int offset
+        actions.push_back(Check);
+
+    // after move
+    ChessGame::UpdateBoard();
+
+    if (IsWin(white) || IsWin(black))
+        actions.push_back(Checkmate);
+    return actions;  
 }
 
 void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)

@@ -239,7 +239,13 @@ void TestSuperChessGame()
 int main()
 {
 
-    // SuperPieceInfo info = std::make_pair(Piece::Queen, Tier::T1);
-    // PlaySuperChessGame( info, info );
-    
+    SuperPieceInfo info = std::make_pair(Piece::Pawn, Tier::T1);
+    PlaySuperChessGame( info, info );
+    auto spg = std::make_unique<SuperChessGame>(info, info);
+    spg->Move(a2,b7);
+    spg->PrintBoard();
+    spg->Move(b7, a8);
+    spg->PrintBoard();
+
+
 }
