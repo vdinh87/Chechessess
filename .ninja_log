@@ -1,0 +1,16 @@
+# ninja log v5
+536	590	7264660764407478	ChessQt_autogen/EWIEGA46WW/qrc_Resource.cpp	c07a822ccd3b9fb0
+6	154	7264662425663568	C:/code/Chechessess/CMakeFiles/cmake.verify_globs	17b360a42069ae5e
+3	536	7264660763407252	C:/code/Chechessess/ChessQt_autogen/mocs_compilation.cpp	ffa18440453fac09
+3	536	7264660763407252	ChessQt_autogen/timestamp	ffa18440453fac09
+3	536	7264660763407252	ChessQt_autogen/mocs_compilation.cpp	ffa18440453fac09
+601	705	7264660765587749	CMakeFiles/ChessQt.dir/ChessQt_autogen/EWIEGA46WW/qrc_Resource.cpp.obj	33907b84607e6895
+595	2258	7264660781121248	CMakeFiles/ChessQt.dir/main.cpp.obj	f370e1dea3ebec3
+3	536	7264660763407252	C:/code/Chechessess/ChessQt_autogen/timestamp	ffa18440453fac09
+536	590	7264660764407478	C:/code/Chechessess/ChessQt_autogen/EWIEGA46WW/qrc_Resource.cpp	c07a822ccd3b9fb0
+590	2240	7264660780931205	CMakeFiles/ChessQt.dir/ChessQt_autogen/mocs_compilation.cpp.obj	928d0ce4a4f4f126
+593	2346	7264660781991441	CMakeFiles/ChessQt.dir/drag.cpp.obj	d2fa118b9bd10c20
+154	845	7264662432325093	build.ninja	b9dc8c57fa4877be
+4	160	0	C:/code/Chechessess/CMakeFiles/cmake.verify_globs	17b360a42069ae5e
+14	2066	7264662455730364	CMakeFiles/ChessQt.dir/mainwindow.cpp.obj	e8a47349957db1b6
+2066	2282	7264662457830842	ChessQt.exe	86cfdcb152798099

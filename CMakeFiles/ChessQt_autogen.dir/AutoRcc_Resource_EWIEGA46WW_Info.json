@@ -1,0 +1,35 @@
+{
+	"BUILD_DIR" : "C:/code/Chechessess/ChessQt_autogen",
+	"CMAKE_BINARY_DIR" : "C:/code/Chechessess",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/code/Chechessess",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/code/Chechessess",
+	"CMAKE_SOURCE_DIR" : "C:/code/Chechessess",
+	"INCLUDE_DIR" : "C:/code/Chechessess/ChessQt_autogen/include",
+	"INPUTS" : 
+	[
+		"C:/code/Chechessess/img/black_bishop.png",
+		"C:/code/Chechessess/img/black_rook.png",
+		"C:/code/Chechessess/img/black_pawn.png",
+		"C:/code/Chechessess/img/white_knight.png",
+		"C:/code/Chechessess/img/blank.png",
+		"C:/code/Chechessess/img/white_king.png",
+		"C:/code/Chechessess/img/board.png",
+		"C:/code/Chechessess/img/black_queen.png",
+		"C:/code/Chechessess/img/black_knight.png",
+		"C:/code/Chechessess/img/white_bishop.png",
+		"C:/code/Chechessess/img/white_queen.png",
+		"C:/code/Chechessess/img/white_pawn.png",
+		"C:/code/Chechessess/img/black_king.png",
+		"C:/code/Chechessess/img/white_rook.png"
+	],
+	"LOCK_FILE" : "C:/code/Chechessess/CMakeFiles/ChessQt_autogen.dir/AutoRcc_Resource_EWIEGA46WW_Lock.lock",
+	"MULTI_CONFIG" : false,
+	"OPTIONS" : [ "-name", "Resource" ],
+	"OUTPUT_CHECKSUM" : "EWIEGA46WW",
+	"OUTPUT_NAME" : "qrc_Resource.cpp",
+	"RCC_EXECUTABLE" : "C:/Qt/6.6.1/mingw_64/./bin/rcc.exe",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "C:/code/Chechessess/CMakeFiles/ChessQt_autogen.dir/AutoRcc_Resource_EWIEGA46WW_Used.txt",
+	"SOURCE" : "C:/code/Chechessess/Resource.qrc",
+	"VERBOSITY" : 0
+}

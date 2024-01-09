@@ -60,7 +60,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -70,7 +70,7 @@
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -80,7 +80,7 @@
           <string notr="true">    border-image: url(&quot;:/img/white_bishop.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -90,7 +90,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -100,7 +100,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -110,7 +110,7 @@
           <string notr="true">    border-image: url(&quot;:/img/black_rook.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -120,7 +120,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -130,7 +130,7 @@
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -140,7 +140,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -151,17 +151,17 @@
 </string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="6" column="3">
-        <widget class="QLabel" name="label_19">
+        <widget class="Drag" name="label_19">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string>AOMOGNUS </string>
          </property>
         </widget>
        </item>
@@ -171,7 +171,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -181,7 +181,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -192,7 +192,7 @@
 </string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -202,7 +202,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -212,7 +212,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -223,7 +223,7 @@
 </string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -233,7 +233,7 @@
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -243,7 +243,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -253,7 +253,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -263,7 +263,7 @@
           <string notr="true">border-image: url(&quot;:/img/black_king.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -273,7 +273,7 @@
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -283,7 +283,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -293,7 +293,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -303,7 +303,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -313,7 +313,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -323,7 +323,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -333,7 +333,7 @@
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -343,7 +343,7 @@
           <string notr="true">    border-image: url(&quot;:/img/black_queen.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -353,7 +353,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -363,7 +363,7 @@
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -374,7 +374,7 @@
 </string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -384,7 +384,7 @@
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -394,7 +394,7 @@
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -405,7 +405,7 @@
 </string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -415,7 +415,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -425,7 +425,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -435,7 +435,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -445,17 +445,17 @@
           <string notr="true">    border-image: url(&quot;:/img/white_queen.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="1" column="3">
-        <widget class="QLabel" name="label_54">
+        <widget class="Drag" name="label_54">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string>wafwaGEWG</string>
          </property>
         </widget>
        </item>
@@ -465,7 +465,7 @@
           <string notr="true">    border-image: url(&quot;:/img/white_knight.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -475,7 +475,7 @@
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -486,7 +486,7 @@
 </string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -496,7 +496,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -506,7 +506,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -516,7 +516,7 @@
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -526,7 +526,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -537,7 +537,7 @@
 </string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -547,7 +547,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -557,7 +557,7 @@
           <string notr="true">    border-image: url(&quot;:/img/white_king.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -567,7 +567,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -577,7 +577,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -587,7 +587,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -597,7 +597,7 @@
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -607,7 +607,7 @@
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -617,7 +617,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -628,7 +628,7 @@
 </string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -638,7 +638,7 @@
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -648,7 +648,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -658,7 +658,7 @@
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -668,7 +668,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -678,7 +678,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -688,7 +688,7 @@
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -699,7 +699,7 @@
 </string>
          </property>
          <property name="text">
-          <string>                    </string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -745,6 +745,13 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Drag</class>
+   <extends>QLabel</extends>
+   <header>drag.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
