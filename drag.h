@@ -13,14 +13,23 @@ public:
         setAcceptDrops(true);
     }
 
+
+
+
 protected:
+
+
     void mousePressEvent(QMouseEvent *event) override {
+
+
         if (event->button() == Qt::LeftButton) {
             QDrag *drag = new QDrag(this);
             QMimeData *mimeData = new QMimeData;
 
+            //we would probably make stuff green here.
+
             // Here we could add any data we want to the mime data object
-            mimeData->setText(this->text());
+            mimeData->setText(this->styleSheet());
             drag->setMimeData(mimeData);
 
             QPixmap pixmap(this->size());
@@ -29,6 +38,7 @@ protected:
 
             drag->exec();
         }
+        this->setStyleSheet("    border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;\\n");
     }
 
     void dragEnterEvent(QDragEnterEvent *event) override {
@@ -38,7 +48,7 @@ protected:
     }
 
     void dropEvent(QDropEvent *event) override {
-        this->setText(event->mimeData()->text());
+        this->setStyleSheet(event->mimeData()->text());
     }
 };
 

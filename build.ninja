@@ -209,7 +209,7 @@ build ChessQt_autogen/EWIEGA46WW/qrc_Resource.cpp | ${cmake_ninja_workdir}ChessQ
 #############################################
 # Phony custom command for CMakeFiles\ChessQt_autogen_timestamp_deps
 
-build CMakeFiles/ChessQt_autogen_timestamp_deps | ${cmake_ninja_workdir}CMakeFiles/ChessQt_autogen_timestamp_deps: phony C$:/Qt/6.6.1/mingw_64/lib/libQt6Core.a C$:/Qt/6.6.1/mingw_64/./bin/uic.exe C$:/Qt/6.6.1/mingw_64/./bin/moc.exe C$:/Qt/6.6.1/mingw_64/lib/libQt6Widgets.a
+build CMakeFiles/ChessQt_autogen_timestamp_deps | ${cmake_ninja_workdir}CMakeFiles/ChessQt_autogen_timestamp_deps: phony C$:/Qt/6.6.1/mingw_64/lib/libQt6Core.a C$:/Qt/6.6.1/mingw_64/./bin/moc.exe C$:/Qt/6.6.1/mingw_64/./bin/uic.exe C$:/Qt/6.6.1/mingw_64/lib/libQt6Widgets.a
 
 
 #############################################

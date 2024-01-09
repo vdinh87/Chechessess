@@ -70,10 +70,6 @@ set(OLD_GLOB
   "C:/code/Chechessess/ChessQt_autogen/EWIEGA46WW/moc_mainwindow.cpp"
   "C:/code/Chechessess/ChessQt_autogen/EWIEGA46WW/qrc_Resource.cpp"
   "C:/code/Chechessess/ChessQt_autogen/mocs_compilation.cpp"
-  "C:/code/Chechessess/build-ChessQt-Desktop_Qt_6_6_1_MinGW_64_bit-Debug/CMakeFiles/3.27.7/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-  "C:/code/Chechessess/build-ChessQt-Desktop_Qt_6_6_1_MinGW_64_bit-Debug/ChessQt_autogen/EWIEGA46WW/moc_mainwindow.cpp"
-  "C:/code/Chechessess/build-ChessQt-Desktop_Qt_6_6_1_MinGW_64_bit-Debug/ChessQt_autogen/EWIEGA46WW/qrc_Resource.cpp"
-  "C:/code/Chechessess/build-ChessQt-Desktop_Qt_6_6_1_MinGW_64_bit-Debug/ChessQt_autogen/mocs_compilation.cpp"
   "C:/code/Chechessess/drag.cpp"
   "C:/code/Chechessess/main.cpp"
   "C:/code/Chechessess/mainwindow.cpp"
@@ -97,8 +93,6 @@ file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/code/Chechessess/*.h")
 set(OLD_GLOB
   "C:/code/Chechessess/ChessQt_autogen/include/ui_mainwindow.h"
   "C:/code/Chechessess/ChessQt_autogen/moc_predefs.h"
-  "C:/code/Chechessess/build-ChessQt-Desktop_Qt_6_6_1_MinGW_64_bit-Debug/ChessQt_autogen/include/ui_mainwindow.h"
-  "C:/code/Chechessess/build-ChessQt-Desktop_Qt_6_6_1_MinGW_64_bit-Debug/ChessQt_autogen/moc_predefs.h"
   "C:/code/Chechessess/drag.h"
   "C:/code/Chechessess/mainwindow.h"
   )
