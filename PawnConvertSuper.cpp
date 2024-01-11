@@ -12,7 +12,6 @@ bool PawnConvertSuper::OnCapture(SuperPiece &piece, Square to_capture, Square fr
     Square sq = piece.GetSquare();        // gets square.
     Piece enemy_piece = game.GetPieceType(1ULL << to_capture);
 
-
     Square sq = piece.GetSquare();
     if (from_sq != sq){
         return false;
