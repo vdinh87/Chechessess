@@ -29,6 +29,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         Resource.qrc
         DraggableLabel.cpp
         DraggableLabel.h
+        img/green_hue.png
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET ChessQt APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
