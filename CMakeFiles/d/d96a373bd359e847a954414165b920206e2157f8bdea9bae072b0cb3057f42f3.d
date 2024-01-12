@@ -527,9 +527,9 @@ ChessQt_autogen/timestamp: \
   CMakeFiles/3.27.7/CMakeSystem.cmake \
   CMakeLists.txt \
   ChessQt_autogen/moc_predefs.h \
+  DraggableLabel.cpp \
+  DraggableLabel.h \
   Resource.qrc \
-  drag.cpp \
-  drag.h \
   main.cpp \
   mainwindow.cpp \
   mainwindow.h \

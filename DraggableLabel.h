@@ -1,42 +1,46 @@
-#ifndef DRAG_H
-#define DRAG_H
+#ifndef DraggableLabel_H
+#define DraggableLabel_H
 
 #include <QLabel>
 #include <QDrag>
 #include <QMimeData>
 #include <QMouseEvent>
 
-class Drag : public QLabel {
+class DraggableLabel : public QLabel {
 public:
-    Drag();
-    Drag(QWidget *parent = 0) : QLabel(parent) {
+    DraggableLabel();
+    DraggableLabel(QWidget *parent = 0) : QLabel(parent) {
         setAcceptDrops(true);
+    }
+
+    void setLabels(QList<QLabel*>& labels) {
+        this->labels_attack_locations = labels;
     }
 
 
 
-
 protected:
+    QList<QLabel*> labels_attack_locations;
 
 
     void mousePressEvent(QMouseEvent *event) override {
 
 
         if (event->button() == Qt::LeftButton) {
-            QDrag *drag = new QDrag(this);
+            QDrag *Drag = new QDrag(this);
             QMimeData *mimeData = new QMimeData;
 
             //we would probably make stuff green here.
 
             // Here we could add any data we want to the mime data object
             mimeData->setText(this->styleSheet());
-            drag->setMimeData(mimeData);
+            Drag->setMimeData(mimeData);
 
             QPixmap pixmap(this->size());
             this->render(&pixmap);
-            drag->setPixmap(pixmap);
+            Drag->setPixmap(pixmap);
 
-            drag->exec();
+            Drag->exec();
         }
         this->setStyleSheet("    border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;\\n");
     }
@@ -53,4 +57,4 @@ protected:
 };
 
 
-#endif // DRAG_H
+#endif // DraggableLabel_H

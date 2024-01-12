@@ -526,9 +526,9 @@ ChessQt_autogen/timestamp: \
 	C:/code/Chechessess/CMakeFiles/3.27.7/CMakeSystem.cmake \
 	C:/code/Chechessess/CMakeLists.txt \
 	C:/code/Chechessess/ChessQt_autogen/moc_predefs.h \
+	C:/code/Chechessess/DraggableLabel.cpp \
+	C:/code/Chechessess/DraggableLabel.h \
 	C:/code/Chechessess/Resource.qrc \
-	C:/code/Chechessess/drag.cpp \
-	C:/code/Chechessess/drag.h \
 	C:/code/Chechessess/main.cpp \
 	C:/code/Chechessess/mainwindow.cpp \
 	C:/code/Chechessess/mainwindow.h \

@@ -262,7 +262,12 @@
 	"DEP_FILE_RULE_NAME" : "ChessQt_autogen/timestamp",
 	"HEADERS" : 
 	[
-		[ "C:/code/Chechessess/drag.h", "MU", "EWIEGA46WW/moc_drag.cpp", null ],
+		[
+			"C:/code/Chechessess/DraggableLabel.h",
+			"MU",
+			"EWIEGA46WW/moc_DraggableLabel.cpp",
+			null
+		],
 		[
 			"C:/code/Chechessess/mainwindow.h",
 			"MU",
@@ -340,7 +345,7 @@
 	"SETTINGS_FILE" : "C:/code/Chechessess/CMakeFiles/ChessQt_autogen.dir/AutogenUsed.txt",
 	"SOURCES" : 
 	[
-		[ "C:/code/Chechessess/drag.cpp", "MU", null ],
+		[ "C:/code/Chechessess/DraggableLabel.cpp", "MU", null ],
 		[ "C:/code/Chechessess/main.cpp", "MU", null ],
 		[ "C:/code/Chechessess/mainwindow.cpp", "MU", null ]
 	],

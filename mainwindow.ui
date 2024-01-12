@@ -55,49 +55,49 @@
         <number>0</number>
        </property>
        <item row="1" column="3">
-        <widget class="Drag" name="label_54">
+        <widget class="DraggableLabel" name="d7">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="6" column="4">
-        <widget class="Drag" name="label_20">
+        <widget class="DraggableLabel" name="e2">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="1" column="4">
-        <widget class="Drag" name="label_55">
+        <widget class="DraggableLabel" name="e7">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="5" column="1">
-        <widget class="Drag" name="label_24">
+        <widget class="DraggableLabel" name="b3">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="5" column="2">
-        <widget class="Drag" name="label_25">
+        <widget class="DraggableLabel" name="c3">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="Drag" name="label_52">
+        <widget class="DraggableLabel" name="b7">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="0" column="2">
-        <widget class="Drag" name="label_60">
+        <widget class="DraggableLabel" name="c8">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_bishop.png&quot;) 0 0 0 0 stretch stretch;
 </string>
@@ -105,7 +105,7 @@
         </widget>
        </item>
        <item row="0" column="5">
-        <widget class="Drag" name="label_63">
+        <widget class="DraggableLabel" name="f8">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_bishop.png&quot;) 0 0 0 0 stretch stretch;
 </string>
@@ -113,35 +113,35 @@
         </widget>
        </item>
        <item row="5" column="5">
-        <widget class="Drag" name="label_28">
+        <widget class="DraggableLabel" name="f3">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="2" column="3">
-        <widget class="Drag" name="label_47">
+        <widget class="DraggableLabel" name="d6">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="5" column="4">
-        <widget class="Drag" name="label_27">
+        <widget class="DraggableLabel" name="e3">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="1" column="2">
-        <widget class="Drag" name="label_53">
+        <widget class="DraggableLabel" name="c7">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="7" column="0">
-        <widget class="Drag" name="label_9">
+        <widget class="DraggableLabel" name="a1">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_rook.png&quot;) 0 0 0 0 stretch stretch;
 </string>
@@ -149,63 +149,63 @@
         </widget>
        </item>
        <item row="4" column="7">
-        <widget class="Drag" name="label_37">
+        <widget class="DraggableLabel" name="h4">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="3" column="2">
-        <widget class="Drag" name="label_39">
+        <widget class="DraggableLabel" name="c5">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="3" column="0">
-        <widget class="Drag" name="label_5">
+        <widget class="DraggableLabel" name="a5">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="2" column="5">
-        <widget class="Drag" name="label_49">
+        <widget class="DraggableLabel" name="f6">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="2" column="7">
-        <widget class="Drag" name="label_51">
+        <widget class="DraggableLabel" name="h6">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="1" column="5">
-        <widget class="Drag" name="label_56">
+        <widget class="DraggableLabel" name="f7">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="5" column="3">
-        <widget class="Drag" name="label_26">
+        <widget class="DraggableLabel" name="d3">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="Drag" name="label_4">
+        <widget class="DraggableLabel" name="a6">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="0" column="6">
-        <widget class="Drag" name="label_64">
+        <widget class="DraggableLabel" name="g8">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_knight.png&quot;) 0 0 0 0 stretch stretch;
 </string>
@@ -213,7 +213,7 @@
         </widget>
        </item>
        <item row="0" column="7">
-        <widget class="Drag" name="label_65">
+        <widget class="DraggableLabel" name="h8">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_rook.png&quot;) 0 0 0 0 stretch stretch;
 </string>
@@ -221,56 +221,56 @@
         </widget>
        </item>
        <item row="6" column="3">
-        <widget class="Drag" name="label_19">
+        <widget class="DraggableLabel" name="d2">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="3" column="3">
-        <widget class="Drag" name="label_40">
+        <widget class="DraggableLabel" name="d5">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="0" column="4">
-        <widget class="Drag" name="label_62">
+        <widget class="DraggableLabel" name="e8">
          <property name="styleSheet">
           <string notr="true">border-image: url(&quot;:/img/black_king.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="6" column="1">
-        <widget class="Drag" name="label_17">
+        <widget class="DraggableLabel" name="b2">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="4" column="0">
-        <widget class="Drag" name="label_6">
+        <widget class="DraggableLabel" name="a4">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="3" column="5">
-        <widget class="Drag" name="label_42">
+        <widget class="DraggableLabel" name="f5">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="7" column="1">
-        <widget class="Drag" name="label_10">
+        <widget class="DraggableLabel" name="b1">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_knight.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="7" column="6">
-        <widget class="Drag" name="label_15">
+        <widget class="DraggableLabel" name="g1">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_knight.png&quot;) 0 0 0 0 stretch stretch;
 </string>
@@ -278,28 +278,28 @@
         </widget>
        </item>
        <item row="6" column="6">
-        <widget class="Drag" name="label_22">
+        <widget class="DraggableLabel" name="g2">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="0" column="0">
-        <widget class="Drag" name="label_2">
+        <widget class="DraggableLabel" name="a8">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_rook.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="2" column="2">
-        <widget class="Drag" name="label_46">
+        <widget class="DraggableLabel" name="c6">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="Drag" name="label_59">
+        <widget class="DraggableLabel" name="b8">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_knight.png&quot;) 0 0 0 0 stretch stretch;
 </string>
@@ -307,119 +307,119 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="Drag" name="label_3">
+        <widget class="DraggableLabel" name="a7">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="3" column="6">
-        <widget class="Drag" name="label_43">
+        <widget class="DraggableLabel" name="g5">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="4" column="2">
-        <widget class="Drag" name="label_32">
+        <widget class="DraggableLabel" name="c4">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="6" column="5">
-        <widget class="Drag" name="label_21">
+        <widget class="DraggableLabel" name="f2">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="1" column="7">
-        <widget class="Drag" name="label_58">
+        <widget class="DraggableLabel" name="h7">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="Drag" name="label_45">
+        <widget class="DraggableLabel" name="b6">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="4" column="6">
-        <widget class="Drag" name="label_36">
+        <widget class="DraggableLabel" name="g4">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="7" column="3">
-        <widget class="Drag" name="label_12">
+        <widget class="DraggableLabel" name="d1">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_queen.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="4" column="4">
-        <widget class="Drag" name="label_34">
+        <widget class="DraggableLabel" name="e4">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="7" column="4">
-        <widget class="Drag" name="label_13">
+        <widget class="DraggableLabel" name="e1">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_king.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="5" column="6">
-        <widget class="Drag" name="label_29">
+        <widget class="DraggableLabel" name="g3">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="4" column="3">
-        <widget class="Drag" name="label_33">
+        <widget class="DraggableLabel" name="d4">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="Drag" name="label_38">
+        <widget class="DraggableLabel" name="b5">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="6" column="7">
-        <widget class="Drag" name="label_23">
+        <widget class="DraggableLabel" name="h2">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="5" column="7">
-        <widget class="Drag" name="label_30">
+        <widget class="DraggableLabel" name="h3">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="2" column="4">
-        <widget class="Drag" name="label_48">
+        <widget class="DraggableLabel" name="e6">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="7" column="5">
-        <widget class="Drag" name="label_14">
+        <widget class="DraggableLabel" name="f1">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_bishop.png&quot;) 0 0 0 0 stretch stretch;
 </string>
@@ -427,21 +427,21 @@
         </widget>
        </item>
        <item row="3" column="7">
-        <widget class="Drag" name="label_44">
+        <widget class="DraggableLabel" name="h5">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="7" column="2">
-        <widget class="Drag" name="label_11">
+        <widget class="DraggableLabel" name="c1">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_bishop.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="7" column="7">
-        <widget class="Drag" name="label_16">
+        <widget class="DraggableLabel" name="h1">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_rook.png&quot;) 0 0 0 0 stretch stretch;
 </string>
@@ -449,63 +449,63 @@
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="Drag" name="label_31">
+        <widget class="DraggableLabel" name="b4">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="1" column="6">
-        <widget class="Drag" name="label_57">
+        <widget class="DraggableLabel" name="g7">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="4" column="5">
-        <widget class="Drag" name="label_35">
+        <widget class="DraggableLabel" name="f4">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="3" column="4">
-        <widget class="Drag" name="label_41">
+        <widget class="DraggableLabel" name="e5">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="5" column="0">
-        <widget class="Drag" name="label_7">
+        <widget class="DraggableLabel" name="a3">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="6" column="0">
-        <widget class="Drag" name="label_8">
+        <widget class="DraggableLabel" name="a2">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="0" column="3">
-        <widget class="Drag" name="label_61">
+        <widget class="DraggableLabel" name="d8">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/black_queen.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="2" column="6">
-        <widget class="Drag" name="label_50">
+        <widget class="DraggableLabel" name="g6">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/blank.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
        <item row="6" column="2">
-        <widget class="Drag" name="label_18">
+        <widget class="DraggableLabel" name="c2">
          <property name="styleSheet">
           <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
@@ -565,9 +565,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Drag</class>
+   <class>DraggableLabel</class>
    <extends>QLabel</extends>
-   <header>drag.h</header>
+   <header>DraggableLabel.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

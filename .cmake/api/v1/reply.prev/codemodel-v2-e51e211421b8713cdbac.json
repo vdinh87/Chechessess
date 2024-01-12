@@ -7,7 +7,7 @@
 				{
 					"build" : ".",
 					"hasInstallRule" : true,
-					"jsonFile" : "directory-.-Debug-befe3087621fe5e8036f.json",
+					"jsonFile" : "directory-.-Debug-f9c5b4dc9bb37f4bf9c9.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.16"
@@ -44,7 +44,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "ChessQt::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-ChessQt-Debug-be9b69b0af6539acf30f.json",
+					"jsonFile" : "target-ChessQt-Debug-a8fb37e437e932de5aa0.json",
 					"name" : "ChessQt",
 					"projectIndex" : 0
 				},

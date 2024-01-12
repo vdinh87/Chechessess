@@ -75,13 +75,13 @@
 			{
 				"command" : 4,
 				"file" : 1,
-				"line" : 72,
+				"line" : 73,
 				"parent" : 0
 			},
 			{
 				"command" : 5,
 				"file" : 1,
-				"line" : 55,
+				"line" : 56,
 				"parent" : 0
 			},
 			{
@@ -373,11 +373,11 @@
 	"dependencies" : 
 	[
 		{
-			"backtrace" : 0,
-			"id" : "ChessQt_autogen::@6890427a1f51a3e7e1df"
+			"id" : "ChessQt_autogen_timestamp_deps::@6890427a1f51a3e7e1df"
 		},
 		{
-			"id" : "ChessQt_autogen_timestamp_deps::@6890427a1f51a3e7e1df"
+			"backtrace" : 0,
+			"id" : "ChessQt_autogen::@6890427a1f51a3e7e1df"
 		}
 	],
 	"id" : "ChessQt::@6890427a1f51a3e7e1df",
@@ -566,12 +566,12 @@
 		{
 			"backtrace" : 4,
 			"compileGroupIndex" : 0,
-			"path" : "drag.cpp",
+			"path" : "DraggableLabel.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 4,
-			"path" : "drag.h",
+			"path" : "DraggableLabel.h",
 			"sourceGroupIndex" : 1
 		},
 		{
