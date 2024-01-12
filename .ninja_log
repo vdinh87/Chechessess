@@ -1,0 +1,26 @@
+# ninja log v5
+537	606	7267200917542092	ChessQt_autogen/EWIEGA46WW/qrc_Resource.cpp	c07a822ccd3b9fb0
+4	299	7267201107229189	C:/code/Chechessess/CMakeFiles/cmake.verify_globs	17b360a42069ae5e
+7	536	7267200916301827	C:/code/Chechessess/ChessQt_autogen/mocs_compilation.cpp	ffa18440453fac09
+7	536	7267200916301827	ChessQt_autogen/timestamp	ffa18440453fac09
+7	536	7267200916301827	ChessQt_autogen/mocs_compilation.cpp	ffa18440453fac09
+615	1110	7267200922653246	CMakeFiles/ChessQt.dir/ChessQt_autogen/EWIEGA46WW/qrc_Resource.cpp.obj	33907b84607e6895
+606	2456	7267200936106287	CMakeFiles/ChessQt.dir/main.cpp.obj	f370e1dea3ebec3
+7	536	7267200916301827	C:/code/Chechessess/ChessQt_autogen/timestamp	ffa18440453fac09
+537	606	7267200917542092	C:/code/Chechessess/ChessQt_autogen/EWIEGA46WW/qrc_Resource.cpp	c07a822ccd3b9fb0
+617	2422	7267200935766221	CMakeFiles/ChessQt.dir/ChessQt_autogen/mocs_compilation.cpp.obj	928d0ce4a4f4f126
+624	2558	7265570836111372	CMakeFiles/ChessQt.dir/drag.cpp.obj	d2fa118b9bd10c20
+325	1265	7267201116047765	build.ninja	b9dc8c57fa4877be
+609	2858	7267200940117195	CMakeFiles/ChessQt.dir/mainwindow.cpp.obj	e8a47349957db1b6
+2858	3186	7267200943367925	ChessQt.exe	28660fb9fdde3417
+0	25	0	CMakeFiles/clean.additional	baedbe210acaa455
+30	37	0	clean	577b940aee94fbd7
+612	2547	7267200937026496	CMakeFiles/ChessQt.dir/DraggableLabel.cpp.obj	1ef2d8131664757e
+300	1075	7267201116047765	build.ninja	b9dc8c57fa4877be
+4	332	0	C:/code/Chechessess/CMakeFiles/cmake.verify_globs	17b360a42069ae5e
+4	300	0	C:/code/Chechessess/CMakeFiles/cmake.verify_globs	17b360a42069ae5e
+8	1888	7267201835796970	CMakeFiles/ChessQt.dir/mainwindow.cpp.obj	e8a47349957db1b6
+1889	2089	7267201837767412	ChessQt.exe	28660fb9fdde3417
+4	321	0	C:/code/Chechessess/CMakeFiles/cmake.verify_globs	17b360a42069ae5e
+8	1897	7267204640253403	CMakeFiles/ChessQt.dir/mainwindow.cpp.obj	e8a47349957db1b6
+1902	2098	7267204642213847	ChessQt.exe	28660fb9fdde3417
