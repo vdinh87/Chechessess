@@ -1,5 +1,5 @@
-C:/code/Chechessess/ChessQt_autogen/EWIEGA46WW/moc_mainwindow.cpp: C:/code/Chechessess/mainwindow.h \
-  C:/code/Chechessess/ChessQt_autogen/moc_predefs.h \
+C:/Users/merom/Desktop/Projects/Chechessess/ChessQt_autogen/EWIEGA46WW/moc_mainwindow.cpp: C:/Users/merom/Desktop/Projects/Chechessess/mainwindow.h \
+  C:/Users/merom/Desktop/Projects/Chechessess/ChessQt_autogen/moc_predefs.h \
   C:/Qt/6.6.1/mingw_64/include/QtCore/q20functional.h \
   C:/Qt/6.6.1/mingw_64/include/QtCore/q20memory.h \
   C:/Qt/6.6.1/mingw_64/include/QtCore/q20type_traits.h \

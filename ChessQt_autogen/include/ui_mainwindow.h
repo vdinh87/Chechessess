@@ -24,7 +24,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Ui_MainWindow
+class Ui_MainWindow5
 {
 public:
     QWidget *centralwidget;

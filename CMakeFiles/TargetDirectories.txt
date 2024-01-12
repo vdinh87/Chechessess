@@ -1,9 +1,0 @@
-C:/code/Chechessess/CMakeFiles/ChessQt.dir
-C:/code/Chechessess/CMakeFiles/edit_cache.dir
-C:/code/Chechessess/CMakeFiles/rebuild_cache.dir
-C:/code/Chechessess/CMakeFiles/list_install_components.dir
-C:/code/Chechessess/CMakeFiles/install.dir
-C:/code/Chechessess/CMakeFiles/install/local.dir
-C:/code/Chechessess/CMakeFiles/install/strip.dir
-C:/code/Chechessess/CMakeFiles/ChessQt_autogen_timestamp_deps.dir
-C:/code/Chechessess/CMakeFiles/ChessQt_autogen.dir
