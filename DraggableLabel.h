@@ -5,6 +5,8 @@
 #include <QDrag>
 #include <QMimeData>
 #include <QMouseEvent>
+#include "ChessEngine/ChessGame.hpp"
+
 
 class DraggableLabel : public QLabel {
 public:

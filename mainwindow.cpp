@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "ChessEngine/Definitions.hpp"
+#include "DraggableLabel.h"
 
 
 
@@ -36,17 +37,17 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 
-void MainWindow::updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels){
-    for (int i = 0; i < 64; i++) {
-        DraggableLabel *label = draggableLabels[i];
+// void MainWindow::updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels){
+//     for (int i = 0; i < 64; i++) {
+//         DraggableLabel *label = draggableLabels[i];
 
-        bool bit = get_bit(bitboard, i);
+//         bool bit = get_bit(bitboard, i);
 
-        if (bit) {
-            label->setStyleSheet("border-image: url(:/img/green_hue.png) 0 0 0 0 stretch stretch;\\n");
-        }
-    }
-}
+//         if (bit) {
+//             label->setStyleSheet("border-image: url(:/img/green_hue.png) 0 0 0 0 stretch stretch;\\n");
+//         }
+//     }
+// }
 
 
 
