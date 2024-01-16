@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "ChessEngine/Definitions.hpp"
+#include "DraggableLabel.h"
 
 
 
@@ -23,10 +24,11 @@ MainWindow::MainWindow(QWidget *parent)
                                                   });
 
 
-
+    // updateLabelsFromBitboard(FILE_B, draggableLabels);
 
     //promote all of them
     //create vector of all of them by doing .append(ui-> label_18)
+    draggableLabels[a1]->setDraggable(true);
 
 
     //labels
@@ -35,22 +37,17 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 
-void MainWindow::updateLabelsFromBitboard(U64 bitboard, std::vector<DraggableLabel*>& draggableLabels){
-    for (int i = 0; i < 64; i++) {
-        // Get the QLabel for the current square
-        DraggableLabel *label = draggableLabels[i];
+// void MainWindow::updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels){
+//     for (int i = 0; i < 64; i++) {
+//         DraggableLabel *label = draggableLabels[i];
 
-        // Get the bit for the current square
-        bool bit = get_bit(bitboard, i);
+//         bool bit = get_bit(bitboard, i);
 
-        // Update the QLabel's stylesheet based on the bit
-        if (bit) {
-            label->setStyleSheet("background-color: green;");
-        } else {
-            label->setStyleSheet("");
-        }
-    }
-}
+//         if (bit) {
+//             label->setStyleSheet("border-image: url(:/img/green_hue.png) 0 0 0 0 stretch stretch;\\n");
+//         }
+//     }
+// }
 
 
 

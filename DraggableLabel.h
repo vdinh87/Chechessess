@@ -5,6 +5,8 @@
 #include <QDrag>
 #include <QMimeData>
 #include <QMouseEvent>
+#include "ChessEngine/ChessGame.hpp"
+
 
 class DraggableLabel : public QLabel {
 public:
@@ -12,19 +14,16 @@ public:
     DraggableLabel(QWidget *parent = 0) : QLabel(parent) {
         setAcceptDrops(true);
     }
-
-    void setLabels(QList<QLabel*>& labels) {
-        this->labels_attack_locations = labels;
+    void setDraggable(bool can_drag){
+        draggable = can_drag;
     }
 
 
-
 protected:
-    QList<QLabel*> labels_attack_locations;
-
+    bool draggable = false;
 
     void mousePressEvent(QMouseEvent *event) override {
-
+        if (!draggable) return;
 
         if (event->button() == Qt::LeftButton) {
             QDrag *Drag = new QDrag(this);
@@ -41,8 +40,15 @@ protected:
             Drag->setPixmap(pixmap);
 
             Drag->exec();
+
+            if (Drag->target() != this) {
+                this->setStyleSheet("    border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;\\n");
+                this->draggable = false;
+
+            }
         }
-        this->setStyleSheet("    border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;\\n");
+
+
     }
 
     void dragEnterEvent(QDragEnterEvent *event) override {
@@ -52,8 +58,23 @@ protected:
     }
 
     void dropEvent(QDropEvent *event) override {
-        this->setStyleSheet(event->mimeData()->text());
+        if (event->source() != this) {
+            this->setStyleSheet(event->mimeData()->text());
+        }
     }
+
+    void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels){
+        for (int i = 0; i < 64; i++) {
+            DraggableLabel *label = draggableLabels[i];
+
+            bool bit = (bitboard & (1ULL << i));
+
+            if (bit) {
+                label->setStyleSheet("border-image: url(:/img/green_hue.png) 0 0 0 0 stretch stretch;\\n");
+            }
+        }
+    }
+
 };
 
 

@@ -15,5 +15,6 @@
         <file>img/white_queen.png</file>
         <file>img/white_rook.png</file>
         <file>img/blank.png</file>
+        <file>img/green_hue.png</file>
     </qresource>
 </RCC>
