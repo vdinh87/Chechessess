@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 
-void MainWindow::updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels){
+void MainWindow::updateLabelsFromBitboard(U64 bitboard, std::vector<DraggableLabel*>& draggableLabels){
     for (int i = 0; i < 64; i++) {
         // Get the QLabel for the current square
         DraggableLabel *label = draggableLabels[i];
