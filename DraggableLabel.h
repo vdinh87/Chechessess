@@ -5,10 +5,10 @@
 #include <QDrag>
 #include <QMimeData>
 #include <QMouseEvent>
-#include "ChessEngine/ChessGame.hpp"
 
 
 class DraggableLabel : public QLabel {
+    Q_OBJECT
 public:
     DraggableLabel();
     DraggableLabel(QWidget *parent = 0) : QLabel(parent) {
@@ -29,7 +29,6 @@ protected:
             QDrag *Drag = new QDrag(this);
             QMimeData *mimeData = new QMimeData;
 
-            //we would probably make stuff green here.
 
             // Here we could add any data we want to the mime data object
             mimeData->setText(this->styleSheet());
@@ -53,6 +52,7 @@ protected:
 
     void dragEnterEvent(QDragEnterEvent *event) override {
         if (event->mimeData()->hasText()) {
+            emit dragEntered(this->objectName());
             event->acceptProposedAction();
         }
     }
@@ -74,6 +74,9 @@ protected:
             }
         }
     }
+
+signals:
+    void dragEntered(QString objectName);
 
 };
 

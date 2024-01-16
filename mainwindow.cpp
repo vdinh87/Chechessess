@@ -2,7 +2,10 @@
 #include "./ui_mainwindow.h"
 #include "ChessEngine/Definitions.hpp"
 #include "DraggableLabel.h"
+// #include "ChessEngine/ChessGame.cpp"
 
+// ChessGame cg;
+void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels);
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -23,6 +26,11 @@ MainWindow::MainWindow(QWidget *parent)
                                                       ui->a8, ui->b8, ui->c8, ui->d8, ui->e8, ui->f8, ui->g8, ui->h8
                                                   });
 
+    for (DraggableLabel* label : draggableLabels) {
+        connect(label, &DraggableLabel::dragEntered, this, &MainWindow::handleDragEntered);
+    }
+
+
 
     // updateLabelsFromBitboard(FILE_B, draggableLabels);
 
@@ -37,19 +45,29 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 
-// void MainWindow::updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels){
-//     for (int i = 0; i < 64; i++) {
-//         DraggableLabel *label = draggableLabels[i];
+void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels){
+    for (int i = 0; i < 64; i++) {
+        DraggableLabel *label = draggableLabels[i];
 
-//         bool bit = get_bit(bitboard, i);
+        bool bit = get_bit(bitboard, i);
 
-//         if (bit) {
-//             label->setStyleSheet("border-image: url(:/img/green_hue.png) 0 0 0 0 stretch stretch;\\n");
-//         }
-//     }
-// }
+        if (bit) {
+            label->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;\\n");
+        }
+    }
+}
 
 
+#include <QMessageBox>
+/* Will Handle Dragging by getting attacks using the ObjectName
+ * ObjectName is in the format of chess positions a1, a2, b2 etc, so we can use our hashmap of strings to squares.  */
+void MainWindow::handleDragEntered(QString objectName){
+    QMessageBox msgBox;
+    msgBox.setText("The object name is " + objectName);
+    msgBox.exec();
+
+
+}
 
 
 MainWindow::~MainWindow()
