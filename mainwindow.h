@@ -23,6 +23,8 @@ private:
     // void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels);
 
 
+public slots:
+    void handleDragEntered(QString objectName);
 
 };
 #endif // MAINWINDOW_H
