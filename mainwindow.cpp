@@ -2,7 +2,8 @@
 #include "./ui_mainwindow.h"
 #include "ChessEngine/Definitions.hpp"
 #include "DraggableLabel.h"
-// #include "ChessEngine/ChessGame.cpp"
+#include "ChessEngine/ChessGame.cpp"
+#include "ChessEngine/Logger.cpp"
 
 // ChessGame cg;
 void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels);
