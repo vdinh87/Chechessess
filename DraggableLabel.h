@@ -25,7 +25,7 @@ public:
             bool bit = (bitboard & (1ULL << i));
 
             if (bit) {
-                label->setStyleSheet("“border: 1px solid black;”");
+                label->setStyleSheet("border: 1px solid black;");
             }
         }
     }

@@ -14,12 +14,20 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 
 set(TS_FILES ChessQt_en_US.ts)
 
+# file(GLOB CHESS_ENGINE_SOURCES
+#     ChessEngine/*.cpp
+#     ChessEngine/*.hpp
+# )
+
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        DraggableLabel.h
+        DraggableLabel.cpp
         ${TS_FILES}
+        # ${CHESS_ENGINE_SOURCES}
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -27,8 +35,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         Resource.qrc
-        DraggableLabel.h
-
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET ChessQt APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
