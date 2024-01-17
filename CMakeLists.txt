@@ -14,10 +14,10 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 
 set(TS_FILES ChessQt_en_US.ts)
 
-file(GLOB CHESS_ENGINE_SOURCES
-    ChessEngine/*.cpp
-    ChessEngine/*.hpp
-)
+# file(GLOB CHESS_ENGINE_SOURCES
+#     ChessEngine/*.cpp
+#     ChessEngine/*.hpp
+# )
 
 set(PROJECT_SOURCES
         main.cpp
