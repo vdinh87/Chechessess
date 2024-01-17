@@ -537,6 +537,9 @@ image: url(:/img/green_hue.png);</string>
       </item>
       <item>
        <widget class="QLabel" name="label_66">
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
         <property name="text">
          <string>Shop button or something lol</string>
         </property>
@@ -562,7 +565,7 @@ image: url(:/img/green_hue.png);</string>
      <x>0</x>
      <y>0</y>
      <width>845</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>

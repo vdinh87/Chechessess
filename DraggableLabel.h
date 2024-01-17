@@ -9,15 +9,27 @@
 
 
 class DraggableLabel : public QLabel {
+    Q_OBJECT
 public:
     DraggableLabel();
     DraggableLabel(QWidget *parent = 0) : QLabel(parent) {
         setAcceptDrops(true);
     }
-    void setDraggable(bool can_drag){
+    void setDraggable(bool can_drag)
+    {
         draggable = can_drag;
     }
+    void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels){
+        for (int i = 0; i < 64; i++) {
+            DraggableLabel *label = draggableLabels[i];
 
+            bool bit = (bitboard & (1ULL << i));
+
+            if (bit) {
+                label->setStyleSheet("“border: 1px solid black;”");
+            }
+        }
+    }
 
 protected:
     bool draggable = false;
@@ -63,17 +75,7 @@ protected:
         }
     }
 
-    void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels){
-        for (int i = 0; i < 64; i++) {
-            DraggableLabel *label = draggableLabels[i];
 
-            bool bit = (bitboard & (1ULL << i));
-
-            if (bit) {
-                label->setStyleSheet("border-image: url(:/img/green_hue.png) 0 0 0 0 stretch stretch;\\n");
-            }
-        }
-    }
 
 };
 

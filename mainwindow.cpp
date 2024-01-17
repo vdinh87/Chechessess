@@ -3,7 +3,7 @@
 #include "ChessEngine/Definitions.hpp"
 #include "DraggableLabel.h"
 
-
+// void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels);
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -23,13 +23,10 @@ MainWindow::MainWindow(QWidget *parent)
                                                       ui->a8, ui->b8, ui->c8, ui->d8, ui->e8, ui->f8, ui->g8, ui->h8
                                                   });
 
-
-    // updateLabelsFromBitboard(FILE_B, draggableLabels);
-
     //promote all of them
     //create vector of all of them by doing .append(ui-> label_18)
     draggableLabels[a1]->setDraggable(true);
-
+    draggableLabels[a3]->updateLabelsFromBitboard(FILE_B, draggableLabels);
 
     //labels
     // ui->label_54->setLabels()
@@ -37,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 
-// void MainWindow::updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels){
+// void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels){
 //     for (int i = 0; i < 64; i++) {
 //         DraggableLabel *label = draggableLabels[i];
 
