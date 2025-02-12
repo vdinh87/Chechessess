@@ -28,16 +28,6 @@ MainWindow::MainWindow(QWidget *parent)
         connect(label, &DraggableLabel::dragEntered, this, &MainWindow::handleDragEntered);
         label->setDraggable(true); // Make all pieces draggable initially
     }
-
-    // updateLabelsFromBitboard(FILE_B, draggableLabels);
-
-    // promote all of them
-    // create vector of all of them by doing .append(ui-> label_18)
-    draggableLabels[a1]->setDraggable(true);
-    draggableLabels[a3]->updateLabelsFromBitboard(FILE_B, draggableLabels);
-
-    // labels
-    //  ui->label_54->setLabels()
 }
 
 void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &draggableLabels)
