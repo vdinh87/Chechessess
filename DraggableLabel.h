@@ -36,6 +36,7 @@ public:
 protected:
     bool draggable = false;
     QPoint dragStartPosition;
+    QString originalStyle;
 
     void mousePressEvent(QMouseEvent *event) override
     {
@@ -44,6 +45,7 @@ protected:
         if (event->button() == Qt::LeftButton)
         {
             dragStartPosition = event->pos();
+            originalStyle = this->styleSheet(); // Store the original style
         }
     }
 
@@ -54,32 +56,40 @@ protected:
         if (!(event->buttons() & Qt::LeftButton))
             return;
 
+        // Don't start drag if the square is empty (has blank image)
+        if (this->styleSheet().contains("blank.png"))
+            return;
+
         if ((event->pos() - dragStartPosition).manhattanLength() < QApplication::startDragDistance())
             return;
 
         QDrag *drag = new QDrag(this);
         QMimeData *mimeData = new QMimeData;
 
-        // Store the original style and position
-        mimeData->setText(this->styleSheet());
+        // Store both the style and the source object name
+        mimeData->setData("application/x-style", originalStyle.toUtf8());
+        mimeData->setData("application/x-source", objectName().toUtf8());
         drag->setMimeData(mimeData);
 
         QPixmap pixmap(this->size());
         this->render(&pixmap);
         drag->setPixmap(pixmap);
 
+        // Clear the source square immediately
+        this->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;");
+
         Qt::DropAction dropAction = drag->exec();
 
-        if (dropAction != Qt::IgnoreAction && drag->target() != this)
+        if (dropAction == Qt::IgnoreAction || drag->target() == this)
         {
-            this->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;\\n");
-            this->draggable = false;
+            // If the drop was cancelled or invalid, restore the original piece
+            this->setStyleSheet(originalStyle);
         }
     }
 
     void dragEnterEvent(QDragEnterEvent *event) override
     {
-        if (event->mimeData()->hasText())
+        if (event->mimeData()->hasFormat("application/x-style"))
         {
             emit dragEntered(this->objectName());
             event->acceptProposedAction();
@@ -88,9 +98,11 @@ protected:
 
     void dropEvent(QDropEvent *event) override
     {
-        if (event->source() != this)
+        if (event->mimeData()->hasFormat("application/x-style"))
         {
-            this->setStyleSheet(event->mimeData()->text());
+            QString style = QString::fromUtf8(event->mimeData()->data("application/x-style"));
+            this->setStyleSheet(style);
+            event->acceptProposedAction();
         }
     }
 

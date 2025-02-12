@@ -45,14 +45,11 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
     }
 }
 
-#include <QMessageBox>
 /* Will Handle Dragging by getting attacks using the ObjectName
  * ObjectName is in the format of chess positions a1, a2, b2 etc, so we can use our hashmap of strings to squares.  */
 void MainWindow::handleDragEntered(QString objectName)
 {
-    QMessageBox msgBox;
-    msgBox.setText("The object name is " + objectName);
-    msgBox.exec();
+    // We'll handle the drag logic here later
 }
 
 MainWindow::~MainWindow()
