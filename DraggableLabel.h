@@ -75,14 +75,12 @@ protected:
         this->render(&pixmap);
         drag->setPixmap(pixmap);
 
-        // Clear the source square immediately
-        this->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;");
-
+        // Don't clear the source square yet - wait for successful drop
         Qt::DropAction dropAction = drag->exec();
 
         if (dropAction == Qt::IgnoreAction)
         {
-            // If the drop was cancelled, restore the original piece
+            // If the drop was cancelled, make sure we keep the original piece
             this->setStyleSheet(originalStyle);
         }
     }
@@ -101,7 +99,9 @@ protected:
         if (event->mimeData()->hasFormat("application/x-style"))
         {
             QString style = QString::fromUtf8(event->mimeData()->data("application/x-style"));
-            this->setStyleSheet(style);
+            QString sourceSquare = QString::fromUtf8(event->mimeData()->data("application/x-source"));
+
+            // Only update styles after confirming the move with the game engine
             event->acceptProposedAction();
             emit dropOccurred(this->objectName());
         }
