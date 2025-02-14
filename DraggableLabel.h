@@ -45,7 +45,7 @@ protected:
         if (event->button() == Qt::LeftButton)
         {
             dragStartPosition = event->pos();
-            originalStyle = this->styleSheet();
+            originalStyle = this->styleSheet(); // Store the original style
         }
     }
 
@@ -55,13 +55,13 @@ protected:
             return;
         if (!(event->buttons() & Qt::LeftButton))
             return;
+
+        // Don't start drag if the square is empty (has blank image)
         if (this->styleSheet().contains("blank.png"))
             return;
 
         if ((event->pos() - dragStartPosition).manhattanLength() < QApplication::startDragDistance())
             return;
-
-        emit dragStarted(this->objectName());
 
         QDrag *drag = new QDrag(this);
         QMimeData *mimeData = new QMimeData;
@@ -80,9 +80,9 @@ protected:
 
         Qt::DropAction dropAction = drag->exec();
 
-        if (dropAction == Qt::IgnoreAction)
+        if (dropAction == Qt::IgnoreAction || drag->target() == this)
         {
-            // If the drop was cancelled, restore the original piece
+            // If the drop was cancelled or invalid, restore the original piece
             this->setStyleSheet(originalStyle);
         }
     }
@@ -103,14 +103,11 @@ protected:
             QString style = QString::fromUtf8(event->mimeData()->data("application/x-style"));
             this->setStyleSheet(style);
             event->acceptProposedAction();
-            emit dropOccurred(this->objectName());
         }
     }
 
 signals:
-    void dragStarted(QString objectName);
     void dragEntered(QString objectName);
-    void dropOccurred(QString targetSquare);
 };
 
 #endif // DraggableLabel_H
