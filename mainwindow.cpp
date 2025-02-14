@@ -42,49 +42,19 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
         bool bit = get_bit(bitboard, i);
         if (bit)
         {
-            // If there's a piece on this square, preserve its style and add green highlight
-            QString currentStyle = label->styleSheet();
-            if (!currentStyle.contains("blank.png") && !currentStyle.contains("green_hue.png"))
-            {
-                // Store the original piece style
-                label->setProperty("originalStyle", currentStyle);
-            }
             label->setStyleSheet("border-image: url(:/img/green_hue.png) 0 0 0 0 stretch stretch;");
-        }
-        else if (label->styleSheet().contains("green_hue.png"))
-        {
-            // Restore the original style if it exists, otherwise set to blank
-            QVariant originalStyle = label->property("originalStyle");
-            if (originalStyle.isValid())
-            {
-                label->setStyleSheet(originalStyle.toString());
-                label->setProperty("originalStyle", QVariant()); // Clear the stored style
-            }
-            else
-            {
-                label->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;");
-            }
         }
     }
 }
 
 void MainWindow::handleDragStarted(QString objectName)
 {
-    // Clear any existing highlights and restore original styles
+    // Clear any existing highlights
     for (DraggableLabel *label : allLabels)
     {
         if (label->styleSheet().contains("green_hue.png"))
         {
-            QVariant originalStyle = label->property("originalStyle");
-            if (originalStyle.isValid())
-            {
-                label->setStyleSheet(originalStyle.toString());
-                label->setProperty("originalStyle", QVariant());
-            }
-            else
-            {
-                label->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;");
-            }
+            label->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;");
         }
     }
 
@@ -114,37 +84,12 @@ void MainWindow::handleDrop(QString targetSquareName)
     if (dragSourceSquare != invalid)
     {
         std::vector<Action> actions = cg.Move(dragSourceSquare, targetSquare);
-
-        // If the move was successful (actions is not empty)
-        if (!actions.empty())
-        {
-            // Get the source and target labels
-            DraggableLabel *sourceLabel = allLabels[dragSourceSquare];
-            DraggableLabel *targetLabel = allLabels[targetSquare];
-
-            // Store the source piece's style
-            QString sourceStyle = sourceLabel->styleSheet();
-
-            // Update the visuals
-            sourceLabel->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;");
-            targetLabel->setStyleSheet(sourceStyle);
-        }
-
-        // Clear highlights
+        // Clear highlights after move
         for (DraggableLabel *label : allLabels)
         {
             if (label->styleSheet().contains("green_hue.png"))
             {
-                QVariant originalStyle = label->property("originalStyle");
-                if (originalStyle.isValid())
-                {
-                    label->setStyleSheet(originalStyle.toString());
-                    label->setProperty("originalStyle", QVariant());
-                }
-                else
-                {
-                    label->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;");
-                }
+                label->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;");
             }
         }
         dragSourceSquare = invalid;
