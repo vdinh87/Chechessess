@@ -96,6 +96,9 @@ void MainWindow::handleDragStarted(QString objectName)
     // Get and show valid moves for this piece
     U64 validMoves = cg.GetAttacks(dragSourceSquare);
     updateLabelsFromBitboard(validMoves, allLabels);
+
+    // Log the drag start
+    ui->textEdit->append(QString("Selected piece at %1").arg(objectName));
 }
 
 void MainWindow::handleDragEntered(QString objectName)
@@ -128,6 +131,21 @@ void MainWindow::handleDrop(QString targetSquareName)
             // Update the visuals
             sourceLabel->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;");
             targetLabel->setStyleSheet(sourceStyle);
+
+            // Log the move and any special actions
+            QString moveLog = QString("Move: %1 -> %2").arg(SquareStrings[dragSourceSquare].c_str()).arg(targetSquareName);
+            if (!actions.empty())
+            {
+                moveLog += " (";
+                for (size_t i = 0; i < actions.size(); ++i)
+                {
+                    if (i > 0)
+                        moveLog += ", ";
+                    moveLog += ActionStrings[actions[i]].c_str();
+                }
+                moveLog += ")";
+            }
+            ui->textEdit->append(moveLog);
         }
 
         // Clear highlights
