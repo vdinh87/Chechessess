@@ -193,8 +193,7 @@
        <item row="6" column="1">
         <widget class="DraggableLabel" name="b2">
          <property name="styleSheet">
-          <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n
-image: url(:/img/green_hue.png);</string>
+          <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
@@ -510,9 +509,7 @@ image: url(:/img/green_hue.png);</string>
        <item row="6" column="2">
         <widget class="DraggableLabel" name="c2">
          <property name="styleSheet">
-          <string notr="true">
-   border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n
-</string>
+          <string notr="true">    border-image: url(&quot;:/img/white_pawn.png&quot;) 0 0 0 0 stretch stretch;\n</string>
          </property>
         </widget>
        </item>
