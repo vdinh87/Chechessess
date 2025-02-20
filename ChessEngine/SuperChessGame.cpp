@@ -47,7 +47,7 @@ bool SuperChessGame::UnSuper(Square square)
 
 bool SuperChessGame::RemovePiece(Square square)
 {
-    std::cout <<"Test: 3\n";
+    std::cout << "Test: 3\n";
 
     U64 p = 1ULL << square;
     Piece p_type = GetPieceType(p);
@@ -91,19 +91,22 @@ bool SuperChessGame::ConvertPieceToSide(Square square, Color side)
     return true;
 }
 
-bool SuperChessGame::ConvertPiece(Piece from_piece, Color from_color, Square square, Piece to_piece) {
-    if (from_color == black){
+bool SuperChessGame::ConvertPiece(Piece from_piece, Color from_color, Square square, Piece to_piece)
+{
+    if (from_color == black)
+    {
         clear_bit(BlackPiecesArray[from_piece], square);
         set_bit(BlackPiecesArray[to_piece], square);
         return true;
-    } else if (from_color == white){
+    }
+    else if (from_color == white)
+    {
         clear_bit(WhitePiecesArray[from_piece], square);
         set_bit(WhitePiecesArray[to_piece], square);
         return true;
-    } 
+    }
     return false;
 }
-
 
 bool SuperChessGame::ConvertToSuperPiece(SuperPieceInfo info, Square square)
 {
@@ -117,7 +120,7 @@ bool SuperChessGame::ConvertSuperPiecesofType(SuperPieceInfo info, Color color)
 {
     CapTier(info.second, info.first);
     std::vector<std::unique_ptr<Ability>> v;
-    
+
     std::pair<Color, Piece> key = std::make_pair(color, info.first);
     std::vector<Square> start_loc = StartingSquares[key];
     for (const auto &sq : start_loc)
@@ -215,8 +218,6 @@ Action SuperChessGame::Promote(Square from_sq, Square to_sq, Color from_color, P
 
     return Action::Promotion;
 }
-
-
 
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 {
@@ -320,7 +321,7 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 
     if (IsWin(white) || IsWin(black))
         actions.push_back(Checkmate);
-    return actions;  
+    return actions;
 }
 
 void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)
@@ -328,33 +329,33 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
     bool do_normal_capture = true;
     // If piece is removed, check on capture effect
     std::vector<Square> keys;
-    for( const auto& sp: super_pieces)
+    for (const auto &sp : super_pieces)
     {
         keys.push_back(sp.first);
     }
 
     std::vector<Square> keys_to_remove;
-    
-    if( board & (1ULL << to_sq) )
+
+    if (board & (1ULL << to_sq))
     {
-        for(const auto& k : keys)
+        for (const auto &k : keys)
         {
             std::cout << "Loop on: " << SquareStrings[k] << std::endl;
             auto it = super_pieces.find(k);
-            if ( it != super_pieces.end() && it->second->OnCaptureEffects(to_sq, from_sq, keys_to_remove) )
+            if (it != super_pieces.end() && it->second->OnCaptureEffects(to_sq, from_sq, keys_to_remove))
             {
-                std::cout <<"In if statemnt\n";
+                std::cout << "In if statemnt\n";
                 do_normal_capture = false;
             }
         }
     }
 
-    for(const auto &k : keys_to_remove)
+    for (const auto &k : keys_to_remove)
     {
         RemovePiece(k);
     }
-    
-    if(do_normal_capture)
+
+    if (do_normal_capture)
     {
         // If piece is removed, add to Graveyard
         if (board & (1ULL << to_sq))
@@ -376,7 +377,6 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
             super_pieces[to_sq]->UpdateSquare(to_sq);
         }
     }
-
 }
 
 // init
@@ -388,8 +388,8 @@ void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white_info, const Sup
 
 void SuperChessGame::InitGameStartEffects()
 {
-    for( const auto& sp: super_pieces)
-    {            
+    for (const auto &sp : super_pieces)
+    {
         sp.second->OnGameStartEffects();
     }
 }
@@ -548,7 +548,7 @@ void SuperChessGame::PrintAbilityNames(Square sq, AbilityType type)
     for (int i = 0; i < all_names.size(); i++)
     {
         auto it = std::find(names.begin(), names.end(), all_names[i]);
-        if(it != names.end())
+        if (it != names.end())
         {
             std::cout << "(" << i << ")" << " " << all_names[i] << " ";
         }

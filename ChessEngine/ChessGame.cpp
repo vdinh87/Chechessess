@@ -425,15 +425,15 @@ Color ChessGame::GetColor(U64 piece) const
 
 Piece ChessGame::GetPieceType(U64 unknown_piece) const
 {
-    Piece p;
+    Piece p = Pawn; // Default to Pawn to avoid undefined behavior
     for (size_t i = 0; i < PieceTypeArray.size(); i++)
     {
         if (unknown_piece & PieceTypeArray[i])
         {
             p = static_cast<Piece>(i);
+            break; // Exit after finding the first match
         }
     }
-
     return p;
 }
 
