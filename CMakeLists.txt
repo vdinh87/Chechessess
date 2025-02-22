@@ -17,10 +17,17 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 
 set(TS_FILES ChessQt_en_US.ts)
 
-# file(GLOB CHESS_ENGINE_SOURCES
-#     ChessEngine/*.cpp
-#     ChessEngine/*.hpp
-# )
+# Add ChessEngine source files
+set(CHESS_ENGINE_SOURCES
+    ChessEngine/ChessGame.cpp
+    ChessEngine/ChessGame.hpp
+    ChessEngine/Definitions.cpp
+    ChessEngine/Definitions.hpp
+    ChessEngine/Logger.cpp
+    ChessEngine/Logger.hpp
+    ChessEngine/Magics.cpp
+    ChessEngine/Magics.hpp
+)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -30,14 +37,14 @@ set(PROJECT_SOURCES
         DraggableLabel.h
         DraggableLabel.cpp
         ${TS_FILES}
-        # ${CHESS_ENGINE_SOURCES}
+        ${CHESS_ENGINE_SOURCES}
+        Resource.qrc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(ChessQt
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        Resource.qrc
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET ChessQt APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

@@ -2,19 +2,39 @@
 #include "./ui_mainwindow.h"
 #include "ChessEngine/Definitions.hpp"
 #include "DraggableLabel.h"
-#include "ChessEngine/ChessGame.cpp"
-#include "ChessEngine/Logger.cpp"
+#include "ChessEngine/ChessGame.hpp"
+#include "ChessEngine/Magics.hpp"
 #include <QMap>
 
-ChessGame cg;
+class CustomChessGame : public ChessGame
+{
+private:
+    MainWindow *mainWindow;
+
+public:
+    CustomChessGame(MainWindow *window = nullptr) : ChessGame(), mainWindow(window) {}
+
+    Piece PromoteInput(Square from_sq, Square to_sq, Color color, Piece to_piece) override
+    {
+        if (mainWindow)
+        {
+            return mainWindow->handlePawnPromotion();
+        }
+        return Queen; // Default if no window is set
+    }
+};
+
+static CustomChessGame cg(nullptr);             // Make it static to avoid multiple definition
+static std::vector<DraggableLabel *> allLabels; // Make it static
+static Square dragSourceSquare = invalid;       // Make it static
+
 void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &draggableLabels);
-std::vector<DraggableLabel *> allLabels; // Store all labels for easy access
-Square dragSourceSquare = invalid;       // Keep track of the currently dragged piece
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    cg = CustomChessGame(this); // Initialize with this window
 
     allLabels = {ui->a1, ui->b1, ui->c1, ui->d1, ui->e1, ui->f1, ui->g1, ui->h1,
                  ui->a2, ui->b2, ui->c2, ui->d2, ui->e2, ui->f2, ui->g2, ui->h2,
@@ -125,12 +145,66 @@ void MainWindow::handleDrop(QString targetSquareName)
             DraggableLabel *sourceLabel = allLabels[dragSourceSquare];
             DraggableLabel *targetLabel = allLabels[targetSquare];
 
-            // Store the source piece's style
-            QString sourceStyle = sourceLabel->styleSheet();
+            // Store the original piece style before the move
+            QString originalPieceStyle = sourceLabel->property("originalStyle").toString();
+            if (originalPieceStyle.isEmpty())
+            {
+                originalPieceStyle = sourceLabel->styleSheet();
+            }
 
-            // Update the visuals
+            // Check if this was a promotion
+            bool wasPromotion = false;
+            for (const Action &action : actions)
+            {
+                if (action == Action::Promotion)
+                {
+                    wasPromotion = true;
+                    break;
+                }
+            }
+
+            // Clear the source square
             sourceLabel->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;");
-            targetLabel->setStyleSheet(sourceStyle);
+            sourceLabel->setProperty("originalStyle", QVariant());
+
+            if (wasPromotion)
+            {
+                U64 piece = 1ULL << targetSquare;
+                Color color = cg.GetColor(piece);
+                Piece pieceType = cg.GetPieceType(piece);
+
+                // Construct the appropriate image path based on piece type and color
+                QString pieceName;
+                switch (pieceType)
+                {
+                case Queen:
+                    pieceName = "queen";
+                    break;
+                case Rook:
+                    pieceName = "rook";
+                    break;
+                case Bishop:
+                    pieceName = "bishop";
+                    break;
+                case Knight:
+                    pieceName = "knight";
+                    break;
+                default:
+                    pieceName = "pawn";
+                    break;
+                }
+                QString colorName = (color == white) ? "white" : "black";
+                QString imagePath = QString(":/img/%1_%2.png").arg(colorName).arg(pieceName);
+                QString newStyle = QString("border-image: url(%1) 0 0 0 0 stretch stretch;").arg(imagePath);
+                targetLabel->setStyleSheet(newStyle);
+                targetLabel->setProperty("originalStyle", newStyle);
+            }
+            else
+            {
+                // Normal move - transfer the original piece style
+                targetLabel->setStyleSheet(originalPieceStyle);
+                targetLabel->setProperty("originalStyle", originalPieceStyle);
+            }
 
             // Log the move and any special actions
             QString moveLog = QString("Move: %1 -> %2").arg(SquareStrings[dragSourceSquare].c_str()).arg(targetSquareName);
@@ -157,7 +231,6 @@ void MainWindow::handleDrop(QString targetSquareName)
                 if (originalStyle.isValid())
                 {
                     label->setStyleSheet(originalStyle.toString());
-                    label->setProperty("originalStyle", QVariant());
                 }
                 else
                 {
@@ -167,6 +240,30 @@ void MainWindow::handleDrop(QString targetSquareName)
         }
         dragSourceSquare = invalid;
     }
+}
+
+Piece MainWindow::handlePawnPromotion()
+{
+    QStringList items;
+    items << "Queen" << "Rook" << "Bishop" << "Knight";
+
+    bool ok;
+    QString item = QInputDialog::getItem(this, "Pawn Promotion",
+                                         "Choose piece to promote to:", items, 0, false, &ok);
+
+    if (ok && !item.isEmpty())
+    {
+        if (item == "Queen")
+            return Queen;
+        if (item == "Rook")
+            return Rook;
+        if (item == "Bishop")
+            return Bishop;
+        if (item == "Knight")
+            return Knight;
+    }
+
+    return Queen; // Default to Queen if dialog is cancelled
 }
 
 MainWindow::~MainWindow()

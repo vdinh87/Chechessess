@@ -1,13 +1,13 @@
 #pragma once
 #include "Definitions.hpp"
-#include "Magics.cpp"
+#include "Magics.hpp"
 #include "Logger.hpp"
 class ChessGame
 {
 protected:
     // log
     Logger log;
-    
+
     // board
     std::vector<U64> WhitePiecesArray;
     std::vector<U64> BlackPiecesArray;
@@ -48,11 +48,11 @@ protected:
 
     // Move functions
     virtual void ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece);
-    Action Promote(Square from_sq,Square to_sq,Color from_color,Piece to_piece);
+    Action Promote(Square from_sq, Square to_sq, Color from_color, Piece to_piece);
     U64 GetCastling(Color color) const;
     U64 GetEnPassant(Square square, const U64 occupancy_, Color color) const;
     bool EnPassant(Square square, Piece type, Color color) const;
-    Piece PromoteInput(Square from_sq, Square to_sq, Color color, Piece to_piece);
+    virtual Piece PromoteInput(Square from_sq, Square to_sq, Color color, Piece to_piece);
 
     // Board edit
 
@@ -76,15 +76,14 @@ public:
 
     // Returns which type of piece it is
     Piece GetPieceType(U64 unknown_piece) const;
-    
-    //board editing
+
+    // board editing
     virtual bool RemovePiece(Square square);
     virtual bool AddPiece(Square square, Color color, Piece piece);
 
-    //log
+    // log
     void Log(ChessMove move);
     void PrintTheLog();
 
     void PrintBoard() const;
-
 };

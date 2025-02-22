@@ -2,7 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QMessageBox>
+#include <QInputDialog>
 #include "DraggableLabel.h"
+#include "ChessEngine/ChessGame.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -18,6 +21,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    Piece handlePawnPromotion();
 
 private:
     Ui::MainWindow *ui;
