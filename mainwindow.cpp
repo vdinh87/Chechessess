@@ -220,6 +220,16 @@ void MainWindow::handleDrop(QString targetSquareName)
                 moveLog += ")";
             }
             ui->textEdit->append(moveLog);
+
+            // Check for checkmate using the chess engine's IsWin method
+            if (cg.IsWin(white))
+            {
+                QMessageBox::information(this, "Game Over", "White Wins!");
+            }
+            else if (cg.IsWin(black))
+            {
+                QMessageBox::information(this, "Game Over", "Black Wins!");
+            }
         }
 
         // Clear highlights
