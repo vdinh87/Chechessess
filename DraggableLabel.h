@@ -6,6 +6,7 @@
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QApplication>
+#include <vector>
 
 class DraggableLabel : public QLabel
 {

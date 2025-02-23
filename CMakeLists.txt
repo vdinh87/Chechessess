@@ -27,6 +27,8 @@ set(CHESS_ENGINE_SOURCES
     ChessEngine/Logger.hpp
     ChessEngine/Magics.cpp
     ChessEngine/Magics.hpp
+    ChessEngine/RecursiveChessGame.cpp
+    ChessEngine/RecursiveChessGame.hpp
 )
 
 set(PROJECT_SOURCES

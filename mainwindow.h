@@ -4,8 +4,9 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QDialog>
 #include "DraggableLabel.h"
-#include "ChessEngine/ChessGame.hpp"
+#include "ChessEngine/RecursiveChessGame.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -25,7 +26,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    // void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel*>& draggableLabels);
+    void updateBoardFromGame(); // Helper to update the visual board state
 
 public slots:
     void handleDragStarted(QString objectName);

@@ -2,17 +2,26 @@
 #include "./ui_mainwindow.h"
 #include "ChessEngine/Definitions.hpp"
 #include "DraggableLabel.h"
-#include "ChessEngine/ChessGame.hpp"
+#include "ChessEngine/RecursiveChessGame.hpp"
 #include "ChessEngine/Magics.hpp"
 #include <QMap>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QTimer>
 
-class CustomChessGame : public ChessGame
+class CustomRecursiveChessGame : public RecursiveChessGame
 {
 private:
     MainWindow *mainWindow;
+    bool inSubGame;
+    std::shared_ptr<CustomRecursiveChessGame> activeSubGame;
+    std::vector<U64> savedWhitePieces;
+    std::vector<U64> savedBlackPieces;
 
 public:
-    CustomChessGame(MainWindow *window = nullptr) : ChessGame(), mainWindow(window) {}
+    CustomRecursiveChessGame(MainWindow *window = nullptr)
+        : RecursiveChessGame(), mainWindow(window), inSubGame(false), activeSubGame(nullptr) {}
 
     Piece PromoteInput(Square from_sq, Square to_sq, Color color, Piece to_piece) override
     {
@@ -22,11 +31,49 @@ public:
         }
         return Queen; // Default if no window is set
     }
+
+    bool IsInSubGame() const { return inSubGame; }
+
+    CustomRecursiveChessGame *GetActiveGame()
+    {
+        return inSubGame && activeSubGame ? activeSubGame.get() : this;
+    }
+
+    void StartSubGame(Square from, Square to, Color attacker)
+    {
+        // Save current game state
+        savedWhitePieces = WhitePiecesArray;
+        savedBlackPieces = BlackPiecesArray;
+
+        // Create new sub-game
+        activeSubGame = std::make_shared<CustomRecursiveChessGame>(mainWindow);
+        activeSubGame->parent_game = this;
+        activeSubGame->capture_from = from;
+        activeSubGame->capture_to = to;
+        activeSubGame->attacker_color = attacker;
+        inSubGame = true;
+    }
+
+    void EndSubGame()
+    {
+        if (inSubGame && activeSubGame)
+        {
+            // Restore the saved state
+            WhitePiecesArray = savedWhitePieces;
+            BlackPiecesArray = savedBlackPieces;
+            UpdateBoard();
+
+            // Clean up sub-game
+            activeSubGame = nullptr;
+            inSubGame = false;
+        }
+    }
 };
 
-static CustomChessGame cg(nullptr);             // Make it static to avoid multiple definition
+static CustomRecursiveChessGame cg(nullptr);    // Make it static to avoid multiple definition
 static std::vector<DraggableLabel *> allLabels; // Make it static
 static Square dragSourceSquare = invalid;       // Make it static
+static QDialog *subGameDialog = nullptr;        // Dialog for sub-games
 
 void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &draggableLabels);
 
@@ -34,7 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    cg = CustomChessGame(this); // Initialize with this window
+    cg = CustomRecursiveChessGame(this); // Initialize with this window
 
     allLabels = {ui->a1, ui->b1, ui->c1, ui->d1, ui->e1, ui->f1, ui->g1, ui->h1,
                  ui->a2, ui->b2, ui->c2, ui->d2, ui->e2, ui->f2, ui->g2, ui->h2,
@@ -56,9 +103,17 @@ MainWindow::MainWindow(QWidget *parent)
 
 void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &draggableLabels)
 {
-    for (int i = 0; i < 64; i++)
+    if (draggableLabels.empty())
+    {
+        return;
+    }
+
+    for (int i = 0; i < 64 && i < draggableLabels.size(); i++)
     {
         DraggableLabel *label = draggableLabels[i];
+        if (!label)
+            continue;
+
         bool bit = get_bit(bitboard, i);
         if (bit)
         {
@@ -113,9 +168,21 @@ void MainWindow::handleDragStarted(QString objectName)
     int rank = objectName[1].digitValue() - 1;
     dragSourceSquare = static_cast<Square>(rank * 8 + file);
 
-    // Get and show valid moves for this piece
-    U64 validMoves = cg.GetAttacks(dragSourceSquare);
-    updateLabelsFromBitboard(validMoves, allLabels);
+    // Get and show valid moves for this piece using the active game
+    CustomRecursiveChessGame *activeGame = cg.GetActiveGame();
+    if (activeGame)
+    {
+        try
+        {
+            U64 validMoves = activeGame->GetAttacks(dragSourceSquare);
+            updateLabelsFromBitboard(validMoves, allLabels);
+        }
+        catch (const std::exception &e)
+        {
+            // If there's no piece at the square, just clear the dragSourceSquare
+            dragSourceSquare = invalid;
+        }
+    }
 
     // Log the drag start
     ui->textEdit->append(QString("Selected piece at %1").arg(objectName));
@@ -136,74 +203,56 @@ void MainWindow::handleDrop(QString targetSquareName)
     // Try to make the move
     if (dragSourceSquare != invalid)
     {
-        std::vector<Action> actions = cg.Move(dragSourceSquare, targetSquare);
+        CustomRecursiveChessGame *activeGame = cg.GetActiveGame();
+        std::vector<Action> actions = activeGame->Move(dragSourceSquare, targetSquare);
 
         // If the move was successful (actions is not empty)
         if (!actions.empty())
         {
-            // Get the source and target labels
-            DraggableLabel *sourceLabel = allLabels[dragSourceSquare];
-            DraggableLabel *targetLabel = allLabels[targetSquare];
-
-            // Store the original piece style before the move
-            QString originalPieceStyle = sourceLabel->property("originalStyle").toString();
-            if (originalPieceStyle.isEmpty())
+            // Check if this move triggers a sub-game
+            if (std::find(actions.begin(), actions.end(), Action::Abilityes) != actions.end())
             {
-                originalPieceStyle = sourceLabel->styleSheet();
-            }
+                // Create a dialog for the sub-game
+                QDialog *dialog = new QDialog(this);
+                dialog->setWindowTitle("Capture Resolution Game");
+                dialog->setModal(true);
 
-            // Check if this was a promotion
-            bool wasPromotion = false;
-            for (const Action &action : actions)
-            {
-                if (action == Action::Promotion)
+                QVBoxLayout *layout = new QVBoxLayout(dialog);
+
+                QLabel *infoLabel = new QLabel("A capture has been attempted! Play this game to determine the outcome.\n"
+                                               "If the attacker wins, the capture succeeds.\n"
+                                               "If the defender wins, the attacking piece is removed instead.",
+                                               dialog);
+                layout->addWidget(infoLabel);
+
+                dialog->setLayout(layout);
+
+                // Store the dialog for later use
+                if (subGameDialog)
                 {
-                    wasPromotion = true;
-                    break;
+                    subGameDialog->deleteLater();
                 }
-            }
+                subGameDialog = dialog;
 
-            // Clear the source square
-            sourceLabel->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;");
-            sourceLabel->setProperty("originalStyle", QVariant());
+                // Start the sub-game
+                cg.StartSubGame(dragSourceSquare, targetSquare, activeGame->GetColor(1ULL << dragSourceSquare));
 
-            if (wasPromotion)
-            {
-                U64 piece = 1ULL << targetSquare;
-                Color color = cg.GetColor(piece);
-                Piece pieceType = cg.GetPieceType(piece);
+                // Force an immediate board update to show the initial sub-game state
+                updateBoardFromGame();
 
-                // Construct the appropriate image path based on piece type and color
-                QString pieceName;
-                switch (pieceType)
-                {
-                case Queen:
-                    pieceName = "queen";
-                    break;
-                case Rook:
-                    pieceName = "rook";
-                    break;
-                case Bishop:
-                    pieceName = "bishop";
-                    break;
-                case Knight:
-                    pieceName = "knight";
-                    break;
-                default:
-                    pieceName = "pawn";
-                    break;
-                }
-                QString colorName = (color == white) ? "white" : "black";
-                QString imagePath = QString(":/img/%1_%2.png").arg(colorName).arg(pieceName);
-                QString newStyle = QString("border-image: url(%1) 0 0 0 0 stretch stretch;").arg(imagePath);
-                targetLabel->setStyleSheet(newStyle);
-                targetLabel->setProperty("originalStyle", newStyle);
-            }
-            else
-            {
-                // Normal move - transfer the original piece style
-                targetLabel->setStyleSheet(originalPieceStyle);
-                targetLabel->setProperty("originalStyle", originalPieceStyle);
+                // Connect dialog's finished signal to cleanup
+                connect(dialog, &QDialog::finished, this, [this]()
+                        {
+                    if (subGameDialog) {
+                        subGameDialog->deleteLater();
+                        subGameDialog = nullptr;
+                    } });
+
+                // Show the dialog
+                dialog->show();
+
+                // Don't clear highlights yet - wait for sub-game completion
+                return;
             }
 
             // Log the move and any special actions
@@ -221,15 +270,36 @@ void MainWindow::handleDrop(QString targetSquareName)
             }
             ui->textEdit->append(moveLog);
 
-            // Check for checkmate using the chess engine's IsWin method
-            if (cg.IsWin(white))
+            // Check for checkmate
+            if (std::find(actions.begin(), actions.end(), Action::Checkmate) != actions.end())
             {
-                QMessageBox::information(this, "Game Over", "White Wins!");
+                if (cg.IsInSubGame())
+                {
+                    // Sub-game ended
+                    QString result = activeGame->GetWinner() == activeGame->GetColor(1ULL << dragSourceSquare) ? "Capture succeeds!" : "Capture fails! Attacking piece is removed.";
+                    ui->textEdit->append(result);
+
+                    // Close the sub-game dialog safely
+                    if (subGameDialog)
+                    {
+                        subGameDialog->accept();
+                        subGameDialog = nullptr;
+                    }
+
+                    // End the sub-game and update the board
+                    cg.EndSubGame();
+                    updateBoardFromGame();
+                }
+                else
+                {
+                    // Main game ended
+                    QMessageBox::information(this, "Game Over",
+                                             activeGame->IsWin(white) ? "White Wins!" : "Black Wins!");
+                }
             }
-            else if (cg.IsWin(black))
-            {
-                QMessageBox::information(this, "Game Over", "Black Wins!");
-            }
+
+            // Update the visual board state
+            updateBoardFromGame();
         }
 
         // Clear highlights
@@ -241,10 +311,6 @@ void MainWindow::handleDrop(QString targetSquareName)
                 if (originalStyle.isValid())
                 {
                     label->setStyleSheet(originalStyle.toString());
-                }
-                else
-                {
-                    label->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;");
                 }
             }
         }
@@ -274,6 +340,65 @@ Piece MainWindow::handlePawnPromotion()
     }
 
     return Queen; // Default to Queen if dialog is cancelled
+}
+
+void MainWindow::updateBoardFromGame()
+{
+    // Get the active game instance
+    CustomRecursiveChessGame *activeGame = cg.GetActiveGame();
+
+    // Update each square based on the current game state
+    for (int i = 0; i < 64; i++)
+    {
+        Square sq = static_cast<Square>(i);
+        DraggableLabel *label = allLabels[i];
+        U64 piece = 1ULL << i;
+
+        if (!(piece & activeGame->GetBoard()))
+        {
+            // Empty square
+            label->setStyleSheet("border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;");
+            label->setProperty("originalStyle", QVariant());
+            continue;
+        }
+
+        // Get piece type and color
+        Color color = activeGame->GetColor(piece);
+        Piece pieceType = activeGame->GetPieceType(piece);
+
+        // Construct image path
+        QString pieceName;
+        switch (pieceType)
+        {
+        case Pawn:
+            pieceName = "pawn";
+            break;
+        case Knight:
+            pieceName = "knight";
+            break;
+        case Bishop:
+            pieceName = "bishop";
+            break;
+        case Rook:
+            pieceName = "rook";
+            break;
+        case Queen:
+            pieceName = "queen";
+            break;
+        case King:
+            pieceName = "king";
+            break;
+        default:
+            continue;
+        }
+
+        QString colorName = (color == white) ? "white" : "black";
+        QString imagePath = QString(":/img/%1_%2.png").arg(colorName).arg(pieceName);
+        QString newStyle = QString("border-image: url(%1) 0 0 0 0 stretch stretch;").arg(imagePath);
+
+        label->setStyleSheet(newStyle);
+        label->setProperty("originalStyle", newStyle);
+    }
 }
 
 MainWindow::~MainWindow()

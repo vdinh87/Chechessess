@@ -1,4 +1,3 @@
-#pragma once
 #include "Logger.hpp"
 
 void Logger::AddToLog(ChessMove move)
@@ -6,7 +5,7 @@ void Logger::AddToLog(ChessMove move)
     log.push_back(move);
 }
 
-const std::vector<ChessMove>& Logger::ReadLog() const
+const std::vector<ChessMove> &Logger::ReadLog() const
 {
     return log;
 }
@@ -25,7 +24,6 @@ int Logger::GetSize() const
 {
     return log.size();
 }
-
 
 bool Logger::IsEmpty() const
 {

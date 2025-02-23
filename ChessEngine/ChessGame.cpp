@@ -1,5 +1,7 @@
-#pragma once
 #include "ChessGame.hpp"
+#include <cstdlib>
+#include <algorithm>
+#include <iostream>
 
 ChessGame::ChessGame(/* args */)
 {
