@@ -296,8 +296,10 @@ void MainWindow::handleDrop(QString targetSquareName)
                 if (!cg.IsInSubGame())
                 {
                     // Main game ended
+                    QString winner = activeGame->GetWinner() == white ? "White" : "Black";
+                    ui->textEdit->append(QString("%1 has checkmated %2! Game Over!").arg(winner).arg(winner == "White" ? "Black" : "White"));
                     QMessageBox::information(this, "Game Over",
-                                             activeGame->GetWinner() == white ? "White Wins!" : "Black Wins!");
+                                             QString("%1 Wins!").arg(winner));
                 }
                 else
                 {
@@ -318,10 +320,12 @@ void MainWindow::handleDrop(QString targetSquareName)
             }
             else if (!cg.IsInSubGame() && activeGame->IsWin(white))
             {
+                ui->textEdit->append("White has checkmated Black! Game Over!");
                 QMessageBox::information(this, "Game Over", "White Wins!");
             }
             else if (!cg.IsInSubGame() && activeGame->IsWin(black))
             {
+                ui->textEdit->append("Black has checkmated White! Game Over!");
                 QMessageBox::information(this, "Game Over", "Black Wins!");
             }
 
