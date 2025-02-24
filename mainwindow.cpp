@@ -134,23 +134,29 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
         bool bit = get_bit(bitboard, i);
         if (bit)
         {
-            // If there's a piece on this square, preserve its style and add green highlight
+            // Store the original style if it's not already stored
             QString currentStyle = label->styleSheet();
-            if (!currentStyle.contains("blank.png") && !currentStyle.contains("green_hue.png"))
+            if (!currentStyle.contains("background-color"))
             {
-                // Store the original piece style
                 label->setProperty("originalStyle", currentStyle);
             }
-            label->setStyleSheet("border-image: url(:/img/green_hue.png) 0 0 0 0 stretch stretch;");
+
+            // Apply the original piece image with a semi-transparent green overlay
+            QString newStyle = label->property("originalStyle").toString();
+            if (newStyle.isEmpty() || newStyle.contains("blank.png"))
+            {
+                newStyle = "border-image: url(:/img/blank.png) 0 0 0 0 stretch stretch;";
+            }
+            newStyle += " background-color: rgba(0, 255, 0, 0.3);"; // Semi-transparent green
+            label->setStyleSheet(newStyle);
         }
-        else if (label->styleSheet().contains("green_hue.png"))
+        else if (label->styleSheet().contains("background-color"))
         {
-            // Restore the original style if it exists, otherwise set to blank
+            // Restore the original style without the green overlay
             QVariant originalStyle = label->property("originalStyle");
             if (originalStyle.isValid())
             {
                 label->setStyleSheet(originalStyle.toString());
-                label->setProperty("originalStyle", QVariant()); // Clear the stored style
             }
             else
             {
@@ -165,13 +171,12 @@ void MainWindow::handleDragStarted(QString objectName)
     // Clear any existing highlights and restore original styles
     for (DraggableLabel *label : allLabels)
     {
-        if (label->styleSheet().contains("green_hue.png"))
+        if (label->styleSheet().contains("background-color"))
         {
             QVariant originalStyle = label->property("originalStyle");
             if (originalStyle.isValid())
             {
                 label->setStyleSheet(originalStyle.toString());
-                label->setProperty("originalStyle", QVariant());
             }
             else
             {
@@ -336,7 +341,7 @@ void MainWindow::handleDrop(QString targetSquareName)
         // Clear highlights
         for (DraggableLabel *label : allLabels)
         {
-            if (label->styleSheet().contains("green_hue.png"))
+            if (label->styleSheet().contains("background-color"))
             {
                 QVariant originalStyle = label->property("originalStyle");
                 if (originalStyle.isValid())
