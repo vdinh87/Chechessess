@@ -293,7 +293,13 @@ void MainWindow::handleDrop(QString targetSquareName)
             // Check for checkmate
             if (std::find(actions.begin(), actions.end(), Action::Checkmate) != actions.end())
             {
-                if (cg.IsInSubGame())
+                if (!cg.IsInSubGame())
+                {
+                    // Main game ended
+                    QMessageBox::information(this, "Game Over",
+                                             activeGame->GetWinner() == white ? "White Wins!" : "Black Wins!");
+                }
+                else
                 {
                     // Sub-game ended
                     QString result = activeGame->GetWinner() == activeGame->GetColor(1ULL << dragSourceSquare) ? "Capture succeeds!" : "Capture fails! Attacking piece is removed.";
@@ -308,28 +314,15 @@ void MainWindow::handleDrop(QString targetSquareName)
 
                     // End the sub-game and force a board update
                     cg.EndSubGame();
-                    updateBoardFromGame();
-
-                    // Clear any remaining highlights
-                    for (DraggableLabel *label : allLabels)
-                    {
-                        if (label->styleSheet().contains("green_hue.png"))
-                        {
-                            QVariant originalStyle = label->property("originalStyle");
-                            if (originalStyle.isValid())
-                            {
-                                label->setStyleSheet(originalStyle.toString());
-                            }
-                        }
-                    }
-                    dragSourceSquare = invalid;
                 }
-                else
-                {
-                    // Main game ended
-                    QMessageBox::information(this, "Game Over",
-                                             activeGame->IsWin(white) ? "White Wins!" : "Black Wins!");
-                }
+            }
+            else if (!cg.IsInSubGame() && activeGame->IsWin(white))
+            {
+                QMessageBox::information(this, "Game Over", "White Wins!");
+            }
+            else if (!cg.IsInSubGame() && activeGame->IsWin(black))
+            {
+                QMessageBox::information(this, "Game Over", "Black Wins!");
             }
 
             // Update the visual board state

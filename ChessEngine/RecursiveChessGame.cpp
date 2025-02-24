@@ -177,28 +177,32 @@ std::vector<Action> RecursiveChessGame::Move(Square from_sq, Square to_sq)
 
     UpdateBoard();
 
-    if (IsWin(white) || IsWin(black))
+    // Only check for win if this is a sub-game or if there's no capture to resolve
+    if (IsSubGame() || !(board & (1ULL << to_sq)))
     {
-        actions.push_back(Checkmate);
-
-        // If this is a sub-game, apply the capture result to the parent game
-        if (IsSubGame() && parent_game)
+        if (IsWin(white) || IsWin(black))
         {
-            Color winner = IsWin(white) ? white : black;
-            if (winner == attacker_color)
+            actions.push_back(Checkmate);
+
+            // If this is a sub-game, apply the capture result to the parent game
+            if (IsSubGame() && parent_game)
             {
-                // Attacker wins - execute the capture in parent game
-                parent_game->RemovePiece(capture_to); // Remove defending piece first
-                parent_game->ExecuteMove(attacker_color, capture_from, capture_to,
-                                         parent_game->GetPieceType(1ULL << capture_from),
-                                         parent_game->GetPieceType(1ULL << capture_to));
-                parent_game->UpdateBoard();
-            }
-            else
-            {
-                // Defender wins - remove the attacking piece
-                parent_game->RemovePiece(capture_from);
-                parent_game->UpdateBoard();
+                Color winner = IsWin(white) ? white : black;
+                if (winner == attacker_color)
+                {
+                    // Attacker wins - execute the capture in parent game
+                    parent_game->RemovePiece(capture_to); // Remove defending piece first
+                    parent_game->ExecuteMove(attacker_color, capture_from, capture_to,
+                                             parent_game->GetPieceType(1ULL << capture_from),
+                                             parent_game->GetPieceType(1ULL << capture_to));
+                    parent_game->UpdateBoard();
+                }
+                else
+                {
+                    // Defender wins - remove the attacking piece
+                    parent_game->RemovePiece(capture_from);
+                    parent_game->UpdateBoard();
+                }
             }
         }
     }

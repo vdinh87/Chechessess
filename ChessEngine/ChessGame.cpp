@@ -183,15 +183,46 @@ U64 ChessGame::GetAttacks(Square square_) const
 
     attacks = GetAttacks(square_, board, which_function);
 
-    attacks = FilterTeam(attacks, piece);
-    attacks = FilterCheck(attacks, piece);
-    if (GetPieceType(piece) == King)
-        attacks = attacks & FilterLegalKingMoves(attacks, piece);
-    else
-        attacks = attacks & FilterPin(attacks, piece);
+    // Get the color of the piece we're moving
+    Color piece_color = GetColor(piece);
 
-    return attacks;
+    // Create a temporary board to test if moves would leave/put own king in check
+    U64 tempBoard = board;
+    clear_bit(tempBoard, square_); // Remove piece from current position
+
+    // Filter out moves that would leave/put own king in check
+    U64 legal_moves = 0ULL;
+    U64 filtered_attacks = FilterTeam(attacks, piece);
+    U64 moves = filtered_attacks;
+
+    while (moves)
+    {
+        int target_square = get_ls1b_index(moves);
+        U64 target = 1ULL << target_square;
+
+        // Make the move on temporary board
+        U64 temp = tempBoard;
+        if (temp & target)   // If capturing a piece
+            temp &= ~target; // Remove captured piece
+        temp |= target;      // Place piece at new position
+
+        // If this move doesn't leave own king in check, it's legal
+        if (!InCheck(temp, piece_color, 0))
+            set_bit(legal_moves, target_square);
+
+        moves &= moves - 1; // Clear least significant bit
+    }
+
+    // Apply the remaining filters
+    legal_moves = FilterCheck(legal_moves, piece);
+    if (GetPieceType(piece) == King)
+        legal_moves = legal_moves & FilterLegalKingMoves(legal_moves, piece);
+    else
+        legal_moves = legal_moves & FilterPin(legal_moves, piece);
+
+    return legal_moves;
 }
+
 Action ChessGame::Promote(Square from_sq, Square to_sq, Color from_color, Piece to_piece)
 {
     Piece promoting_to_piece = PromoteInput(from_sq, to_sq, from_color, to_piece);
@@ -243,7 +274,9 @@ U64 ChessGame::InCheck(const U64 &occupany_, Color color_of_king, int offset) co
 
     Square king_sq = static_cast<Square>(get_LSB(king) + offset);
     U64 opposite_piece = 0ULL;
-    for (int i = Pawn; i < King; i++)
+
+    // Check all piece types including Queen
+    for (int i = Pawn; i <= Queen; i++) // Changed to <= Queen to include Queen
     {
         attacks = GetAttacks(king_sq, occupany_, i);
         if (color_of_king == white)
@@ -611,8 +644,10 @@ std::vector<Action> ChessGame::Move(Square from_sq, Square to_sq)
     // after move
     UpdateBoard();
 
+    // Check for win regardless of whether it's a capture or not
     if (IsWin(white) || IsWin(black))
         actions.push_back(Checkmate);
+
     return actions;
 }
 
@@ -680,12 +715,46 @@ U64 ChessGame::GetBoard() const
 
 bool ChessGame::IsWin(Color color) const
 {
-    if (color == white)
-        return (!(GetAttacks(GetSquare(BlackPiecesArray[King]))) &&
-                InCheck(board, black, BlackPiecesArray[King]));
+    Color opponent = (color == white) ? black : white;
+    U64 opponent_king = (opponent == white) ? WhitePiecesArray[King] : BlackPiecesArray[King];
+    U64 opponent_pieces = (opponent == white) ? WhitePieces : BlackPieces;
 
-    return (!(GetAttacks(GetSquare(WhitePiecesArray[King]))) &&
-            InCheck(board, white, WhitePiecesArray[King]));
+    // First check if opponent is in check
+    if (!InCheck(board, opponent, 0))
+    {
+        std::cout << "IsWin: King is not in check" << std::endl;
+        return false;
+    }
+    std::cout << "IsWin: King is in check" << std::endl;
+
+    // Get king's square
+    Square king_square = static_cast<Square>(get_ls1b_index(opponent_king));
+
+    // Try all possible moves for each opponent piece
+    U64 pieces = opponent_pieces;
+    while (pieces)
+    {
+        Square square = static_cast<Square>(get_ls1b_index(pieces));
+        try
+        {
+            U64 moves = GetAttacks(square);
+            // If any piece has a legal move, it's not checkmate
+            if (moves)
+            {
+                std::cout << "IsWin: Found legal move for piece at square " << square << std::endl;
+                return false;
+            }
+        }
+        catch (const std::invalid_argument &)
+        {
+            // Skip if GetAttacks throws (which happens for empty squares)
+        }
+        pieces &= pieces - 1; // Clear the least significant bit
+    }
+
+    std::cout << "IsWin: No legal moves found - Checkmate!" << std::endl;
+    // If we get here, no piece can make a legal move and the king is in check
+    return true;
 }
 
 // board editing
