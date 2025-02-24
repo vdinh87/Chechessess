@@ -184,10 +184,11 @@ std::vector<Action> RecursiveChessGame::Move(Square from_sq, Square to_sq)
         // If this is a sub-game, apply the capture result to the parent game
         if (IsSubGame() && parent_game)
         {
-            Color winner = GetWinner();
+            Color winner = IsWin(white) ? white : black;
             if (winner == attacker_color)
             {
                 // Attacker wins - execute the capture in parent game
+                parent_game->RemovePiece(capture_to); // Remove defending piece first
                 parent_game->ExecuteMove(attacker_color, capture_from, capture_to,
                                          parent_game->GetPieceType(1ULL << capture_from),
                                          parent_game->GetPieceType(1ULL << capture_to));
@@ -211,6 +212,7 @@ void RecursiveChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, 
     if (IsSubGame())
     {
         ChessGame::ExecuteMove(color, from_sq, to_sq, from_piece, to_piece);
+        UpdateBoard();
         return;
     }
 
@@ -223,4 +225,5 @@ void RecursiveChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, 
 
     // Non-capture moves execute normally
     ChessGame::ExecuteMove(color, from_sq, to_sq, from_piece, to_piece);
+    UpdateBoard();
 }

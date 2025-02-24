@@ -58,14 +58,31 @@ public:
     {
         if (inSubGame && activeSubGame)
         {
-            // Restore the saved state
-            WhitePiecesArray = savedWhitePieces;
-            BlackPiecesArray = savedBlackPieces;
-            UpdateBoard();
+            // Check if there was a winner and handle piece removal
+            Color winner = activeSubGame->GetWinner();
+            if (winner != static_cast<Color>(-1)) // If there was a winner
+            {
+                if (winner == activeSubGame->attacker_color)
+                {
+                    // Attacker won - remove defending piece and move attacking piece
+                    RemovePiece(activeSubGame->capture_to);
+                    ExecuteMove(activeSubGame->attacker_color,
+                                activeSubGame->capture_from,
+                                activeSubGame->capture_to,
+                                GetPieceType(1ULL << activeSubGame->capture_from),
+                                GetPieceType(1ULL << activeSubGame->capture_to));
+                }
+                else
+                {
+                    // Defender won - remove attacking piece
+                    RemovePiece(activeSubGame->capture_from);
+                }
+            }
 
             // Clean up sub-game
             activeSubGame = nullptr;
             inSubGame = false;
+            UpdateBoard();
         }
     }
 };
@@ -246,6 +263,9 @@ void MainWindow::handleDrop(QString targetSquareName)
                     if (subGameDialog) {
                         subGameDialog->deleteLater();
                         subGameDialog = nullptr;
+                        
+                        // Force a board update after the sub-game ends
+                        updateBoardFromGame();
                     } });
 
                 // Show the dialog
@@ -286,9 +306,23 @@ void MainWindow::handleDrop(QString targetSquareName)
                         subGameDialog = nullptr;
                     }
 
-                    // End the sub-game and update the board
+                    // End the sub-game and force a board update
                     cg.EndSubGame();
                     updateBoardFromGame();
+
+                    // Clear any remaining highlights
+                    for (DraggableLabel *label : allLabels)
+                    {
+                        if (label->styleSheet().contains("green_hue.png"))
+                        {
+                            QVariant originalStyle = label->property("originalStyle");
+                            if (originalStyle.isValid())
+                            {
+                                label->setStyleSheet(originalStyle.toString());
+                            }
+                        }
+                    }
+                    dragSourceSquare = invalid;
                 }
                 else
                 {
