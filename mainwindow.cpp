@@ -9,6 +9,10 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QTimer>
+#include <QGraphicsBlurEffect>
+#include <QPropertyAnimation>
+#include <QParallelAnimationGroup>
+#include <QGraphicsOpacityEffect>
 
 class CustomRecursiveChessGame : public RecursiveChessGame
 {
@@ -234,49 +238,111 @@ void MainWindow::handleDrop(QString targetSquareName)
             // Check if this move triggers a sub-game
             if (std::find(actions.begin(), actions.end(), Action::Abilityes) != actions.end())
             {
-                // Create a dialog for the sub-game
-                QDialog *dialog = new QDialog(this);
-                dialog->setWindowTitle("Capture Resolution Game");
-                dialog->setModal(true);
+                // Create and setup the blur effect
+                QGraphicsBlurEffect *blurEffect = new QGraphicsBlurEffect(this);
+                blurEffect->setBlurRadius(0);
+                ui->centralwidget->setGraphicsEffect(blurEffect);
 
-                QVBoxLayout *layout = new QVBoxLayout(dialog);
+                // Create blur animation
+                QPropertyAnimation *blurAnimation = new QPropertyAnimation(blurEffect, "blurRadius");
+                blurAnimation->setDuration(1000); // 1 second duration
+                blurAnimation->setStartValue(0);
+                blurAnimation->setEndValue(15);
+                blurAnimation->setEasingCurve(QEasingCurve::InOutQuad);
 
-                QLabel *infoLabel = new QLabel("A capture has been attempted! Play this game to determine the outcome.\n"
-                                               "If the attacker wins, the capture succeeds.\n"
-                                               "If the defender wins, the attacking piece is removed instead.",
-                                               dialog);
-                layout->addWidget(infoLabel);
+                // Create zoom animation
+                QPropertyAnimation *scaleAnimation = new QPropertyAnimation(ui->centralwidget, "geometry");
+                scaleAnimation->setDuration(1000); // 1 second duration
+                QRect startGeom = ui->centralwidget->geometry();
+                QRect endGeom = startGeom;
+                endGeom.setWidth(startGeom.width() * 1.2); // 120% size
+                endGeom.setHeight(startGeom.height() * 1.2);
+                endGeom.moveCenter(startGeom.center()); // Keep centered
+                scaleAnimation->setStartValue(startGeom);
+                scaleAnimation->setEndValue(endGeom);
+                scaleAnimation->setEasingCurve(QEasingCurve::InOutQuad);
 
-                dialog->setLayout(layout);
+                // Create animation group to run both animations in parallel
+                QParallelAnimationGroup *animGroup = new QParallelAnimationGroup(this);
+                animGroup->addAnimation(blurAnimation);
+                animGroup->addAnimation(scaleAnimation);
 
-                // Store the dialog for later use
-                if (subGameDialog)
-                {
-                    subGameDialog->deleteLater();
-                }
-                subGameDialog = dialog;
+                // Capture necessary variables for the lambda
+                Square captureFrom = dragSourceSquare;
+                Square captureTo = targetSquare;
+                Color attackerColor = activeGame->GetColor(1ULL << dragSourceSquare);
 
-                // Start the sub-game
-                cg.StartSubGame(dragSourceSquare, targetSquare, activeGame->GetColor(1ULL << dragSourceSquare));
-
-                // Force an immediate board update to show the initial sub-game state
-                updateBoardFromGame();
-
-                // Connect dialog's finished signal to cleanup
-                connect(dialog, &QDialog::finished, this, [this]()
+                // Connect animation finished signal to cleanup and show dialog
+                connect(animGroup, &QParallelAnimationGroup::finished, this,
+                        [this, blurEffect, captureFrom, captureTo, attackerColor]()
                         {
-                    if (subGameDialog) {
-                        subGameDialog->deleteLater();
-                        subGameDialog = nullptr;
-                        
-                        // Force a board update after the sub-game ends
-                        updateBoardFromGame();
-                    } });
+                            // Create dialog for the sub-game
+                            QDialog *dialog = new QDialog(this);
+                            dialog->setWindowTitle("Capture Resolution Game");
+                            dialog->setModal(true);
 
-                // Show the dialog
-                dialog->show();
+                            QVBoxLayout *layout = new QVBoxLayout(dialog);
+                            QLabel *infoLabel = new QLabel(
+                                "A capture has been attempted! Play this game to determine the outcome.\n"
+                                "If the attacker wins, the capture succeeds.\n"
+                                "If the defender wins, the attacking piece is removed instead.",
+                                dialog);
+                            layout->addWidget(infoLabel);
+                            dialog->setLayout(layout);
 
-                // Don't clear highlights yet - wait for sub-game completion
+                            // Store the dialog
+                            if (subGameDialog)
+                            {
+                                subGameDialog->deleteLater();
+                            }
+                            subGameDialog = dialog;
+
+                            // Connect dialog's finished signal
+                            connect(dialog, &QDialog::finished, this, [this, blurEffect]()
+                                    {
+                        // Reverse animations when dialog closes
+                        QPropertyAnimation *reverseBlur = new QPropertyAnimation(blurEffect, "blurRadius");
+                        reverseBlur->setDuration(1000);
+                        reverseBlur->setStartValue(15);
+                        reverseBlur->setEndValue(0);
+                        reverseBlur->setEasingCurve(QEasingCurve::InOutQuad);
+
+                        QPropertyAnimation *reverseScale = new QPropertyAnimation(ui->centralwidget, "geometry");
+                        reverseScale->setDuration(1000);
+                        QRect currentGeom = ui->centralwidget->geometry();
+                        QRect originalGeom = currentGeom;
+                        originalGeom.setWidth(currentGeom.width() / 1.2);
+                        originalGeom.setHeight(currentGeom.height() / 1.2);
+                        originalGeom.moveCenter(currentGeom.center());
+                        reverseScale->setStartValue(currentGeom);
+                        reverseScale->setEndValue(originalGeom);
+                        reverseScale->setEasingCurve(QEasingCurve::InOutQuad);
+
+                        QParallelAnimationGroup *reverseGroup = new QParallelAnimationGroup(this);
+                        reverseGroup->addAnimation(reverseBlur);
+                        reverseGroup->addAnimation(reverseScale);
+
+                        connect(reverseGroup, &QParallelAnimationGroup::finished, this, [this, blurEffect]() {
+                            ui->centralwidget->setGraphicsEffect(nullptr);
+                            delete blurEffect;
+                            updateBoardFromGame();
+                        });
+
+                        reverseGroup->start(QAbstractAnimation::DeleteWhenStopped);
+
+                        if (subGameDialog) {
+                            subGameDialog->deleteLater();
+                            subGameDialog = nullptr;
+                        } });
+
+                            // Start the sub-game
+                            cg.StartSubGame(captureFrom, captureTo, attackerColor);
+                            updateBoardFromGame();
+                            dialog->show();
+                        });
+
+                // Start the animations
+                animGroup->start(QAbstractAnimation::DeleteWhenStopped);
                 return;
             }
 
