@@ -195,10 +195,16 @@ U64 ChessGame::GetAttacks(Square square_) const
     U64 filtered_attacks = FilterTeam(attacks, piece);
     U64 moves = filtered_attacks;
 
+    // Get checking pieces
+    U64 checking_pieces = InCheck(board, piece_color, 0);
+
     while (moves)
     {
         int target_square = get_ls1b_index(moves);
         U64 target = 1ULL << target_square;
+
+        // Save the piece that might be captured
+        U64 captured_piece = tempBoard & target;
 
         // Make the move on temporary board
         U64 temp = tempBoard;
@@ -206,9 +212,12 @@ U64 ChessGame::GetAttacks(Square square_) const
             temp &= ~target; // Remove captured piece
         temp |= target;      // Place piece at new position
 
-        // If this move doesn't leave own king in check, it's legal
-        if (!InCheck(temp, piece_color, 0))
+        // If this move captures a checking piece or doesn't leave own king in check, it's legal
+        if ((captured_piece & checking_pieces) || !InCheck(temp, piece_color, 0))
             set_bit(legal_moves, target_square);
+
+        // Restore captured piece for next iteration
+        tempBoard |= captured_piece;
 
         moves &= moves - 1; // Clear least significant bit
     }
@@ -330,45 +339,50 @@ U64 ChessGame::FilterCheck(const U64 &moveset, const U64 &piece) const
     U64 block_mask = ~0ULL;
 
     U64 checkers = InCheck(board, color, 0);
-    bool two_or_more_checkers = false;
-    U64 checkers2 = checkers;
-    std::vector<Square> checker_locations;
+    if (!checkers)
+        return moveset; // If not in check, all moves are legal
 
-    for (int i = 0; checkers2; i++)
+    // Count the number of checking pieces
+    U64 checkers_copy = checkers;
+    int checker_count = 0;
+    while (checkers_copy)
     {
-        if (i == 1)
-            two_or_more_checkers = true;
-        U64 lsb = get_LSB(checkers2);
-        checker_locations.push_back(static_cast<Square>(lsb));
-        checkers2 &= (checkers2 - 1);
+        checker_count++;
+        checkers_copy &= (checkers_copy - 1);
     }
 
-    // may need to be updated as we add filters
-    bool is_king = piece & PieceTypeArray[King];
+    // If there's more than one checker, only king moves are allowed
+    if (checker_count > 1 && !(piece & PieceTypeArray[King]))
+    {
+        return 0ULL;
+    }
 
-    if (two_or_more_checkers || is_king)
-    { // Only king moves allowed.
-        U64 checker_attacks = 0ULL;
-        for (const Square &square : checker_locations)
-        {
-            U64 checkerboard = 0ULL;
-            set_bit(checkerboard, square);
-            Piece type = GetPieceType(checkerboard);
-            checker_attacks = GetAttacks(square, 0ULL, type) | checker_attacks;
-        }
+    // For a single checker, we can:
+    // 1. Capture the checking piece
+    // 2. Block the check (if it's a sliding piece)
+    // 3. Move the king
+    if (piece & PieceTypeArray[King])
+    {
+        // King moves are already filtered in GetAttacks
+        return moveset;
+    }
 
-        return moveset & ~checker_attacks;
+    // For other pieces:
+    // 1. Get the square of the checking piece
+    Square checker_sq = static_cast<Square>(get_ls1b_index(checkers));
+    capture_mask = 1ULL << checker_sq;
+
+    // 2. If it's a sliding piece, add the squares between king and checker
+    if (IsSlider(checkers))
+    {
+        block_mask = GetRay(king_sq, checker_sq);
     }
     else
     {
-        capture_mask = checkers;
-        block_mask = 0ULL;
-        if (IsSlider(checkers))
-            block_mask = GetRay(king_sq, GetSquare(checkers));
+        block_mask = 0ULL; // Non-sliding pieces can only be captured, not blocked
     }
-    if (!checkers)
-        return moveset;
-    return moveset & (block_mask | capture_mask);
+
+    return moveset & (capture_mask | block_mask);
 }
 
 U64 ChessGame::FilterPin(const U64 &moveset, const U64 &piece) const
@@ -720,40 +734,32 @@ bool ChessGame::IsWin(Color color) const
     U64 opponent_pieces = (opponent == white) ? WhitePieces : BlackPieces;
 
     // First check if opponent is in check
-    if (!InCheck(board, opponent, 0))
+    U64 checking_pieces = InCheck(board, opponent, 0);
+    if (!checking_pieces)
     {
-        std::cout << "IsWin: King is not in check" << std::endl;
-        return false;
+        return false; // Not in check, so definitely not checkmate
     }
-    std::cout << "IsWin: King is in check" << std::endl;
-
-    // Get king's square
-    Square king_square = static_cast<Square>(get_ls1b_index(opponent_king));
 
     // Try all possible moves for each opponent piece
     U64 pieces = opponent_pieces;
     while (pieces)
     {
         Square square = static_cast<Square>(get_ls1b_index(pieces));
-        try
+        U64 piece = 1ULL << square;
+
+        // Get all possible moves for this piece
+        U64 attacks = GetAttacks(square);
+
+        // If we found any legal moves (including captures), it's not checkmate
+        if (attacks)
         {
-            U64 moves = GetAttacks(square);
-            // If any piece has a legal move, it's not checkmate
-            if (moves)
-            {
-                std::cout << "IsWin: Found legal move for piece at square " << square << std::endl;
-                return false;
-            }
+            return false;
         }
-        catch (const std::invalid_argument &)
-        {
-            // Skip if GetAttacks throws (which happens for empty squares)
-        }
-        pieces &= pieces - 1; // Clear the least significant bit
+
+        pieces &= pieces - 1; // Clear least significant bit
     }
 
-    std::cout << "IsWin: No legal moves found - Checkmate!" << std::endl;
-    // If we get here, no piece can make a legal move and the king is in check
+    // If we get here, no piece has any legal moves that escape check
     return true;
 }
 
