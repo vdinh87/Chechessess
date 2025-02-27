@@ -239,50 +239,62 @@ void MainWindow::handleDrop(QString targetSquareName)
             // Check if this move triggers a sub-game
             if (std::find(actions.begin(), actions.end(), Action::Abilityes) != actions.end())
             {
-                // Find the chessboard widget (first child of centralwidget that's a QWidget)
+                // Find the chessboard widget (it's the first QWidget child that contains our chess squares)
                 QWidget *chessboard = nullptr;
                 for (QObject *child : ui->centralwidget->children())
                 {
                     if (QWidget *widget = qobject_cast<QWidget *>(child))
                     {
-                        chessboard = widget;
-                        break;
+                        if (widget->findChild<DraggableLabel *>())
+                        {
+                            chessboard = widget;
+                            break;
+                        }
                     }
                 }
 
                 if (!chessboard)
                     return; // Safety check
 
-                // Create and setup the blur effect
-                QGraphicsBlurEffect *blurEffect = new QGraphicsBlurEffect(chessboard);
+                // Raise the chessboard to be on top of all other widgets
+                chessboard->raise();
+
+                // Create and setup the blur effect for the entire central widget
+                QPointer<QGraphicsBlurEffect> blurEffect = new QGraphicsBlurEffect(ui->centralwidget);
                 blurEffect->setBlurRadius(0);
-                chessboard->setGraphicsEffect(blurEffect);
+                ui->centralwidget->setGraphicsEffect(blurEffect);
 
-                // Store the initial geometry
+                // Store the initial geometry of the chessboard
                 QRect originalGeom = chessboard->geometry();
+                QPoint globalCenter = chessboard->mapToGlobal(chessboard->rect().center());
+                QPoint localCenter = ui->centralwidget->mapFromGlobal(globalCenter);
 
-                // Create blur animation
-                QPropertyAnimation *blurAnimation = new QPropertyAnimation(blurEffect, "blurRadius");
+                // Create animation group with safe pointer tracking
+                QPointer<QParallelAnimationGroup> animGroup = new QParallelAnimationGroup(this);
+
+                // Create blur animation for the entire UI
+                QPropertyAnimation *blurAnimation = new QPropertyAnimation(blurEffect, "blurRadius", animGroup);
                 blurAnimation->setDuration(1000);
                 blurAnimation->setStartValue(0);
                 blurAnimation->setEndValue(15);
                 blurAnimation->setEasingCurve(QEasingCurve::InOutQuad);
+                animGroup->addAnimation(blurAnimation);
 
-                // Create zoom animation that maintains position
-                QPropertyAnimation *scaleAnimation = new QPropertyAnimation(chessboard, "geometry");
+                // Create zoom animation for the chessboard only
+                QPropertyAnimation *scaleAnimation = new QPropertyAnimation(chessboard, "geometry", animGroup);
                 scaleAnimation->setDuration(1000);
                 QRect endGeom = originalGeom;
-                // Calculate the size increase while maintaining position
-                int widthIncrease = static_cast<int>(originalGeom.width() * 0.2);
-                int heightIncrease = static_cast<int>(originalGeom.height() * 0.2);
-                endGeom.adjust(-widthIncrease / 2, -heightIncrease / 2, widthIncrease / 2, heightIncrease / 2);
+
+                // Calculate zoom with proper centering on the chessboard
+                int newWidth = static_cast<int>(originalGeom.width() * 2.0);
+                int newHeight = static_cast<int>(originalGeom.height() * 2.0);
+                endGeom.setWidth(newWidth);
+                endGeom.setHeight(newHeight);
+                endGeom.moveCenter(localCenter);
+
                 scaleAnimation->setStartValue(originalGeom);
                 scaleAnimation->setEndValue(endGeom);
                 scaleAnimation->setEasingCurve(QEasingCurve::InOutQuad);
-
-                // Create animation group
-                QParallelAnimationGroup *animGroup = new QParallelAnimationGroup(this);
-                animGroup->addAnimation(blurAnimation);
                 animGroup->addAnimation(scaleAnimation);
 
                 // Capture necessary variables
@@ -290,16 +302,12 @@ void MainWindow::handleDrop(QString targetSquareName)
                 Square captureTo = targetSquare;
                 Color attackerColor = activeGame->GetColor(1ULL << dragSourceSquare);
 
-                // Store pointers for cleanup
-                QPointer<QWidget> safeChessboard = chessboard;
-                QPointer<QGraphicsBlurEffect> safeBlurEffect = blurEffect;
-
                 // Connect animation finished signal
                 connect(animGroup, &QParallelAnimationGroup::finished, this,
-                        [this, safeBlurEffect, captureFrom, captureTo, attackerColor, originalGeom, safeChessboard]()
+                        [this, blurEffect, captureFrom, captureTo, attackerColor, originalGeom, chessboard]()
                         {
-                            if (!safeChessboard)
-                                return; // Safety check
+                            if (!chessboard)
+                                return;
 
                             // Create dialog for the sub-game
                             QDialog *dialog = new QDialog(this);
@@ -322,45 +330,50 @@ void MainWindow::handleDrop(QString targetSquareName)
                             subGameDialog = dialog;
 
                             // Connect dialog's finished signal
-                            connect(dialog, &QDialog::finished, this, [this, safeBlurEffect, originalGeom, safeChessboard]()
+                            connect(dialog, &QDialog::finished, this, [this, blurEffect, originalGeom, chessboard]()
                                     {
-                        if (!safeChessboard || !safeBlurEffect) return;  // Safety check
+                                if (!chessboard) return;
 
-                        // Reverse animations
-                        QPropertyAnimation *reverseBlur = new QPropertyAnimation(safeBlurEffect, "blurRadius");
-                        reverseBlur->setDuration(1000);
-                        reverseBlur->setStartValue(15);
-                        reverseBlur->setEndValue(0);
-                        reverseBlur->setEasingCurve(QEasingCurve::InOutQuad);
+                                // Lower the chessboard back to its original stack position
+                                chessboard->lower();
 
-                        QPropertyAnimation *reverseScale = new QPropertyAnimation(safeChessboard, "geometry");
-                        reverseScale->setDuration(1000);
-                        QRect currentGeom = safeChessboard->geometry();
-                        reverseScale->setStartValue(currentGeom);
-                        reverseScale->setEndValue(originalGeom);
-                        reverseScale->setEasingCurve(QEasingCurve::InOutQuad);
+                                // Create reverse animation group with safe pointer tracking
+                                QPointer<QParallelAnimationGroup> reverseGroup = new QParallelAnimationGroup(this);
 
-                        QParallelAnimationGroup *reverseGroup = new QParallelAnimationGroup;
-                        reverseGroup->addAnimation(reverseBlur);
-                        reverseGroup->addAnimation(reverseScale);
+                                // Create reverse blur animation for the entire UI
+                                QPropertyAnimation *reverseBlur = new QPropertyAnimation(blurEffect, "blurRadius", reverseGroup);
+                                reverseBlur->setDuration(1000);
+                                reverseBlur->setStartValue(15);
+                                reverseBlur->setEndValue(0);
+                                reverseBlur->setEasingCurve(QEasingCurve::InOutQuad);
+                                reverseGroup->addAnimation(reverseBlur);
 
-                        // Cleanup after reverse animation finishes
-                        connect(reverseGroup, &QParallelAnimationGroup::finished, this, 
-                            [this, safeBlurEffect, reverseGroup, safeChessboard]() {
-                            if (safeChessboard && safeBlurEffect) {
-                                safeChessboard->setGraphicsEffect(nullptr);
-                                safeBlurEffect->deleteLater();
-                            }
-                            reverseGroup->deleteLater();
-                            updateBoardFromGame();
-                        });
+                                // Create reverse scale animation for the chessboard
+                                QPropertyAnimation *reverseScale = new QPropertyAnimation(chessboard, "geometry", reverseGroup);
+                                reverseScale->setDuration(1000);
+                                reverseScale->setStartValue(chessboard->geometry());
+                                reverseScale->setEndValue(originalGeom);
+                                reverseScale->setEasingCurve(QEasingCurve::InOutQuad);
+                                reverseGroup->addAnimation(reverseScale);
 
-                        reverseGroup->start();
+                                // Cleanup after reverse animation finishes
+                                connect(reverseGroup, &QParallelAnimationGroup::finished, this, [this, blurEffect, reverseGroup]() {
+                                    if (blurEffect) {
+                                        ui->centralwidget->setGraphicsEffect(nullptr);
+                                        blurEffect->deleteLater();
+                                    }
+                                    if (reverseGroup) {
+                                        reverseGroup->deleteLater();
+                                    }
+                                    updateBoardFromGame();
+                                });
 
-                        if (subGameDialog) {
-                            subGameDialog->deleteLater();
-                            subGameDialog = nullptr;
-                        } });
+                                reverseGroup->start();
+
+                                if (subGameDialog) {
+                                    subGameDialog->deleteLater();
+                                    subGameDialog = nullptr;
+                                } });
 
                             // Start the sub-game
                             cg.StartSubGame(captureFrom, captureTo, attackerColor);
@@ -369,7 +382,7 @@ void MainWindow::handleDrop(QString targetSquareName)
                         });
 
                 // Start the animations
-                animGroup->start(QAbstractAnimation::DeleteWhenStopped);
+                animGroup->start();
                 return;
             }
 
