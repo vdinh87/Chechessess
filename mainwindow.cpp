@@ -13,6 +13,7 @@
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
 #include <QGraphicsOpacityEffect>
+#include <QPointer>
 
 class CustomRecursiveChessGame : public RecursiveChessGame
 {
@@ -238,44 +239,68 @@ void MainWindow::handleDrop(QString targetSquareName)
             // Check if this move triggers a sub-game
             if (std::find(actions.begin(), actions.end(), Action::Abilityes) != actions.end())
             {
+                // Find the chessboard widget (first child of centralwidget that's a QWidget)
+                QWidget *chessboard = nullptr;
+                for (QObject *child : ui->centralwidget->children())
+                {
+                    if (QWidget *widget = qobject_cast<QWidget *>(child))
+                    {
+                        chessboard = widget;
+                        break;
+                    }
+                }
+
+                if (!chessboard)
+                    return; // Safety check
+
                 // Create and setup the blur effect
-                QGraphicsBlurEffect *blurEffect = new QGraphicsBlurEffect(this);
+                QGraphicsBlurEffect *blurEffect = new QGraphicsBlurEffect(chessboard);
                 blurEffect->setBlurRadius(0);
-                ui->centralwidget->setGraphicsEffect(blurEffect);
+                chessboard->setGraphicsEffect(blurEffect);
+
+                // Store the initial geometry
+                QRect originalGeom = chessboard->geometry();
 
                 // Create blur animation
                 QPropertyAnimation *blurAnimation = new QPropertyAnimation(blurEffect, "blurRadius");
-                blurAnimation->setDuration(1000); // 1 second duration
+                blurAnimation->setDuration(1000);
                 blurAnimation->setStartValue(0);
                 blurAnimation->setEndValue(15);
                 blurAnimation->setEasingCurve(QEasingCurve::InOutQuad);
 
-                // Create zoom animation
-                QPropertyAnimation *scaleAnimation = new QPropertyAnimation(ui->centralwidget, "geometry");
-                scaleAnimation->setDuration(1000); // 1 second duration
-                QRect startGeom = ui->centralwidget->geometry();
-                QRect endGeom = startGeom;
-                endGeom.setWidth(startGeom.width() * 1.2); // 120% size
-                endGeom.setHeight(startGeom.height() * 1.2);
-                endGeom.moveCenter(startGeom.center()); // Keep centered
-                scaleAnimation->setStartValue(startGeom);
+                // Create zoom animation that maintains position
+                QPropertyAnimation *scaleAnimation = new QPropertyAnimation(chessboard, "geometry");
+                scaleAnimation->setDuration(1000);
+                QRect endGeom = originalGeom;
+                // Calculate the size increase while maintaining position
+                int widthIncrease = static_cast<int>(originalGeom.width() * 0.2);
+                int heightIncrease = static_cast<int>(originalGeom.height() * 0.2);
+                endGeom.adjust(-widthIncrease / 2, -heightIncrease / 2, widthIncrease / 2, heightIncrease / 2);
+                scaleAnimation->setStartValue(originalGeom);
                 scaleAnimation->setEndValue(endGeom);
                 scaleAnimation->setEasingCurve(QEasingCurve::InOutQuad);
 
-                // Create animation group to run both animations in parallel
+                // Create animation group
                 QParallelAnimationGroup *animGroup = new QParallelAnimationGroup(this);
                 animGroup->addAnimation(blurAnimation);
                 animGroup->addAnimation(scaleAnimation);
 
-                // Capture necessary variables for the lambda
+                // Capture necessary variables
                 Square captureFrom = dragSourceSquare;
                 Square captureTo = targetSquare;
                 Color attackerColor = activeGame->GetColor(1ULL << dragSourceSquare);
 
-                // Connect animation finished signal to cleanup and show dialog
+                // Store pointers for cleanup
+                QPointer<QWidget> safeChessboard = chessboard;
+                QPointer<QGraphicsBlurEffect> safeBlurEffect = blurEffect;
+
+                // Connect animation finished signal
                 connect(animGroup, &QParallelAnimationGroup::finished, this,
-                        [this, blurEffect, captureFrom, captureTo, attackerColor]()
+                        [this, safeBlurEffect, captureFrom, captureTo, attackerColor, originalGeom, safeChessboard]()
                         {
+                            if (!safeChessboard)
+                                return; // Safety check
+
                             // Create dialog for the sub-game
                             QDialog *dialog = new QDialog(this);
                             dialog->setWindowTitle("Capture Resolution Game");
@@ -290,7 +315,6 @@ void MainWindow::handleDrop(QString targetSquareName)
                             layout->addWidget(infoLabel);
                             dialog->setLayout(layout);
 
-                            // Store the dialog
                             if (subGameDialog)
                             {
                                 subGameDialog->deleteLater();
@@ -298,37 +322,40 @@ void MainWindow::handleDrop(QString targetSquareName)
                             subGameDialog = dialog;
 
                             // Connect dialog's finished signal
-                            connect(dialog, &QDialog::finished, this, [this, blurEffect]()
+                            connect(dialog, &QDialog::finished, this, [this, safeBlurEffect, originalGeom, safeChessboard]()
                                     {
-                        // Reverse animations when dialog closes
-                        QPropertyAnimation *reverseBlur = new QPropertyAnimation(blurEffect, "blurRadius");
+                        if (!safeChessboard || !safeBlurEffect) return;  // Safety check
+
+                        // Reverse animations
+                        QPropertyAnimation *reverseBlur = new QPropertyAnimation(safeBlurEffect, "blurRadius");
                         reverseBlur->setDuration(1000);
                         reverseBlur->setStartValue(15);
                         reverseBlur->setEndValue(0);
                         reverseBlur->setEasingCurve(QEasingCurve::InOutQuad);
 
-                        QPropertyAnimation *reverseScale = new QPropertyAnimation(ui->centralwidget, "geometry");
+                        QPropertyAnimation *reverseScale = new QPropertyAnimation(safeChessboard, "geometry");
                         reverseScale->setDuration(1000);
-                        QRect currentGeom = ui->centralwidget->geometry();
-                        QRect originalGeom = currentGeom;
-                        originalGeom.setWidth(currentGeom.width() / 1.2);
-                        originalGeom.setHeight(currentGeom.height() / 1.2);
-                        originalGeom.moveCenter(currentGeom.center());
+                        QRect currentGeom = safeChessboard->geometry();
                         reverseScale->setStartValue(currentGeom);
                         reverseScale->setEndValue(originalGeom);
                         reverseScale->setEasingCurve(QEasingCurve::InOutQuad);
 
-                        QParallelAnimationGroup *reverseGroup = new QParallelAnimationGroup(this);
+                        QParallelAnimationGroup *reverseGroup = new QParallelAnimationGroup;
                         reverseGroup->addAnimation(reverseBlur);
                         reverseGroup->addAnimation(reverseScale);
 
-                        connect(reverseGroup, &QParallelAnimationGroup::finished, this, [this, blurEffect]() {
-                            ui->centralwidget->setGraphicsEffect(nullptr);
-                            delete blurEffect;
+                        // Cleanup after reverse animation finishes
+                        connect(reverseGroup, &QParallelAnimationGroup::finished, this, 
+                            [this, safeBlurEffect, reverseGroup, safeChessboard]() {
+                            if (safeChessboard && safeBlurEffect) {
+                                safeChessboard->setGraphicsEffect(nullptr);
+                                safeBlurEffect->deleteLater();
+                            }
+                            reverseGroup->deleteLater();
                             updateBoardFromGame();
                         });
 
-                        reverseGroup->start(QAbstractAnimation::DeleteWhenStopped);
+                        reverseGroup->start();
 
                         if (subGameDialog) {
                             subGameDialog->deleteLater();
