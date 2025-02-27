@@ -23,10 +23,11 @@ private:
     std::shared_ptr<CustomRecursiveChessGame> activeSubGame;
     std::vector<U64> savedWhitePieces;
     std::vector<U64> savedBlackPieces;
+    Piece attackingPieceType;
 
 public:
     CustomRecursiveChessGame(MainWindow *window = nullptr)
-        : RecursiveChessGame(), mainWindow(window), inSubGame(false), activeSubGame(nullptr) {}
+        : RecursiveChessGame(), mainWindow(window), inSubGame(false), activeSubGame(nullptr), attackingPieceType(Pawn) {}
 
     Piece PromoteInput(Square from_sq, Square to_sq, Color color, Piece to_piece) override
     {
@@ -49,6 +50,9 @@ public:
         // Save current game state
         savedWhitePieces = WhitePiecesArray;
         savedBlackPieces = BlackPiecesArray;
+
+        // Store the attacking piece's type before creating sub-game
+        attackingPieceType = GetPieceType(1ULL << from);
 
         // Create new sub-game
         activeSubGame = std::make_shared<CustomRecursiveChessGame>(mainWindow);
@@ -74,8 +78,8 @@ public:
                     ExecuteMove(activeSubGame->attacker_color,
                                 activeSubGame->capture_from,
                                 activeSubGame->capture_to,
-                                GetPieceType(1ULL << activeSubGame->capture_from),
-                                GetPieceType(1ULL << activeSubGame->capture_to));
+                                attackingPieceType,  // Use the stored piece type
+                                attackingPieceType); // Same type for both from and to
                 }
                 else
                 {
@@ -88,6 +92,22 @@ public:
             activeSubGame = nullptr;
             inSubGame = false;
             UpdateBoard();
+
+            // Check for checkmate after resolving the capture
+            if (IsWin(white))
+            {
+                if (mainWindow)
+                {
+                    mainWindow->showGameOver(true);
+                }
+            }
+            else if (IsWin(black))
+            {
+                if (mainWindow)
+                {
+                    mainWindow->showGameOver(false);
+                }
+            }
         }
     }
 };
@@ -541,6 +561,14 @@ void MainWindow::updateBoardFromGame()
         label->setStyleSheet(newStyle);
         label->setProperty("originalStyle", newStyle);
     }
+}
+
+void MainWindow::showGameOver(bool isWhiteWinner)
+{
+    QString winner = isWhiteWinner ? "White" : "Black";
+    QString loser = isWhiteWinner ? "Black" : "White";
+    ui->textEdit->append(QString("%1 has checkmated %2! Game Over!").arg(winner).arg(loser));
+    QMessageBox::information(this, "Game Over", QString("%1 Wins!").arg(winner));
 }
 
 MainWindow::~MainWindow()

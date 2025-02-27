@@ -23,6 +23,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     Piece handlePawnPromotion();
+    void showGameOver(bool isWhiteWinner);
 
 private:
     Ui::MainWindow *ui;
