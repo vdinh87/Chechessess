@@ -93,20 +93,19 @@ public:
             inSubGame = false;
             UpdateBoard();
 
-            // Check for checkmate after resolving the capture
-            if (IsWin(white))
+            // Add a delayed check as a fallback with a shorter delay
+            if (mainWindow)
             {
-                if (mainWindow)
-                {
-                    mainWindow->showGameOver(true);
-                }
-            }
-            else if (IsWin(black))
-            {
-                if (mainWindow)
-                {
-                    mainWindow->showGameOver(false);
-                }
+                QTimer::singleShot(250, mainWindow, [this, mainWindowPtr = mainWindow]()
+                                   {
+                    if (IsWin(white) && mainWindowPtr)
+                    {
+                        mainWindowPtr->showGameOver(true);
+                    }
+                    else if (IsWin(black) && mainWindowPtr)
+                    {
+                        mainWindowPtr->showGameOver(false);
+                    } });
             }
         }
     }
@@ -386,6 +385,25 @@ void MainWindow::handleDrop(QString targetSquareName)
                                         reverseGroup->deleteLater();
                                     }
                                     updateBoardFromGame();
+                                    
+                                    // Add debug message
+                                    ui->textEdit->append("Animation complete, checking for checkmate...");
+                                    
+                                    // Check for checkmate after the animation completes
+                                    if (cg.IsWin(white))
+                                    {
+                                        ui->textEdit->append("White wins after capture!");
+                                        showGameOver(true);
+                                    }
+                                    else if (cg.IsWin(black))
+                                    {
+                                        ui->textEdit->append("Black wins after capture!");
+                                        showGameOver(false);
+                                    }
+                                    else
+                                    {
+                                        ui->textEdit->append("No checkmate found after capture resolution");
+                                    }
                                 });
 
                                 reverseGroup->start();
@@ -393,6 +411,18 @@ void MainWindow::handleDrop(QString targetSquareName)
                                 if (subGameDialog) {
                                     subGameDialog->deleteLater();
                                     subGameDialog = nullptr;
+                                    
+                                    // Additional check for checkmate immediately after dialog closes
+                                    QTimer::singleShot(50, this, [this]() {
+                                        if (cg.IsWin(white))
+                                        {
+                                            showGameOver(true);
+                                        }
+                                        else if (cg.IsWin(black))
+                                        {
+                                            showGameOver(false);
+                                        }
+                                    });
                                 } });
 
                             // Start the sub-game
