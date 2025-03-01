@@ -30,8 +30,9 @@ private:
     void updateBoardFromGame(); // Helper to update the visual board state
 
 public slots:
-    void handleDragStarted(QString objectName);
-    void handleDragEntered(QString objectName);
-    void handleDrop(QString targetSquareName);
+    void handleDragStarted(DraggableLabel *source);
+    void handleDragEntered(DraggableLabel *source);
+    void handleDrop(DraggableLabel *source, DraggableLabel *target);
+    void on_actionNew_Game_triggered();
 };
 #endif // MAINWINDOW_H

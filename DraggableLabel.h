@@ -16,6 +16,9 @@ public:
     DraggableLabel(QWidget *parent = 0) : QLabel(parent)
     {
         setAcceptDrops(true);
+        setAlignment(Qt::AlignCenter);
+        setScaledContents(true);
+        setContentsMargins(2, 2, 2, 2);
     }
     void setDraggable(bool can_drag)
     {
@@ -29,7 +32,16 @@ public:
             bool bit = (bitboard & (1ULL << i));
             if (bit)
             {
-                label->setStyleSheet("border: 1px solid black;");
+                // Save current style
+                QString currentStyle = label->styleSheet();
+                if (!currentStyle.contains("background-color"))
+                {
+                    label->setProperty("originalStyle", currentStyle);
+                }
+
+                // Add highlight
+                currentStyle += " background-color: rgba(0, 255, 0, 0.3);";
+                label->setStyleSheet(currentStyle);
             }
         }
     }
@@ -56,18 +68,18 @@ protected:
             return;
         if (!(event->buttons() & Qt::LeftButton))
             return;
-        if (this->styleSheet().contains("blank.png"))
+        if (this->pixmap().isNull())
             return;
 
         if ((event->pos() - dragStartPosition).manhattanLength() < QApplication::startDragDistance())
             return;
 
-        emit dragStarted(this->objectName());
+        emit dragStarted(this);
 
         QDrag *drag = new QDrag(this);
         QMimeData *mimeData = new QMimeData;
 
-        // Store both the style and the source object name
+        // Store both the style and the source pointer
         mimeData->setData("application/x-style", originalStyle.toUtf8());
         mimeData->setData("application/x-source", objectName().toUtf8());
         drag->setMimeData(mimeData);
@@ -90,7 +102,7 @@ protected:
     {
         if (event->mimeData()->hasFormat("application/x-style"))
         {
-            emit dragEntered(this->objectName());
+            emit dragEntered(this);
             event->acceptProposedAction();
         }
     }
@@ -102,16 +114,24 @@ protected:
             QString style = QString::fromUtf8(event->mimeData()->data("application/x-style"));
             QString sourceSquare = QString::fromUtf8(event->mimeData()->data("application/x-source"));
 
+            // Get the source label from the source square name
             // Only update styles after confirming the move with the game engine
             event->acceptProposedAction();
-            emit dropOccurred(this->objectName());
+
+            // Get the source from the parent window
+            QWidget *topLevel = this->window();
+            if (topLevel)
+            {
+                DraggableLabel *sourceLabel = topLevel->findChild<DraggableLabel *>(sourceSquare);
+                emit dropOccurred(sourceLabel, this);
+            }
         }
     }
 
 signals:
-    void dragStarted(QString objectName);
-    void dragEntered(QString objectName);
-    void dropOccurred(QString targetSquare);
+    void dragStarted(DraggableLabel *source);
+    void dragEntered(DraggableLabel *target);
+    void dropOccurred(DraggableLabel *source, DraggableLabel *target);
 };
 
 #endif // DraggableLabel_H
