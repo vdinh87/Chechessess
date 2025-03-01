@@ -8,6 +8,9 @@
 #include "DraggableLabel.h"
 #include "ChessEngine/RecursiveChessGame.hpp"
 
+// Forward declaration of the CustomRecursiveChessGame class
+class CustomRecursiveChessGame;
+
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -24,10 +27,26 @@ public:
     ~MainWindow();
     Piece handlePawnPromotion();
     void showGameOver(bool isWhiteWinner);
+    void setOriginalPosition(Square square, Square originalSquare);
+    int getOriginalRank(Square square);
+    int getOriginalFile(Square square);
+    void updateBoardFromGame();
+    void forceUpdatePieceSizes();
+    void initializeUI();
+
+    // Add a toggle for free move mode
+    void toggleFreeMoveMode() { freeMoveMode = !freeMoveMode; }
+    bool isFreeMoveMode() const { return freeMoveMode; }
 
 private:
     Ui::MainWindow *ui;
-    void updateBoardFromGame(); // Helper to update the visual board state
+    std::vector<QFrame *> allFrames;
+    std::vector<DraggableLabel *> allLabels;
+    // Use a pointer instead of a direct instance
+    CustomRecursiveChessGame *cg;
+
+    // Add free move mode flag
+    bool freeMoveMode = false;
 
 public slots:
     void handleDragStarted(DraggableLabel *source);
