@@ -663,7 +663,6 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
 
     if (isCapture && !cg->IsInSubGame())
     {
-        // Log the capture attempt
         QString moveText = QString("%1%2 attempting to capture %3%4")
                                .arg(QChar('a' + (dragSourceSquare % 8)))
                                .arg(dragSourceSquare / 8 + 1)
