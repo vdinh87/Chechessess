@@ -115,12 +115,71 @@ public:
         activeSubGame = nullptr;
     }
 
+    // Add helper methods for checking check and checkmate conditions
+
+    bool IsKingInCheck(Square kingSquare, bool isWhiteKing)
+    {
+        // Check if the king's square is under attack by opponent pieces
+        uint64_t attackers = isWhiteKing ? GetSquareAttackers(kingSquare, false) : // Black attacking white king
+                                 GetSquareAttackers(kingSquare, true);             // White attacking black king
+
+        return attackers != 0;
+    }
+
+    uint64_t GetSquareAttackers(Square square, bool isWhiteAttacking)
+    {
+        // Return a bitboard of all pieces attacking this square
+        // Implement this based on your existing piece movement logic
+        // ...
+
+        // Placeholder implementation
+        return 0;
+    }
+
+    bool HasNoLegalMoves(bool isWhiteToMove)
+    {
+        // Check if the player has no legal moves (required for checkmate)
+        // Implement this based on your existing move generation logic
+        // ...
+
+        // Placeholder implementation
+        return false;
+    }
+
     // Add helper methods for free move mode
     void MovePiece(Square from, Square to)
     {
         // Don't do anything if trying to move to the same square
         if (from == to)
             return;
+
+        if (!inSubGame)
+        {
+            // Save the game state before the capturing
+            savedWhitePieces = WhitePiecesArray;
+            savedBlackPieces = BlackPiecesArray;
+
+            // Get the attacking piece type without using board[]
+            U64 sourceBit = 1ULL << from;
+            for (int i = 0; i < 6; i++)
+            {
+                if (WhitePiecesArray[i] & sourceBit)
+                {
+                    attackingPieceType = static_cast<Piece>(i);
+                    break;
+                }
+                if (BlackPiecesArray[i] & sourceBit)
+                {
+                    attackingPieceType = static_cast<Piece>(i + 6); // Adjust for black pieces
+                    break;
+                }
+            }
+
+            make_move(from, to);
+
+            // Log check and checkmate status after the move
+            LogCheckStatus();
+        }
 
         // Get the piece at the source square
         U64 sourceBit = 1ULL << from;
@@ -289,6 +348,167 @@ public:
             return;
 
         activeGame->Move(from, to);
+    }
+
+    // Check if a king is in check
+    bool IsKingInCheck(bool isWhiteKing)
+    {
+        // Get king position
+        Square kingPos = isWhiteKing ? GetWhiteKingPosition() : GetBlackKingPosition();
+
+        // Check if king exists (bitboard not empty)
+        if (isWhiteKing && WhitePiecesArray[5] == 0)
+        {
+            return false; // No white king
+        }
+        if (!isWhiteKing && BlackPiecesArray[5] == 0)
+        {
+            return false; // No black king
+        }
+
+        // Check if any opponent piece can attack the king's square
+        uint64_t kingBit = 1ULL << kingPos;
+
+        // For all opponent pieces, check if any can attack the king
+        for (int pieceType = 0; pieceType < 6; pieceType++)
+        {
+            uint64_t pieces = isWhiteKing ? BlackPiecesArray[pieceType] : WhitePiecesArray[pieceType];
+
+            // For each piece of this type
+            while (pieces)
+            {
+                int piecePos = __builtin_ctzll(pieces); // Get position of least significant bit
+                pieces &= pieces - 1;                   // Clear least significant bit
+
+                // Check if this piece attacks the king
+                uint64_t attacks = get_moves_bitboard(static_cast<Square>(piecePos));
+                if (attacks & kingBit)
+                {
+                    return true; // King is in check
+                }
+            }
+        }
+
+        return false;
+    }
+
+    // Check if a king is in checkmate (in check and no legal moves)
+    bool IsKingInCheckmate(bool isWhiteKing)
+    {
+        // First check if king is in check
+        if (!IsKingInCheck(isWhiteKing))
+        {
+            return false;
+        }
+
+        // Check if king exists
+        if (isWhiteKing && WhitePiecesArray[5] == 0)
+        {
+            return false; // No white king
+        }
+        if (!isWhiteKing && BlackPiecesArray[5] == 0)
+        {
+            return false; // No black king
+        }
+
+        // Try all possible moves for all pieces of this color
+        for (int pieceType = 0; pieceType < 6; pieceType++)
+        {
+            uint64_t pieces = isWhiteKing ? WhitePiecesArray[pieceType] : BlackPiecesArray[pieceType];
+
+            // For each piece of this type
+            while (pieces)
+            {
+                int piecePos = __builtin_ctzll(pieces); // Get position of least significant bit
+                pieces &= pieces - 1;                   // Clear least significant bit
+
+                // Get all possible moves for this piece
+                uint64_t moves = get_moves_bitboard(static_cast<Square>(piecePos));
+
+                // Try each move
+                while (moves)
+                {
+                    int movePos = __builtin_ctzll(moves); // Get position of least significant bit
+                    moves &= moves - 1;                   // Clear least significant bit
+
+                    // Try the move and see if it gets out of check
+                    // Save game state
+                    std::vector<U64> savedWhite = WhitePiecesArray;
+                    std::vector<U64> savedBlack = BlackPiecesArray;
+
+                    // Make the move
+                    make_move(static_cast<Square>(piecePos), static_cast<Square>(movePos));
+
+                    // Check if still in check
+                    bool stillInCheck = IsKingInCheck(isWhiteKing);
+
+                    // Restore game state
+                    WhitePiecesArray = savedWhite;
+                    BlackPiecesArray = savedBlack;
+
+                    // If any move gets out of check, it's not checkmate
+                    if (!stillInCheck)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // If we get here, no move can get out of check, so it's checkmate
+        return true;
+    }
+
+    // Call these methods in your MovePiece method after make_move
+    void LogCheckStatus()
+    {
+        // Check white king status
+        if (IsKingInCheck(true))
+        {
+            qDebug() << "White king is in CHECK";
+
+            // Display in the UI text area
+            if (mainWindow)
+            {
+                mainWindow->appendToLog("White king is in CHECK");
+            }
+
+            if (IsKingInCheckmate(true))
+            {
+                qDebug() << "White king is in CHECKMATE";
+
+                // Display in the UI text area
+                if (mainWindow)
+                {
+                    mainWindow->appendToLog("White king is in CHECKMATE");
+                    mainWindow->showGameOver(false); // Black wins
+                }
+            }
+        }
+
+        // Check black king status
+        if (IsKingInCheck(false))
+        {
+            qDebug() << "Black king is in CHECK";
+
+            // Display in the UI text area
+            if (mainWindow)
+            {
+                mainWindow->appendToLog("Black king is in CHECK");
+            }
+
+            if (IsKingInCheckmate(false))
+            {
+                qDebug() << "Black king is in CHECKMATE";
+
+                // Display in the UI text area
+                if (mainWindow)
+                {
+                    mainWindow->appendToLog("Black king is in CHECKMATE");
+                    mainWindow->showGameOver(true); // White wins
+                }
+            }
+        }
     }
 };
 
@@ -1584,4 +1804,12 @@ MainWindow::~MainWindow()
 {
     delete ui;
     delete cg; // Add this
+}
+
+void MainWindow::appendToLog(const QString &message)
+{
+    if (ui && ui->textEdit)
+    {
+        ui->textEdit->append(message);
+    }
 }

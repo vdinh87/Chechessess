@@ -33,6 +33,7 @@ public:
     void updateBoardFromGame();
     void forceUpdatePieceSizes();
     void initializeUI();
+    void appendToLog(const QString &message);
 
     // Add a toggle for free move mode
     void toggleFreeMoveMode() { freeMoveMode = !freeMoveMode; }
