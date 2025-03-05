@@ -155,6 +155,7 @@ public:
 
         if (!inSubGame)
         {
+            // We're in the main game
             // Save the game state before the capturing
             savedWhitePieces = WhitePiecesArray;
             savedBlackPieces = BlackPiecesArray;
@@ -177,40 +178,15 @@ public:
 
             make_move(from, to);
 
-            // Log check and checkmate status after the move
-            LogCheckStatus();
-        }
-
-        // Get the piece at the source square
-        U64 sourceBit = 1ULL << from;
-        U64 targetBit = 1ULL << to;
-
-        // If there's no piece at the source, do nothing
-        if (!(GetBoard() & sourceBit))
-            return;
-
-        // Remove any existing piece at the target
-        RemovePiece(to);
-
-        // Get the piece type and color
-        Color pieceColor = GetColor(sourceBit);
-        Piece pieceType = GetPieceType(sourceBit);
-
-        // Remove from source
-        RemovePiece(from);
-
-        // Add to target based on color
-        if (pieceColor == white)
-        {
-            WhitePiecesArray[pieceType] |= targetBit;
+            // Check status is now handled in make_move
         }
         else
         {
-            BlackPiecesArray[pieceType] |= targetBit;
-        }
+            // We're in a subgame
+            make_move(from, to);
 
-        // Update the board
-        UpdateBoard();
+            // Check status is now handled in make_move
+        }
     }
 
     Piece PromoteInput(Square from_sq, Square to_sq, Color color, Piece to_piece) override
@@ -226,7 +202,9 @@ public:
 
     CustomRecursiveChessGame *GetActiveGame()
     {
-        return inSubGame && activeSubGame ? activeSubGame.get() : this;
+        if (inSubGame && activeSubGame)
+            return activeSubGame.get();
+        return this;
     }
 
     void StartSubGame(Square from, Square to, Color attacker)
@@ -245,6 +223,12 @@ public:
         activeSubGame->capture_to = to;
         activeSubGame->attacker_color = attacker;
         inSubGame = true;
+
+        // Log the start of the subgame
+        if (mainWindow)
+        {
+            mainWindow->appendToLog("Sub-game started for capture resolution");
+        }
     }
 
     void EndSubGame()
@@ -258,7 +242,7 @@ public:
                 if (winner == activeSubGame->attacker_color)
                 {
                     // Attacker won - remove defending piece and move attacking piece
-                    RemovePiece(activeSubGame->capture_to);
+                    activeSubGame->RemovePiece(activeSubGame->capture_to);
                     ExecuteMove(activeSubGame->attacker_color,
                                 activeSubGame->capture_from,
                                 activeSubGame->capture_to,
@@ -268,7 +252,7 @@ public:
                 else
                 {
                     // Defender won - remove attacking piece
-                    RemovePiece(activeSubGame->capture_from);
+                    activeSubGame->RemovePiece(activeSubGame->capture_from);
                 }
             }
 
@@ -348,6 +332,10 @@ public:
             return;
 
         activeGame->Move(from, to);
+
+        // After the move is completed, check for check/checkmate status in the active game
+        // This ensures check detection works in both the main game and subgames
+        activeGame->LogCheckStatus();
     }
 
     // Check if a king is in check
@@ -953,26 +941,26 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
             // Connect animation finished signal to start the sub-game
             connect(animGroup, &QParallelAnimationGroup::finished, this, [this, fromSquare = dragSourceSquare, toSquare = targetSquare, attacker = attackerColor]()
                     {
-                // Start the sub-game
-                cg->StartSubGame(fromSquare, toSquare, attacker);
-                
-                // Update the board to show the new sub-game state
-                updateBoardFromGame();
-                
-                // Add a delayed update here:
-                QTimer::singleShot(50, this, [this]() {
-                    forceUpdatePieceSizes(); // Force the piece sizes to be consistent
-                });
-                
-                // Log the start of the sub-game
-                ui->textEdit->append("Sub-game started for capture resolution");
-                
-                // Remove blur effect when sub-game begins
-                QWidget* chessWidget = findChild<QWidget *>("chesswdg");
-                if (chessWidget && chessWidget->graphicsEffect())
-                {
-                    chessWidget->setGraphicsEffect(nullptr);
-                } });
+                    // Start the sub-game
+                    cg->StartSubGame(fromSquare, toSquare, attacker);
+                    
+                    // Update the board to show the new sub-game state
+                    updateBoardFromGame();
+                    
+                    // Add a delayed update here:
+                    QTimer::singleShot(50, this, [this]() {
+                        forceUpdatePieceSizes(); // Force the piece sizes to be consistent
+                    });
+                    
+                    // Log the start of the sub-game
+                    ui->textEdit->append("Sub-game started for capture resolution");
+                    
+                    // Remove blur effect when sub-game begins
+                    QWidget* chessWidget = findChild<QWidget *>("chesswdg");
+                    if (chessWidget && chessWidget->graphicsEffect())
+                    {
+                        chessWidget->setGraphicsEffect(nullptr);
+                    } });
 
             // Start the animation
             animGroup->start(QAbstractAnimation::DeleteWhenStopped);
@@ -1095,37 +1083,37 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
                         // Connect animation finished signal
                         connect(animGroup, &QParallelAnimationGroup::finished, this, [this]()
                                 {
-                            // End the sub-game and return to main game
-                            cg->EndSubGame();
-                            
-                            // Update the board to show the main game state
-                            updateBoardFromGame();
-                            
-                            // Add a delayed update here:
-                            QTimer::singleShot(50, this, [this]() {
-                                forceUpdatePieceSizes(); // Force the piece sizes to be consistent
-                            });
-                            
-                            // Remove blur effect
-                            QWidget* chessWidget = findChild<QWidget *>("chesswdg");
-                            if (chessWidget && chessWidget->graphicsEffect())
-                            {
-                                chessWidget->setGraphicsEffect(nullptr);
-                            }
-                            
-                            // Log return to main game
-                            ui->textEdit->append("Returned to main game");
-                            
-                            // Check for checkmate in main game
-                            RecursiveChessGame* activeGame = cg->GetActiveGame();
-                            if (activeGame->IsWin(white))
-                            {
-                                showGameOver(true);  // White wins
-                            }
-                            else if (activeGame->IsWin(black))
-                            {
-                                showGameOver(false); // Black wins
-                            } });
+                        // End the sub-game and return to main game
+                        cg->EndSubGame();
+                        
+                        // Update the board to show the main game state
+                        updateBoardFromGame();
+                        
+                        // Add a delayed update here:
+                        QTimer::singleShot(50, this, [this]() {
+                            forceUpdatePieceSizes(); // Force the piece sizes to be consistent
+                        });
+                        
+                        // Remove blur effect
+                        QWidget* chessWidget = findChild<QWidget *>("chesswdg");
+                        if (chessWidget && chessWidget->graphicsEffect())
+                        {
+                            chessWidget->setGraphicsEffect(nullptr);
+                        }
+                        
+                        // Log return to main game
+                        ui->textEdit->append("Returned to main game");
+                        
+                        // Check for checkmate in main game
+                        RecursiveChessGame* activeGame = cg->GetActiveGame();
+                        if (activeGame->IsWin(white))
+                        {
+                            showGameOver(true);  // White wins
+                        }
+                        else if (activeGame->IsWin(black))
+                        {
+                            showGameOver(false); // Black wins
+                        } });
 
                         // Start the animation
                         animGroup->start(QAbstractAnimation::DeleteWhenStopped);
@@ -1195,37 +1183,37 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
                         // Connect animation finished signal
                         connect(animGroup, &QParallelAnimationGroup::finished, this, [this]()
                                 {
-                            // End the sub-game and return to main game
-                            cg->EndSubGame();
-                            
-                            // Update the board to show the main game state
-                            updateBoardFromGame();
-                            
-                            // Add a delayed update here:
-                            QTimer::singleShot(50, this, [this]() {
-                                forceUpdatePieceSizes(); // Force the piece sizes to be consistent
-                            });
-                            
-                            // Remove blur effect
-                            QWidget* chessWidget = findChild<QWidget *>("chesswdg");
-                            if (chessWidget && chessWidget->graphicsEffect())
-                            {
-                                chessWidget->setGraphicsEffect(nullptr);
-                            }
-                            
-                            // Log return to main game
-                            ui->textEdit->append("Returned to main game");
-                            
-                            // Check for checkmate in main game
-                            RecursiveChessGame* activeGame = cg->GetActiveGame();
-                            if (activeGame->IsWin(white))
-                            {
-                                showGameOver(true);  // White wins
-                            }
-                            else if (activeGame->IsWin(black))
-                            {
-                                showGameOver(false); // Black wins
-                            } });
+                        // End the sub-game and return to main game
+                        cg->EndSubGame();
+                        
+                        // Update the board to show the main game state
+                        updateBoardFromGame();
+                        
+                        // Add a delayed update here:
+                        QTimer::singleShot(50, this, [this]() {
+                            forceUpdatePieceSizes(); // Force the piece sizes to be consistent
+                        });
+                        
+                        // Remove blur effect
+                        QWidget* chessWidget = findChild<QWidget *>("chesswdg");
+                        if (chessWidget && chessWidget->graphicsEffect())
+                        {
+                            chessWidget->setGraphicsEffect(nullptr);
+                        }
+                        
+                        // Log return to main game
+                        ui->textEdit->append("Returned to main game");
+                        
+                        // Check for checkmate in main game
+                        RecursiveChessGame* activeGame = cg->GetActiveGame();
+                        if (activeGame->IsWin(white))
+                        {
+                            showGameOver(true);  // White wins
+                        }
+                        else if (activeGame->IsWin(black))
+                        {
+                            showGameOver(false); // Black wins
+                        } });
 
                         // Start the animation
                         animGroup->start(QAbstractAnimation::DeleteWhenStopped);
@@ -1769,10 +1757,10 @@ MainWindow::MainWindow(QWidget *parent)
     // Connect free move mode button
     connect(ui->freeMoveButton, &QPushButton::toggled, this, [this](bool checked)
             {
-        freeMoveMode = checked;
-        QString modeMessage = checked ? "Free Move Mode: ENABLED" : "Free Move Mode: DISABLED";
-        ui->textEdit->append(modeMessage);
-        qDebug() << modeMessage; });
+    freeMoveMode = checked;
+    QString modeMessage = checked ? "Free Move Mode: ENABLED" : "Free Move Mode: DISABLED";
+    ui->textEdit->append(modeMessage);
+    qDebug() << modeMessage; });
 
     // Initialize the game engine
     cg->NewGame();
@@ -1788,14 +1776,14 @@ MainWindow::MainWindow(QWidget *parent)
     // Apply the larger piece size immediately after initialization
     QTimer::singleShot(100, this, [this]()
                        {
-        QWidget *chesswdg = findChild<QWidget *>("chesswdg");
-        if (chesswdg) {
-            qDebug() << "Forcing resize on chessboard. Size:" << chesswdg->size();
-            // Ensure the widget has been properly sized
-            chesswdg->updateGeometry();
-            // Force an update after the layout has settled
-            forceUpdatePieceSizes();
-        } });
+    QWidget *chesswdg = findChild<QWidget *>("chesswdg");
+    if (chesswdg) {
+        qDebug() << "Forcing resize on chessboard. Size:" << chesswdg->size();
+        // Ensure the widget has been properly sized
+        chesswdg->updateGeometry();
+        // Force an update after the layout has settled
+        forceUpdatePieceSizes();
+    } });
 
     qDebug() << "MainWindow constructor completed";
 }
