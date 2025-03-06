@@ -115,37 +115,6 @@ public:
         activeSubGame = nullptr;
     }
 
-    // Add helper methods for checking check and checkmate conditions
-
-    bool IsKingInCheck(Square kingSquare, bool isWhiteKing)
-    {
-        // Check if the king's square is under attack by opponent pieces
-        uint64_t attackers = isWhiteKing ? GetSquareAttackers(kingSquare, false) : // Black attacking white king
-                                 GetSquareAttackers(kingSquare, true);             // White attacking black king
-
-        return attackers != 0;
-    }
-
-    uint64_t GetSquareAttackers(Square square, bool isWhiteAttacking)
-    {
-        // Return a bitboard of all pieces attacking this square
-        // Implement this based on your existing piece movement logic
-        // ...
-
-        // Placeholder implementation
-        return 0;
-    }
-
-    bool HasNoLegalMoves(bool isWhiteToMove)
-    {
-        // Check if the player has no legal moves (required for checkmate)
-        // Implement this based on your existing move generation logic
-        // ...
-
-        // Placeholder implementation
-        return false;
-    }
-
     // Add helper methods for free move mode
     void MovePiece(Square from, Square to)
     {

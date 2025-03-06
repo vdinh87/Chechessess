@@ -27,9 +27,6 @@ public:
     ~MainWindow();
     Piece handlePawnPromotion();
     void showGameOver(bool isWhiteWinner);
-    void setOriginalPosition(Square square, Square originalSquare);
-    int getOriginalRank(Square square);
-    int getOriginalFile(Square square);
     void updateBoardFromGame();
     void forceUpdatePieceSizes();
     void initializeUI();
