@@ -36,7 +36,9 @@ public:
     CustomRecursiveChessGame(MainWindow *window = nullptr)
         : RecursiveChessGame(), mainWindow(window), inSubGame(false), activeSubGame(nullptr), attackingPieceType(Pawn) {}
 
-    // Helper methods to safely access king positions and moves
+    // UI integration methods - only keep methods that connect UI with engine
+
+    // Get king position using engine data
     Square GetWhiteKingPosition() const
     {
         return static_cast<Square>(get_ls1b_index(WhitePiecesArray[King]));
@@ -47,6 +49,7 @@ public:
         return static_cast<Square>(get_ls1b_index(BlackPiecesArray[King]));
     }
 
+    // Re-add king moves methods but implement them using engine functionality
     uint64_t GetWhiteKingMoves() const
     {
         try
@@ -73,7 +76,7 @@ public:
         }
     }
 
-    // Debug helper methods
+    // UI debug method
     void LogPiecePositions() const
     {
         qDebug() << "White pieces:";
@@ -88,9 +91,10 @@ public:
         }
     }
 
-    // Add NewGame method
+    // Reset the game state
     void NewGame()
     {
+        // Use the engine's initialization rather than reimplementing
         // Reset to starting position
         WhitePiecesArray = {
             0x000000000000FF00ULL, // Pawns
@@ -115,7 +119,7 @@ public:
         activeSubGame = nullptr;
     }
 
-    // Add helper methods for free move mode
+    // UI adapter method to move pieces
     void MovePiece(Square from, Square to)
     {
         // Don't do anything if trying to move to the same square
@@ -146,18 +150,15 @@ public:
             }
 
             make_move(from, to);
-
-            // Check status is now handled in make_move
         }
         else
         {
             // We're in a subgame
             make_move(from, to);
-
-            // Check status is now handled in make_move
         }
     }
 
+    // UI integration for pawn promotion
     Piece PromoteInput(Square from_sq, Square to_sq, Color color, Piece to_piece) override
     {
         if (mainWindow)
@@ -176,6 +177,7 @@ public:
         return this;
     }
 
+    // Sub-game handling while using engine functionality
     void StartSubGame(Square from, Square to, Color attacker)
     {
         // Save current game state
@@ -247,16 +249,12 @@ public:
                         qDebug() << "Error getting king positions";
                     }
                     
-                    // Perform a recursive check to validate king mobility
+                    // Use core engine methods for win detection
                     bool whiteInCheckmate = IsWin(white);
                     bool blackInCheckmate = IsWin(black);
                     
-                    // Extra verification that kings have legal moves
-                    uint64_t whiteKingMoves = GetWhiteKingMoves();
-                    uint64_t blackKingMoves = GetBlackKingMoves();
-                    
-                    qDebug() << "White king has moves:" << whiteKingMoves;
-                    qDebug() << "Black king has moves:" << blackKingMoves;
+                    qDebug() << "White is in checkmate:" << whiteInCheckmate;
+                    qDebug() << "Black is in checkmate:" << blackInCheckmate;
                     
                     if (whiteInCheckmate && mainWindowPtr)
                     {
@@ -272,6 +270,7 @@ public:
         }
     }
 
+    // UI adapter to get available moves
     uint64_t get_moves_bitboard(Square square)
     {
         uint64_t moves = 0;
@@ -280,7 +279,7 @@ public:
         if (!activeGame)
             return 0;
 
-        // Get the attacks for the piece at this square
+        // Get the attacks for the piece at this square using engine functionality
         try
         {
             moves = activeGame->GetAttacks(square);
@@ -294,6 +293,7 @@ public:
         return moves;
     }
 
+    // Use core engine Move method
     void make_move(Square from, Square to)
     {
         CustomRecursiveChessGame *activeGame = GetActiveGame();
@@ -302,12 +302,11 @@ public:
 
         activeGame->Move(from, to);
 
-        // After the move is completed, check for check/checkmate status in the active game
-        // This ensures check detection works in both the main game and subgames
+        // After the move is completed, check status using the LogCheckStatus method
         activeGame->LogCheckStatus();
     }
 
-    // Check if a king is in check
+    // Check if a king is in check using core engine InCheck functionality
     bool IsKingInCheck(bool isWhiteKing)
     {
         // Get king position
@@ -323,100 +322,20 @@ public:
             return false; // No black king
         }
 
-        // Check if any opponent piece can attack the king's square
-        uint64_t kingBit = 1ULL << kingPos;
-
-        // For all opponent pieces, check if any can attack the king
-        for (int pieceType = 0; pieceType < 6; pieceType++)
-        {
-            uint64_t pieces = isWhiteKing ? BlackPiecesArray[pieceType] : WhitePiecesArray[pieceType];
-
-            // For each piece of this type
-            while (pieces)
-            {
-                int piecePos = __builtin_ctzll(pieces); // Get position of least significant bit
-                pieces &= pieces - 1;                   // Clear least significant bit
-
-                // Check if this piece attacks the king
-                uint64_t attacks = get_moves_bitboard(static_cast<Square>(piecePos));
-                if (attacks & kingBit)
-                {
-                    return true; // King is in check
-                }
-            }
-        }
-
-        return false;
+        // Use the core engine's InCheck function instead of reimplementing
+        Color kingColor = isWhiteKing ? white : black;
+        return InCheck(board, kingColor, 0) != 0;
     }
 
-    // Check if a king is in checkmate (in check and no legal moves)
+    // Use core engine functionality for checkmate detection
     bool IsKingInCheckmate(bool isWhiteKing)
     {
-        // First check if king is in check
-        if (!IsKingInCheck(isWhiteKing))
-        {
-            return false;
-        }
-
-        // Check if king exists
-        if (isWhiteKing && WhitePiecesArray[5] == 0)
-        {
-            return false; // No white king
-        }
-        if (!isWhiteKing && BlackPiecesArray[5] == 0)
-        {
-            return false; // No black king
-        }
-
-        // Try all possible moves for all pieces of this color
-        for (int pieceType = 0; pieceType < 6; pieceType++)
-        {
-            uint64_t pieces = isWhiteKing ? WhitePiecesArray[pieceType] : BlackPiecesArray[pieceType];
-
-            // For each piece of this type
-            while (pieces)
-            {
-                int piecePos = __builtin_ctzll(pieces); // Get position of least significant bit
-                pieces &= pieces - 1;                   // Clear least significant bit
-
-                // Get all possible moves for this piece
-                uint64_t moves = get_moves_bitboard(static_cast<Square>(piecePos));
-
-                // Try each move
-                while (moves)
-                {
-                    int movePos = __builtin_ctzll(moves); // Get position of least significant bit
-                    moves &= moves - 1;                   // Clear least significant bit
-
-                    // Try the move and see if it gets out of check
-                    // Save game state
-                    std::vector<U64> savedWhite = WhitePiecesArray;
-                    std::vector<U64> savedBlack = BlackPiecesArray;
-
-                    // Make the move
-                    make_move(static_cast<Square>(piecePos), static_cast<Square>(movePos));
-
-                    // Check if still in check
-                    bool stillInCheck = IsKingInCheck(isWhiteKing);
-
-                    // Restore game state
-                    WhitePiecesArray = savedWhite;
-                    BlackPiecesArray = savedBlack;
-
-                    // If any move gets out of check, it's not checkmate
-                    if (!stillInCheck)
-                    {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        // If we get here, no move can get out of check, so it's checkmate
-        return true;
+        // Skip reimplementation and use engine's IsWin functionality
+        Color kingColor = isWhiteKing ? white : black;
+        return IsWin(kingColor);
     }
 
-    // Call these methods in your MovePiece method after make_move
+    // UI integration method to display check/checkmate status
     void LogCheckStatus()
     {
         // Check white king status
