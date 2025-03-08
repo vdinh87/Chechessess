@@ -6,10 +6,10 @@
 #include <QInputDialog>
 #include <QDialog>
 #include "DraggableLabel.h"
-#include "ChessEngine/RecursiveChessGame.hpp"
+#include "ChessEngine/SuperChessGame.hpp"
 
-// Forward declaration of the CustomRecursiveChessGame class
-class CustomRecursiveChessGame;
+// Forward declaration of the CustomSuperChessGame class
+class CustomSuperChessGame;
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -25,12 +25,12 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    Piece handlePawnPromotion();
+    Piece getPromotionPiece(Color color);
     void showGameOver(bool isWhiteWinner);
     void updateBoardFromGame();
     void forceUpdatePieceSizes();
     void initializeUI();
-    void appendToLog(const QString &message);
+    void appendToLog(const QString &text);
 
     // Add a toggle for free move mode
     void toggleFreeMoveMode() { freeMoveMode = !freeMoveMode; }
@@ -41,7 +41,7 @@ private:
     std::vector<QFrame *> allFrames;
     std::vector<DraggableLabel *> allLabels;
     // Use a pointer instead of a direct instance
-    CustomRecursiveChessGame *cg;
+    CustomSuperChessGame *cg;
 
     // Add free move mode flag
     bool freeMoveMode = false;

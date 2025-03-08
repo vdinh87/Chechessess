@@ -1,14 +1,14 @@
-#pragma once
 #include "SuperChessGame.hpp"
-#include "AbilityLibrary.cpp"
-#include "SuperPiece.cpp"
+#include "AbilityLibrary.hpp"
 
 SuperChessGame::SuperChessGame() // testing purposes only
+    : ChessGame()
 {
     al = std::make_shared<AbilityLibrary>(*this, log);
 }
 
 SuperChessGame::SuperChessGame(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info)
+    : ChessGame()
 {
     al = std::make_shared<AbilityLibrary>(*this, log);
 
@@ -382,15 +382,43 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
 // init
 void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info)
 {
-    ConvertSuperPiecesofType(white_info, Color::white);
-    ConvertSuperPiecesofType(black_info, Color::black);
+    // Initialize standard chess board first
+    // White pieces - find the pieces of the specified type
+    U64 whitePieces = GetBoardOf(white_info.first, white);
+    while (whitePieces)
+    {
+        int sq_idx = get_LSB(whitePieces);
+        Square sq = static_cast<Square>(sq_idx);
+
+        // Create super piece
+        SuperPieceInfo info = std::make_pair(white_info.first, white_info.second);
+        AddSuperPiece(info, sq, white, true);
+
+        // Clear the bit
+        whitePieces &= ~(1ULL << sq_idx);
+    }
+
+    // Black pieces - find the pieces of the specified type
+    U64 blackPieces = GetBoardOf(black_info.first, black);
+    while (blackPieces)
+    {
+        int sq_idx = get_LSB(blackPieces);
+        Square sq = static_cast<Square>(sq_idx);
+
+        // Create super piece
+        SuperPieceInfo info = std::make_pair(black_info.first, black_info.second);
+        AddSuperPiece(info, sq, black, true);
+
+        // Clear the bit
+        blackPieces &= ~(1ULL << sq_idx);
+    }
 }
 
 void SuperChessGame::InitGameStartEffects()
 {
-    for (const auto &sp : super_pieces)
+    for (auto &pair : super_pieces)
     {
-        sp.second->OnGameStartEffects();
+        pair.second->OnGameStartEffects();
     }
 }
 
@@ -413,6 +441,14 @@ bool SuperChessGame::IsSuperPiece(const Square &key) const
 bool SuperChessGame::InCheck(Color color) const
 {
     return ChessGame::InCheck(ChessGame::GetBoard(), color, static_cast<U64>(1ULL << GetSquare(AllColorPiecesArray[color][King]))); // it wouldn't take 1ull<<square unless it was assigned to a variable, or casted.
+}
+
+bool SuperChessGame::IsWin(Color color) const
+{
+    // For super chess game, check if the opponent king is captured
+    Color opponent = (color == white) ? black : white;
+    U64 kingBitboard = (opponent == white) ? WhitePiecesArray[King] : BlackPiecesArray[King];
+    return kingBitboard == 0;
 }
 
 void SuperChessGame::CapTier(Tier &t, Piece p_type) const

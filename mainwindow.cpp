@@ -21,32 +21,84 @@
 #include <QApplication>
 #include <QDebug>
 #include <QSizePolicy>
+#include "ChessEngine/SuperChessGame.hpp"
+#include "ChessEngine/AbilityLibrary.hpp"
+#include <QThread>
+#include <QInputDialog>
+#include <QButtonGroup>
+#include <QRadioButton>
+#include <QGroupBox>
+#include <QDialogButtonBox>
+#include <QtGlobal>
+#include <QDateTime>
+#include <random>
+#include <chrono>
+#include <iterator>
 
-class CustomRecursiveChessGame : public RecursiveChessGame
+class CustomSuperChessGame : public SuperChessGame
 {
 private:
     MainWindow *mainWindow;
     bool inSubGame;
-    std::shared_ptr<CustomRecursiveChessGame> activeSubGame;
+    std::shared_ptr<CustomSuperChessGame> activeSubGame;
     std::vector<U64> savedWhitePieces;
     std::vector<U64> savedBlackPieces;
     Piece attackingPieceType;
+    Piece defendingPieceType;
+
+    // Helper methods for debugging
+    QString pieceToString(Piece piece) const
+    {
+        switch (piece)
+        {
+        case Pawn:
+            return "Pawn";
+        case Knight:
+            return "Knight";
+        case Bishop:
+            return "Bishop";
+        case Rook:
+            return "Rook";
+        case Queen:
+            return "Queen";
+        case King:
+            return "King";
+        default:
+            return "Unknown";
+        }
+    }
+
+    QString squareToString(Square sq) const
+    {
+        if (sq >= 0 && sq < 64)
+        {
+            char file = 'a' + (sq % 8);
+            char rank = '1' + (sq / 8);
+            return QString("%1%2").arg(file).arg(rank);
+        }
+        return "??";
+    }
 
 public:
-    CustomRecursiveChessGame(MainWindow *window = nullptr)
-        : RecursiveChessGame(), mainWindow(window), inSubGame(false), activeSubGame(nullptr), attackingPieceType(Pawn) {}
+    CustomSuperChessGame(MainWindow *window = nullptr)
+        : SuperChessGame(), mainWindow(window), inSubGame(false), activeSubGame(nullptr), attackingPieceType(Pawn), defendingPieceType(Pawn) {}
+
+    // Constructor for subgames with specific piece types
+    CustomSuperChessGame(MainWindow *window, const SuperPieceInfo &white_info, const SuperPieceInfo &black_info)
+        : SuperChessGame(white_info, black_info), mainWindow(window), inSubGame(false), activeSubGame(nullptr),
+          attackingPieceType(Pawn), defendingPieceType(Pawn) {}
 
     // UI integration methods - only keep methods that connect UI with engine
 
     // Get king position using engine data
     Square GetWhiteKingPosition() const
     {
-        return static_cast<Square>(get_ls1b_index(WhitePiecesArray[King]));
+        return static_cast<Square>(get_ls1b_index(this->WhitePiecesArray[King]));
     }
 
     Square GetBlackKingPosition() const
     {
-        return static_cast<Square>(get_ls1b_index(BlackPiecesArray[King]));
+        return static_cast<Square>(get_ls1b_index(this->BlackPiecesArray[King]));
     }
 
     // Re-add king moves methods but implement them using engine functionality
@@ -55,7 +107,7 @@ public:
         try
         {
             Square whiteKingPos = GetWhiteKingPosition();
-            return GetAttacks(whiteKingPos);
+            return this->GetAttacks(whiteKingPos);
         }
         catch (...)
         {
@@ -68,7 +120,7 @@ public:
         try
         {
             Square blackKingPos = GetBlackKingPosition();
-            return GetAttacks(blackKingPos);
+            return this->GetAttacks(blackKingPos);
         }
         catch (...)
         {
@@ -79,24 +131,33 @@ public:
     // UI debug method
     void LogPiecePositions() const
     {
-        qDebug() << "White pieces:";
-        for (int i = 0; i < 6; i++)
+        if (!mainWindow)
+            return;
+
+        auto formatBitboard = [](U64 bb) -> QString
         {
-            qDebug() << "  Type" << i << "bitboard:" << QString::number(WhitePiecesArray[i], 16);
+            return QString("0x%1").arg(bb, 16, 16, QChar('0'));
+        };
+
+        mainWindow->appendToLog("White: " + formatBitboard(this->WhitePieces));
+        mainWindow->appendToLog("Black: " + formatBitboard(this->BlackPieces));
+        mainWindow->appendToLog("Board: " + formatBitboard(this->board));
+
+        for (size_t i = 0; i < this->WhitePiecesArray.size(); i++)
+        {
+            mainWindow->appendToLog(QString("White %1: %2").arg(i).arg(formatBitboard(this->WhitePiecesArray[i])));
         }
-        qDebug() << "Black pieces:";
-        for (int i = 0; i < 6; i++)
+
+        for (size_t i = 0; i < this->BlackPiecesArray.size(); i++)
         {
-            qDebug() << "  Type" << i << "bitboard:" << QString::number(BlackPiecesArray[i], 16);
+            mainWindow->appendToLog(QString("Black %1: %2").arg(i).arg(formatBitboard(this->BlackPiecesArray[i])));
         }
     }
 
-    // Reset the game state
     void NewGame()
     {
-        // Use the engine's initialization rather than reimplementing
         // Reset to starting position
-        WhitePiecesArray = {
+        this->WhitePiecesArray = {
             0x000000000000FF00ULL, // Pawns
             0x0000000000000042ULL, // Knights
             0x0000000000000024ULL, // Bishops
@@ -105,7 +166,7 @@ public:
             0x0000000000000010ULL  // King
         };
 
-        BlackPiecesArray = {
+        this->BlackPiecesArray = {
             0x00FF000000000000ULL, // Pawns
             0x4200000000000000ULL, // Knights
             0x2400000000000000ULL, // Bishops
@@ -114,82 +175,86 @@ public:
             0x1000000000000000ULL  // King
         };
 
-        UpdateBoard();
+        this->UpdateBoard();
         inSubGame = false;
         activeSubGame = nullptr;
     }
 
-    // UI adapter method to move pieces
     void MovePiece(Square from, Square to)
     {
-        // Don't do anything if trying to move to the same square
-        if (from == to)
-            return;
+        U64 from_bit = 1ULL << from;
+        U64 to_bit = 1ULL << to;
 
+        // Don't allow moving to squares that have our own pieces
         if (!inSubGame)
         {
-            // We're in the main game
-            // Save the game state before the capturing
-            savedWhitePieces = WhitePiecesArray;
-            savedBlackPieces = BlackPiecesArray;
-
-            // Get the attacking piece type without using board[]
-            U64 sourceBit = 1ULL << from;
-            for (int i = 0; i < 6; i++)
+            Color color = this->GetColor(from_bit);
+            U64 ownPieces = (color == white) ? this->WhitePieces : this->BlackPieces;
+            if (to_bit & ownPieces)
             {
-                if (WhitePiecesArray[i] & sourceBit)
-                {
-                    attackingPieceType = static_cast<Piece>(i);
-                    break;
-                }
-                if (BlackPiecesArray[i] & sourceBit)
-                {
-                    attackingPieceType = static_cast<Piece>(i + 6); // Adjust for black pieces
-                    break;
-                }
+                if (mainWindow)
+                    mainWindow->appendToLog("Can't capture your own pieces!");
+                return;
             }
-
-            make_move(from, to);
         }
-        else
+
+        // We're in a subgame
+        std::vector<Action> actions = Move(from, to);
+        if (actions.empty())
         {
-            // We're in a subgame
-            make_move(from, to);
+            if (mainWindow)
+                mainWindow->appendToLog("Invalid move!");
+            return;
+        }
+
+        if (mainWindow)
+        {
+            QString fromStr = QString::fromStdString(square_to_string(from));
+            QString toStr = QString::fromStdString(square_to_string(to));
+            mainWindow->appendToLog(QString("Moving %1 to %2").arg(fromStr).arg(toStr));
         }
     }
 
-    // UI integration for pawn promotion
     Piece PromoteInput(Square from_sq, Square to_sq, Color color, Piece to_piece) override
     {
         if (mainWindow)
         {
-            return mainWindow->handlePawnPromotion();
+            return mainWindow->getPromotionPiece(color);
         }
-        return Queen; // Default if no window is set
+        return Queen; // Default if no UI available
     }
 
     bool IsInSubGame() const { return inSubGame; }
 
-    CustomRecursiveChessGame *GetActiveGame()
+    CustomSuperChessGame *GetActiveGame()
     {
         if (inSubGame && activeSubGame)
             return activeSubGame.get();
         return this;
     }
 
-    // Sub-game handling while using engine functionality
+    // Sub-game handling with super pieces
     void StartSubGame(Square from, Square to, Color attacker)
     {
         // Save current game state
-        savedWhitePieces = WhitePiecesArray;
-        savedBlackPieces = BlackPiecesArray;
+        savedWhitePieces = this->WhitePiecesArray;
+        savedBlackPieces = this->BlackPiecesArray;
 
         // Store the attacking piece's type before creating sub-game
-        attackingPieceType = GetPieceType(1ULL << from);
+        U64 attackingPieceBit = 1ULL << from;
+        U64 defendingPieceBit = 1ULL << to;
 
-        // Create new sub-game
-        activeSubGame = std::make_shared<CustomRecursiveChessGame>(mainWindow);
-        activeSubGame->parent_game = this;
+        attackingPieceType = this->GetPieceType(attackingPieceBit);
+        defendingPieceType = this->GetPieceType(defendingPieceBit);
+
+        // Create appropriate SuperPieceInfo for both pieces
+        SuperPieceInfo attackerInfo = std::make_pair(attackingPieceType, Tier::T1);
+        SuperPieceInfo defenderInfo = std::make_pair(defendingPieceType, Tier::T1);
+
+        // Create new sub-game with super pieces
+        activeSubGame = std::make_shared<CustomSuperChessGame>(mainWindow, attackerInfo, defenderInfo);
+
+        // Set subgame properties
         activeSubGame->capture_from = from;
         activeSubGame->capture_to = to;
         activeSubGame->attacker_color = attacker;
@@ -198,7 +263,18 @@ public:
         // Log the start of the subgame
         if (mainWindow)
         {
-            mainWindow->appendToLog("Sub-game started for capture resolution");
+            mainWindow->appendToLog("Super Chess game started for capture resolution");
+            mainWindow->appendToLog(QString("Attacker: %1 (%2) at %3")
+                                        .arg(pieceToString(attackingPieceType))
+                                        .arg(attacker == white ? "White" : "Black")
+                                        .arg(squareToString(from)));
+            mainWindow->appendToLog(QString("Defender: %1 (%2) at %3")
+                                        .arg(pieceToString(defendingPieceType))
+                                        .arg(attacker == white ? "Black" : "White")
+                                        .arg(squareToString(to)));
+
+            // Show a special dialog for the super chess game
+            showSuperChessDialog(attackingPieceType, defendingPieceType, attacker);
         }
     }
 
@@ -207,183 +283,204 @@ public:
         if (inSubGame && activeSubGame)
         {
             // Check if there was a winner and handle piece removal
-            Color winner = activeSubGame->GetWinner();
-            if (winner != static_cast<Color>(-1)) // If there was a winner
+            Color winner = white; // Default, will need to implement proper win checking for SuperChessGame
+
+            // For now, use a simple check - if white king is missing, black won
+            if (activeSubGame->GetBoardOf(King, white) == 0)
             {
-                if (winner == activeSubGame->attacker_color)
-                {
-                    // Attacker won - remove defending piece and move attacking piece
-                    activeSubGame->RemovePiece(activeSubGame->capture_to);
-                    ExecuteMove(activeSubGame->attacker_color,
-                                activeSubGame->capture_from,
-                                activeSubGame->capture_to,
-                                attackingPieceType,  // Use the stored piece type
-                                attackingPieceType); // Same type for both from and to
-                }
-                else
-                {
-                    // Defender won - remove attacking piece
-                    activeSubGame->RemovePiece(activeSubGame->capture_from);
-                }
+                winner = black;
+            }
+            // If black king is missing, white won
+            else if (activeSubGame->GetBoardOf(King, black) == 0)
+            {
+                winner = white;
+            }
+
+            // Determine if attacker won based on the initial setup
+            Color attackerColor = (activeSubGame->GetBoardOf(attackingPieceType, white) != 0) ? white : black;
+
+            if (winner == attackerColor)
+            {
+                // Attacker won - remove defending piece and move attacking piece
+                RemovePiece(activeSubGame->capture_to);
+                ExecuteMove(attackerColor,
+                            activeSubGame->capture_from,
+                            activeSubGame->capture_to,
+                            attackingPieceType,  // Use the stored piece type
+                            attackingPieceType); // Same type for both from and to
+            }
+            else
+            {
+                // Defender won - remove attacking piece
+                RemovePiece(activeSubGame->capture_from);
             }
 
             // Clean up sub-game
             activeSubGame = nullptr;
             inSubGame = false;
-            UpdateBoard();
+            this->UpdateBoard();
 
-            // Add a delayed check as a fallback with a shorter delay
             if (mainWindow)
             {
-                QTimer::singleShot(250, mainWindow, [this, mainWindowPtr = mainWindow]()
-                                   {
-                    // Add debug logging for checkmate state
-                    qDebug() << "Checking for checkmate after sub-game";
-                    LogPiecePositions();
-                    
-                    // Check if kings are present and their positions
-                    try {
-                        qDebug() << "White king position:" << GetWhiteKingPosition();
-                        qDebug() << "Black king position:" << GetBlackKingPosition();
-                    } catch (...) {
-                        qDebug() << "Error getting king positions";
-                    }
-                    
-                    // Use core engine methods for win detection
-                    bool whiteInCheckmate = IsWin(white);
-                    bool blackInCheckmate = IsWin(black);
-                    
-                    qDebug() << "White is in checkmate:" << whiteInCheckmate;
-                    qDebug() << "Black is in checkmate:" << blackInCheckmate;
-                    
-                    if (whiteInCheckmate && mainWindowPtr)
-                    {
-                        qDebug() << "White is in checkmate!";
-                        mainWindowPtr->showGameOver(true);
-                    }
-                    else if (blackInCheckmate && mainWindowPtr)
-                    {
-                        qDebug() << "Black is in checkmate!";
-                        mainWindowPtr->showGameOver(false);
-                    } });
+                mainWindow->appendToLog("Super Chess game ended");
             }
         }
     }
 
-    // UI adapter to get available moves
     uint64_t get_moves_bitboard(Square square)
     {
-        uint64_t moves = 0;
-        CustomRecursiveChessGame *activeGame = GetActiveGame();
-
-        if (!activeGame)
-            return 0;
-
-        // Get the attacks for the piece at this square using engine functionality
-        try
+        if (!inSubGame)
         {
-            moves = activeGame->GetAttacks(square);
+            // For the main game, get all valid moves for the piece at the given square
+            return GetAttacks(square);
         }
-        catch (const std::exception &)
+        else
         {
-            // No piece at this square
-            return 0;
+            // We're in a sub-game, let the active sub-game handle it
+            CustomSuperChessGame *activeGame = GetActiveGame();
+            return activeGame->GetAttacks(square);
         }
-
-        return moves;
     }
 
-    // Use core engine Move method
     void make_move(Square from, Square to)
     {
-        CustomRecursiveChessGame *activeGame = GetActiveGame();
-        if (!activeGame)
-            return;
-
-        activeGame->Move(from, to);
-
-        // After the move is completed, check status using the LogCheckStatus method
-        activeGame->LogCheckStatus();
+        MovePiece(from, to);
     }
 
-    // Check if a king is in check using core engine InCheck functionality
     bool IsKingInCheck(bool isWhiteKing)
     {
-        // Get king position
-        Square kingPos = isWhiteKing ? GetWhiteKingPosition() : GetBlackKingPosition();
-
-        // Check if king exists (bitboard not empty)
-        if (isWhiteKing && WhitePiecesArray[5] == 0)
-        {
-            return false; // No white king
-        }
-        if (!isWhiteKing && BlackPiecesArray[5] == 0)
-        {
-            return false; // No black king
-        }
-
-        // Use the core engine's InCheck function instead of reimplementing
         Color kingColor = isWhiteKing ? white : black;
-        return InCheck(board, kingColor, 0) != 0;
+        return InCheck(kingColor);
     }
 
-    // Use core engine functionality for checkmate detection
-    bool IsKingInCheckmate(bool isWhiteKing)
+    // Add IsWin method since it's used in many places
+    bool IsWin(Color color) const
     {
-        // Skip reimplementation and use engine's IsWin functionality
-        Color kingColor = isWhiteKing ? white : black;
-        return IsWin(kingColor);
+        // For simplicity, we'll check if the king of the given color is not on the board
+        Color kingColor = (color == white) ? black : white;
+        U64 kingBitboard = (kingColor == white) ? this->WhitePiecesArray[King] : this->BlackPiecesArray[King];
+        return kingBitboard == 0;
     }
 
-    // UI integration method to display check/checkmate status
-    void LogCheckStatus()
+    // Helper function for UI
+    std::string square_to_string(Square sq)
     {
-        // Check white king status
-        if (IsKingInCheck(true))
+        if (sq >= 0 && sq < 64)
         {
-            qDebug() << "White king is in CHECK";
-
-            // Display in the UI text area
-            if (mainWindow)
-            {
-                mainWindow->appendToLog("White king is in CHECK");
-            }
-
-            if (IsKingInCheckmate(true))
-            {
-                qDebug() << "White king is in CHECKMATE";
-
-                // Display in the UI text area
-                if (mainWindow)
-                {
-                    mainWindow->appendToLog("White king is in CHECKMATE");
-                    mainWindow->showGameOver(false); // Black wins
-                }
-            }
+            char file = 'a' + (sq % 8);
+            char rank = '1' + (sq / 8);
+            return std::string{file, rank};
         }
+        return "??";
+    }
 
-        // Check black king status
-        if (IsKingInCheck(false))
+    // For UI interactions
+    Square capture_from;
+    Square capture_to;
+    Color attacker_color;
+
+    // Display a dialog showing the super chess game and abilities
+    void showSuperChessDialog(Piece attackerPiece, Piece defenderPiece, Color attackerColor)
+    {
+        if (!mainWindow)
+            return;
+
+        QDialog dialog(mainWindow);
+        dialog.setWindowTitle("Super Chess Battle");
+        dialog.setMinimumSize(400, 300);
+
+        QVBoxLayout *layout = new QVBoxLayout(&dialog);
+
+        // Title
+        QLabel *titleLabel = new QLabel("Super Chess Battle!");
+        titleLabel->setAlignment(Qt::AlignCenter);
+        QFont titleFont = titleLabel->font();
+        titleFont.setPointSize(16);
+        titleFont.setBold(true);
+        titleLabel->setFont(titleFont);
+        layout->addWidget(titleLabel);
+
+        // Description
+        QLabel *descLabel = new QLabel("The pieces have transformed into Super Pieces with special abilities!");
+        descLabel->setWordWrap(true);
+        descLabel->setAlignment(Qt::AlignCenter);
+        layout->addWidget(descLabel);
+
+        // Attacker details
+        QFrame *attackerFrame = new QFrame();
+        attackerFrame->setFrameShape(QFrame::StyledPanel);
+        QVBoxLayout *attackerLayout = new QVBoxLayout(attackerFrame);
+
+        QLabel *attackerTitle = new QLabel(QString("%1 %2")
+                                               .arg(attackerColor == white ? "White" : "Black")
+                                               .arg(pieceToString(attackerPiece)));
+        attackerTitle->setAlignment(Qt::AlignCenter);
+        QFont boldFont = attackerTitle->font();
+        boldFont.setBold(true);
+        attackerTitle->setFont(boldFont);
+        attackerLayout->addWidget(attackerTitle);
+
+        // Attacker abilities (examples - would need to be pulled from actual abilities)
+        QLabel *attackerAbilities = new QLabel(getAbilityDescription(attackerPiece));
+        attackerAbilities->setWordWrap(true);
+        attackerLayout->addWidget(attackerAbilities);
+
+        layout->addWidget(attackerFrame);
+
+        // Defender details
+        QFrame *defenderFrame = new QFrame();
+        defenderFrame->setFrameShape(QFrame::StyledPanel);
+        QVBoxLayout *defenderLayout = new QVBoxLayout(defenderFrame);
+
+        QLabel *defenderTitle = new QLabel(QString("%1 %2")
+                                               .arg(attackerColor == white ? "Black" : "White")
+                                               .arg(pieceToString(defenderPiece)));
+        defenderTitle->setAlignment(Qt::AlignCenter);
+        defenderTitle->setFont(boldFont);
+        defenderLayout->addWidget(defenderTitle);
+
+        // Defender abilities
+        QLabel *defenderAbilities = new QLabel(getAbilityDescription(defenderPiece));
+        defenderAbilities->setWordWrap(true);
+        defenderLayout->addWidget(defenderAbilities);
+
+        layout->addWidget(defenderFrame);
+
+        // Battle instructions
+        QLabel *instructionsLabel = new QLabel("Play the mini-game to determine if the capture succeeds!");
+        instructionsLabel->setWordWrap(true);
+        instructionsLabel->setAlignment(Qt::AlignCenter);
+        layout->addWidget(instructionsLabel);
+
+        // OK button
+        QPushButton *okButton = new QPushButton("Start Battle");
+        layout->addWidget(okButton);
+
+        QObject::connect(okButton, &QPushButton::clicked, &dialog, &QDialog::accept);
+
+        dialog.setLayout(layout);
+        dialog.exec();
+    }
+
+    // Return a description of abilities based on piece type
+    QString getAbilityDescription(Piece piece) const
+    {
+        switch (piece)
         {
-            qDebug() << "Black king is in CHECK";
-
-            // Display in the UI text area
-            if (mainWindow)
-            {
-                mainWindow->appendToLog("Black king is in CHECK");
-            }
-
-            if (IsKingInCheckmate(false))
-            {
-                qDebug() << "Black king is in CHECKMATE";
-
-                // Display in the UI text area
-                if (mainWindow)
-                {
-                    mainWindow->appendToLog("Black king is in CHECKMATE");
-                    mainWindow->showGameOver(true); // White wins
-                }
-            }
+        case Pawn:
+            return "• Two Tiles: Can move forward two squares\n• Convert: Can convert captured pieces to own side";
+        case Knight:
+            return "• Big L: Can jump in an L-shape over other pieces\n• Protection: Cannot be captured when next to a friendly piece";
+        case Bishop:
+            return "• Swap: Can swap positions with another piece\n• Take Cover: Can hide behind other pieces";
+        case Rook:
+            return "• Swap: Can swap positions with another piece\n• Ram Buff: Stronger when aligned with other rooks";
+        case Queen:
+            return "• Inspire: Nearby friendly pieces move faster\n• Kamikaze: Can sacrifice itself to remove enemy pieces";
+        case King:
+            return "• Inspire: Nearby friendly pieces are stronger\n• Teleport: Can teleport to empty squares\n• Convert: Can convert enemy pieces";
+        default:
+            return "No special abilities";
         }
     }
 };
@@ -749,13 +846,10 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
     qDebug() << "Valid move detected, proceeding with move logic";
 
     // Check if this is a capture (there's already a piece at the target square)
-    CustomRecursiveChessGame *activeGame = cg->GetActiveGame();
+    CustomSuperChessGame *activeGame = cg->GetActiveGame();
     bool isCapture = false;
-    if (activeGame)
-    {
-        U64 squareBit = 1ULL << targetSquare;
-        isCapture = (activeGame->GetBoard() & squareBit) != 0;
-    }
+    U64 squareBit = 1ULL << targetSquare;
+    isCapture = (activeGame->GetBoardOf(white) | activeGame->GetBoardOf(black)) & squareBit;
 
     if (isCapture && !cg->IsInSubGame())
     {
@@ -874,7 +968,7 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
             ui->textEdit->append(moveText);
 
             // Check if sub-game is over (checkmate)
-            CustomRecursiveChessGame *activeGame = cg->GetActiveGame();
+            CustomSuperChessGame *activeGame = cg->GetActiveGame();
             if (activeGame)
             {
                 // More thorough check before declaring checkmate
@@ -993,7 +1087,7 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
                         ui->textEdit->append("Returned to main game");
                         
                         // Check for checkmate in main game
-                        RecursiveChessGame* activeGame = cg->GetActiveGame();
+                        SuperChessGame* activeGame = cg->GetActiveGame();
                         if (activeGame->IsWin(white))
                         {
                             showGameOver(true);  // White wins
@@ -1093,7 +1187,7 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
                         ui->textEdit->append("Returned to main game");
                         
                         // Check for checkmate in main game
-                        RecursiveChessGame* activeGame = cg->GetActiveGame();
+                        SuperChessGame* activeGame = cg->GetActiveGame();
                         if (activeGame->IsWin(white))
                         {
                             showGameOver(true);  // White wins
@@ -1215,28 +1309,50 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
     dragSourceSquare = invalid;
 }
 
-Piece MainWindow::handlePawnPromotion()
+Piece MainWindow::getPromotionPiece(Color color)
 {
-    QStringList items;
-    items << "Queen" << "Rook" << "Bishop" << "Knight";
+    QDialog dialog(this);
+    dialog.setWindowTitle("Pawn Promotion");
+    dialog.setModal(true);
 
-    bool ok;
-    QString item = QInputDialog::getItem(this, "Pawn Promotion",
-                                         "Choose piece to promote to:", items, 0, false, &ok);
+    QVBoxLayout layout(&dialog);
+    layout.addWidget(new QLabel("Choose a piece to promote to:"));
 
-    if (ok && !item.isEmpty())
-    {
-        if (item == "Queen")
-            return Queen;
-        if (item == "Rook")
-            return Rook;
-        if (item == "Bishop")
-            return Bishop;
-        if (item == "Knight")
-            return Knight;
-    }
+    QButtonGroup group;
+    QRadioButton *queenButton = new QRadioButton("Queen");
+    QRadioButton *rookButton = new QRadioButton("Rook");
+    QRadioButton *bishopButton = new QRadioButton("Bishop");
+    QRadioButton *knightButton = new QRadioButton("Knight");
 
-    return Queen; // Default to Queen if dialog is cancelled
+    queenButton->setChecked(true); // Default to queen
+
+    group.addButton(queenButton);
+    group.addButton(rookButton);
+    group.addButton(bishopButton);
+    group.addButton(knightButton);
+
+    layout.addWidget(queenButton);
+    layout.addWidget(rookButton);
+    layout.addWidget(bishopButton);
+    layout.addWidget(knightButton);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok, Qt::Horizontal, &dialog);
+    connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    layout.addWidget(&buttonBox);
+
+    dialog.setLayout(&layout);
+    dialog.exec();
+
+    if (queenButton->isChecked())
+        return Queen;
+    if (rookButton->isChecked())
+        return Rook;
+    if (bishopButton->isChecked())
+        return Bishop;
+    if (knightButton->isChecked())
+        return Knight;
+
+    return Queen; // Default if somehow nothing was selected
 }
 
 void MainWindow::updateBoardFromGame()
@@ -1248,7 +1364,7 @@ void MainWindow::updateBoardFromGame()
         return;
     }
 
-    CustomRecursiveChessGame *activeGame = cg->GetActiveGame();
+    CustomSuperChessGame *activeGame = cg->GetActiveGame();
     if (!activeGame)
     {
         qDebug() << "ERROR: No active game available";
@@ -1301,7 +1417,7 @@ void MainWindow::updateBoardFromGame()
 
         // Check if there's a piece at this square
         U64 squareBit = 1ULL << square_enum;
-        bool hasPiece = (activeGame->GetBoard() & squareBit) != 0;
+        bool hasPiece = (activeGame->GetBoardOf(white) | activeGame->GetBoardOf(black)) & squareBit;
 
         if (!hasPiece)
         {
@@ -1620,8 +1736,9 @@ MainWindow::MainWindow(QWidget *parent)
     qDebug() << "UI initialized, allLabels size:" << allLabels.size();
 
     // Set up any other connections needed
-    cg = new CustomRecursiveChessGame(this); // Initialize with this window as pointer
-    qDebug() << "CustomRecursiveChessGame created";
+    cg = new CustomSuperChessGame(this); // Initialize with this window as pointer
+    cg->NewGame();                       // Initialize the game board
+    qDebug() << "CustomSuperChessGame created";
 
     // Connect signals/slots for all the labels
     for (auto label : allLabels)

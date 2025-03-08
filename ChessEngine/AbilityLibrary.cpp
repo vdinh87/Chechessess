@@ -1,7 +1,30 @@
-#pragma once
 #include "AbilityLibrary.hpp"
+#include "SuperChessGame.hpp"
 
-AbilityLibrary::AbilityLibrary(SuperChessGame& game_, Logger& log_)
+// Include all the ability headers
+#include "PawnTwoTiles.hpp"
+#include "PawnConvert.hpp"
+#include "PawnConvertSuper.hpp"
+#include "PawnTwoTilesBackwards.hpp"
+#include "KingInspire.hpp"
+#include "KingTurnIntoDead.hpp"
+#include "KingSniperShot.hpp"
+#include "KingTeleport.hpp"
+#include "KingConvert.hpp"
+#include "BishopSwap.hpp"
+#include "BishopTakeCover.hpp"
+#include "BishopResurrect.hpp"
+#include "KnightBigL.hpp"
+#include "KnightProtection.hpp"
+#include "RookSwap.hpp"
+#include "RookRamBuff.hpp"
+#include "QueenInspire.hpp"
+#include "QueenKamikaze.hpp"
+#include "KnightTier2.hpp"
+#include "RookTier2.hpp"
+
+AbilityLibrary::AbilityLibrary(SuperChessGame &game_, Logger &log_)
+    : game(game_), log(log_)
 {
     lib[std::make_pair(Piece::Pawn, Tier::T0)] = std::make_unique<PawnTwoTiles>(game_, log_);
     lib[std::make_pair(Piece::Pawn, Tier::T1)] = std::make_unique<PawnConvert>(game_, log_);
@@ -22,7 +45,7 @@ AbilityLibrary::AbilityLibrary(SuperChessGame& game_, Logger& log_)
     lib[std::make_pair(Piece::King, Tier::T3)] = std::make_unique<KingSniperShot>(game_, log_);
     lib[std::make_pair(Piece::King, Tier::T4)] = std::make_unique<KingConvert>(game_, log_);
 
-    //TO BE REPLACED
+    // TO BE REPLACED
     lib[std::make_pair(Piece::Knight, Tier::T2)] = std::make_unique<KnightTier2>(game_, log_);
     lib[std::make_pair(Piece::Rook, Tier::T2)] = std::make_unique<RookTier2>(game_, log_);
 }
@@ -30,7 +53,7 @@ AbilityLibrary::AbilityLibrary(SuperChessGame& game_, Logger& log_)
 std::unique_ptr<Ability> AbilityLibrary::GetAbility(const SuperPieceInfo &key)
 {
     auto it = lib.find(key);
-    if (it != lib.end()) 
+    if (it != lib.end())
         return it->second->Clone();
 
     return nullptr;

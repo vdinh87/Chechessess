@@ -1,8 +1,6 @@
-#pragma once
 #include "SuperPiece.hpp"
 
-SuperPiece::SuperPiece(std::vector<std::unique_ptr<Ability>> &abilities_, SuperPieceInfo info_, Square sq_, Color color_) : 
-info(info_), sq(sq_), color(color_)
+SuperPiece::SuperPiece(std::vector<std::unique_ptr<Ability>> &abilities_, SuperPieceInfo info_, Square sq_, Color color_) : info(info_), sq(sq_), color(color_)
 {
     AddAbilities(abilities_);
 }
@@ -18,11 +16,11 @@ bool SuperPiece::UseAbility(Tier key)
     return false;
 }
 
-void SuperPiece::ModifyMove(U64& move)
+void SuperPiece::ModifyMove(U64 &move)
 {
-    for(const auto& pair : abilities)
+    for (const auto &pair : abilities)
     {
-        if( pair.second->GetType() == AbilityType::move_modifer )
+        if (pair.second->GetType() == AbilityType::move_modifer)
             pair.second->Modify(move, sq);
     }
 }
@@ -31,9 +29,9 @@ bool SuperPiece::OnCaptureEffects(Square to_capture, Square from_sq, std::vector
 {
     bool success = false;
 
-    for(const auto& pair : abilities)
+    for (const auto &pair : abilities)
     {
-        if( (pair.second->GetType() == AbilityType::on_capture) && pair.second->OnCapture(*this, to_capture, from_sq, keys_to_remove) )
+        if ((pair.second->GetType() == AbilityType::on_capture) && pair.second->OnCapture(*this, to_capture, from_sq, keys_to_remove))
         {
             success = true;
         }
@@ -43,16 +41,16 @@ bool SuperPiece::OnCaptureEffects(Square to_capture, Square from_sq, std::vector
 
 void SuperPiece::OnGameStartEffects()
 {
-    for(const auto& pair : abilities)
+    for (const auto &pair : abilities)
     {
-        if( pair.second->GetType() == AbilityType::on_game_start )
+        if (pair.second->GetType() == AbilityType::on_game_start)
         {
             pair.second->OnGameStart(*this);
         }
     }
 }
 
-//updaters
+// updaters
 void SuperPiece::UpdateSquare(Square to_sq)
 {
     sq = to_sq;
@@ -80,7 +78,7 @@ void SuperPiece::AddAbilities(std::vector<std::unique_ptr<Ability>> &abilities_)
     abilities_.clear();
 }
 
-//getters
+// getters
 SuperPieceInfo SuperPiece::GetInfo() const
 {
     return info;
@@ -105,21 +103,21 @@ Tier SuperPiece::GetTier() const
 std::vector<std::string> SuperPiece::GetAbilityNames() const
 {
     std::vector<std::string> v;
-    for(auto& a : abilities)
+    for (auto &a : abilities)
         v.push_back(a.second->GetName());
-    
+
     return v;
 }
 
 std::vector<std::string> SuperPiece::GetAbilityNames(AbilityType type) const
 {
     std::vector<std::string> v;
-    for(auto& a : abilities)
+    for (auto &a : abilities)
     {
-        if(a.second->GetType() == type)
+        if (a.second->GetType() == type)
             v.push_back(a.second->GetName());
     }
-    
+
     return v;
 }
 
