@@ -181,8 +181,17 @@ public:
 
     void MovePiece(Square from, Square to)
     {
+        qDebug() << "MovePiece called:" << from << "to" << to;
         U64 from_bit = 1ULL << from;
         U64 to_bit = 1ULL << to;
+
+        // Get the active game that should be handling this move
+        CustomSuperChessGame *activeGame = GetActiveGame();
+        if (!activeGame)
+        {
+            qDebug() << "ERROR: No active game available";
+            return;
+        }
 
         // Don't allow moving to squares that have our own pieces
         if (!inSubGame)
@@ -198,7 +207,22 @@ public:
         }
 
         // We're in a subgame
-        std::vector<Action> actions = Move(from, to);
+        qDebug() << "Before Move call";
+        // First, print the current state of the board for debugging
+        qDebug() << "Board BEFORE move:";
+        qDebug() << "White pieces:" << activeGame->GetBoardOf(white);
+        qDebug() << "Black pieces:" << activeGame->GetBoardOf(black);
+        qDebug() << "From piece exists:" << ((activeGame->board & from_bit) != 0);
+
+        std::vector<Action> actions = activeGame->Move(from, to);
+        qDebug() << "After Move call, actions size:" << actions.size();
+
+        // Print the state after the move
+        qDebug() << "Board AFTER move:";
+        qDebug() << "White pieces:" << activeGame->GetBoardOf(white);
+        qDebug() << "Black pieces:" << activeGame->GetBoardOf(black);
+        qDebug() << "To piece exists:" << ((activeGame->board & to_bit) != 0);
+
         if (actions.empty())
         {
             if (mainWindow)
@@ -211,6 +235,13 @@ public:
             QString fromStr = QString::fromStdString(square_to_string(from));
             QString toStr = QString::fromStdString(square_to_string(to));
             mainWindow->appendToLog(QString("Moving %1 to %2").arg(fromStr).arg(toStr));
+
+            // Force UI update after move
+            qDebug() << "Calling updateBoardFromGame from MovePiece";
+            mainWindow->updateBoardFromGame();
+
+            // Also force an immediate refresh of the board
+            QTimer::singleShot(0, mainWindow, &MainWindow::forceUpdatePieceSizes);
         }
     }
 
@@ -253,6 +284,14 @@ public:
         // Create new sub-game with super pieces
         activeSubGame = std::make_shared<CustomSuperChessGame>(mainWindow, attackerInfo, defenderInfo);
 
+        // Make sure the board is initialized with a standard chess position
+        activeSubGame->NewGame();
+
+        // Add debug output to verify the subgame's initial state
+        qDebug() << "SubGame initialized with standard position";
+        qDebug() << "White pieces:" << activeSubGame->GetBoardOf(white);
+        qDebug() << "Black pieces:" << activeSubGame->GetBoardOf(black);
+
         // Set subgame properties
         activeSubGame->capture_from = from;
         activeSubGame->capture_to = to;
@@ -274,6 +313,12 @@ public:
 
             // Show a special dialog for the super chess game
             showSuperChessDialog(attackingPieceType, defendingPieceType, attacker);
+
+            // Force UI update to sync with the new game state
+            mainWindow->updateBoardFromGame();
+
+            // Force the chess board to immediately update
+            QTimer::singleShot(0, mainWindow, &MainWindow::forceUpdatePieceSizes);
         }
     }
 
@@ -1370,6 +1415,88 @@ void MainWindow::updateBoardFromGame()
         return;
     }
 
+    // Debug output to show the current board state
+    qDebug() << "White pieces bitboard:" << activeGame->GetBoardOf(white);
+    qDebug() << "Black pieces bitboard:" << activeGame->GetBoardOf(black);
+
+    // Print out an ASCII representation of the board for debugging
+    qDebug() << "Current board state:";
+    for (int row = 7; row >= 0; row--)
+    {
+        QString rowStr = QString::number(row + 1) + " ";
+        for (int col = 0; col < 8; col++)
+        {
+            Square sq = static_cast<Square>(row * 8 + col);
+            U64 squareBit = 1ULL << sq;
+
+            if ((activeGame->GetBoardOf(white) & squareBit) != 0)
+            {
+                // White piece
+                Piece p = activeGame->GetPieceType(squareBit);
+                switch (p)
+                {
+                case Pawn:
+                    rowStr += "P ";
+                    break;
+                case Knight:
+                    rowStr += "N ";
+                    break;
+                case Bishop:
+                    rowStr += "B ";
+                    break;
+                case Rook:
+                    rowStr += "R ";
+                    break;
+                case Queen:
+                    rowStr += "Q ";
+                    break;
+                case King:
+                    rowStr += "K ";
+                    break;
+                default:
+                    rowStr += "? ";
+                    break;
+                }
+            }
+            else if ((activeGame->GetBoardOf(black) & squareBit) != 0)
+            {
+                // Black piece
+                Piece p = activeGame->GetPieceType(squareBit);
+                switch (p)
+                {
+                case Pawn:
+                    rowStr += "p ";
+                    break;
+                case Knight:
+                    rowStr += "n ";
+                    break;
+                case Bishop:
+                    rowStr += "b ";
+                    break;
+                case Rook:
+                    rowStr += "r ";
+                    break;
+                case Queen:
+                    rowStr += "q ";
+                    break;
+                case King:
+                    rowStr += "k ";
+                    break;
+                default:
+                    rowStr += "? ";
+                    break;
+                }
+            }
+            else
+            {
+                // Empty square
+                rowStr += ". ";
+            }
+        }
+        qDebug() << rowStr;
+    }
+    qDebug() << "  a b c d e f g h";
+
     // Find the chessboard widget to get its size
     QWidget *chesswdg = findChild<QWidget *>("chesswdg");
     if (!chesswdg)
@@ -1381,6 +1508,12 @@ void MainWindow::updateBoardFromGame()
     int boardSize = qMin(chesswdg->width(), chesswdg->height());
     int squareSize = boardSize / 8;
     qDebug() << "Board size:" << boardSize << "Square size:" << squareSize;
+
+    // Force a board update
+    chesswdg->update();
+
+    // Temporarily block signals to avoid cascading updates
+    bool wasBlocked = chesswdg->blockSignals(true);
 
     // For each square on the board
     for (int i = 0; i < 64 && i < allLabels.size(); i++)
@@ -1414,7 +1547,7 @@ void MainWindow::updateBoardFromGame()
         std::string squareStr = std::string(1, file) + std::string(1, rank);
         Square square_enum = square_from_string(squareStr);
 
-        // Check if there's a piece at this square
+        // Check if there's a piece at this square in the active game
         U64 squareBit = 1ULL << square_enum;
         bool hasPiece = (activeGame->GetBoardOf(white) | activeGame->GetBoardOf(black)) & squareBit;
 
@@ -1430,6 +1563,9 @@ void MainWindow::updateBoardFromGame()
 
             // Reset any margins
             label->setContentsMargins(0, 0, 0, 0);
+
+            // Disable dragging for empty squares
+            label->setDraggable(false);
         }
         else
         {
@@ -1500,6 +1636,9 @@ void MainWindow::updateBoardFromGame()
             label->setDraggable(true);
         }
     }
+
+    // Restore signal blocking state
+    chesswdg->blockSignals(wasBlocked);
 
     qDebug() << "Board update completed";
 }

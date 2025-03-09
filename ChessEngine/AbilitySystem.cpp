@@ -306,8 +306,7 @@ U64 SuperChessGame::GetBoardOf(Color color)
 
 bool SuperChessGame::InCheck(Color color) const
 {
-    // Basic implementation
-    return ChessGame::InCheck(board, color, 0);
+    return ChessGame::InCheck(ChessGame::GetBoard(), color, static_cast<U64>(1ULL << GetSquare(AllColorPiecesArray[color][King])));
 }
 
 bool SuperChessGame::IsWin(Color color) const
@@ -358,9 +357,48 @@ void SuperChessGame::MakeAbilityVector(std::vector<std::unique_ptr<Ability>> &v,
 
 U64 SuperChessGame::GetAttacks(Square square_) const
 {
-    // Basic implementation - defer to base class
-    U64 piece = 1ULL << square_;
-    return ChessGame::GetAttacks(square_);
+    U64 attacks, piece = 0ULL;
+    set_bit(piece, square_);
+    if (!(piece & board))
+        throw std::invalid_argument("No piece on square");
+
+    int which_function = -1;
+    for (size_t i = 0; i < PieceTypeArray.size(); i++)
+    {
+        if (piece & PieceTypeArray[i])
+            which_function = i;
+    }
+
+    attacks = ChessGame::GetAttacks(square_, board, which_function);
+
+    // Super piece modifications
+    const auto it = super_pieces.find(square_);
+    if (it != super_pieces.end())
+        it->second->ModifyMove(attacks);
+
+    // Filter out illegal moves
+    attacks = FilterTeam(attacks, piece);
+
+    // Only apply check filtering in actual game play, not in free move mode
+    // Since we don't have access to the free move flag here, we'll make it conditional
+    // in the main UI instead
+
+    // We'll leave this commented out for now to debug the issue
+    // attacks = FilterCheck(attacks, piece);
+
+    if (GetPieceType(piece) == King)
+    {
+        // For kings, filter out moves that would put it in check
+        // Again, leave this commented out for debugging
+        // attacks = attacks & FilterLegalKingMoves(attacks, piece);
+    }
+    else
+    {
+        // For other pieces, filter out moves that would leave the king in check (pins)
+        // attacks = attacks & FilterPin(attacks, piece);
+    }
+
+    return attacks;
 }
 
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
@@ -374,15 +412,24 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
     if (!(from & board) || from_sq == to_sq)
         return actions;
 
+    // For debugging purposes, let's skip the strict validation for now
+    // U64 validMoves = GetAttacks(from_sq);
+    // if (!((validMoves >> to_sq) & 1ULL)) {
+    //     return actions;  // Return empty actions if the move isn't valid
+    // }
+
     // Execute move
     Color color = GetColor(from);
     Piece fromPiece = GetPieceType(from);
     Piece toPiece = GetPieceType(to);
 
+    // Add a debug print to see if we're reaching this point
+    std::cout << "Executing move from " << SquareStrings[from_sq] << " to " << SquareStrings[to_sq] << std::endl;
+
     ExecuteMove(color, from_sq, to_sq, fromPiece, toPiece);
 
     // if capturing
-    if (board & (1ULL << to_sq))
+    if ((board & to) != 0)
         actions.push_back(Action::Capture);
     else
         actions.push_back(Action::Move);
@@ -395,6 +442,9 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
     // Critical: Update the board state to reflect changes
     UpdateBoard();
 
+    // Add extra debug print to confirm we updated
+    std::cout << "Board updated after move" << std::endl;
+
     // Check for checkmate
     if (IsWin(white) || IsWin(black))
         actions.push_back(Action::Checkmate);
@@ -404,16 +454,57 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 
 void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece)
 {
-    // Basic implementation - just call base class
+    std::cout << "ExecuteMove called: " << SquareStrings[from_sq] << " to " << SquareStrings[to_sq] << std::endl;
+
+    // Print the board state before the move
+    std::cout << "Board state BEFORE move:" << std::endl;
+    std::cout << "White pieces: " << WhitePieces << std::endl;
+    std::cout << "Black pieces: " << BlackPieces << std::endl;
+    std::cout << "From square bit: " << (1ULL << from_sq) << std::endl;
+    std::cout << "To square bit: " << (1ULL << to_sq) << std::endl;
+
+    // First handle captures before executing the move
+    bool captureExists = (board & (1ULL << to_sq)) != 0;
+    if (captureExists)
+    {
+        std::cout << "Capture detected at " << SquareStrings[to_sq] << std::endl;
+        // Add to graveyard if there's a piece being captured
+        AddToGraveyard(color, to_sq, to_piece);
+
+        // If there's a super piece at the target, remove it
+        if (IsSuperPiece(to_sq))
+        {
+            std::cout << "Removing super piece at " << SquareStrings[to_sq] << std::endl;
+            super_pieces.erase(to_sq);
+        }
+    }
+
+    // Call base class implementation to move the pieces on the regular board
+    std::cout << "Calling ChessGame::ExecuteMove" << std::endl;
     ChessGame::ExecuteMove(color, from_sq, to_sq, from_piece, to_piece);
 
-    // Update super piece if needed
-    if (super_pieces.find(from_sq) != super_pieces.end())
+    // If the piece we're moving is a super piece, update its position
+    if (IsSuperPiece(from_sq))
     {
-        super_pieces[to_sq] = super_pieces[from_sq];
-        super_pieces[to_sq]->UpdateSquare(to_sq);
+        std::cout << "Moving super piece from " << SquareStrings[from_sq] << " to " << SquareStrings[to_sq] << std::endl;
+        // Move the super piece from from_sq to to_sq
+        super_pieces[to_sq] = std::move(super_pieces[from_sq]);
         super_pieces.erase(from_sq);
+
+        // Update the square in the super piece object
+        super_pieces[to_sq]->UpdateSquare(to_sq);
     }
+
+    // Explicitly update the board after the move
+    std::cout << "Calling UpdateBoard()" << std::endl;
+    UpdateBoard();
+
+    // Print the board state after the move
+    std::cout << "Board state AFTER move:" << std::endl;
+    std::cout << "White pieces: " << WhitePieces << std::endl;
+    std::cout << "Black pieces: " << BlackPieces << std::endl;
+
+    std::cout << "ExecuteMove completed" << std::endl;
 }
 
 // graveyard functions
