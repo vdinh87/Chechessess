@@ -31,16 +31,10 @@ set(CHESS_ENGINE_SOURCES
     ChessEngine/RecursiveChessGame.hpp
 )
 
-# Add SuperChessGame source files
-set(SUPER_CHESS_SOURCES
-    ChessEngine/SuperChessGame.cpp
-    ChessEngine/SuperChessGame.hpp
-    ChessEngine/SuperPiece.cpp
-    ChessEngine/SuperPiece.hpp
-    ChessEngine/Ability.cpp
-    ChessEngine/Ability.hpp
-    ChessEngine/AbilityLibrary.cpp
-    ChessEngine/AbilityLibrary.hpp
+# Add AbilitySystem source files
+set(ABILITY_SYSTEM_SOURCES
+    ChessEngine/AbilitySystem.cpp
+    ChessEngine/AbilitySystem.hpp
 )
 
 set(PROJECT_SOURCES
@@ -52,7 +46,7 @@ set(PROJECT_SOURCES
         DraggableLabel.cpp
         ${TS_FILES}
         ${CHESS_ENGINE_SOURCES}
-        ${SUPER_CHESS_SOURCES}
+        ${ABILITY_SYSTEM_SOURCES}
         Resource.qrc
 )
 

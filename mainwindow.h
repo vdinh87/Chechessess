@@ -6,7 +6,7 @@
 #include <QInputDialog>
 #include <QDialog>
 #include "DraggableLabel.h"
-#include "ChessEngine/SuperChessGame.hpp"
+#include "ChessEngine/AbilitySystem.hpp"
 
 // Forward declaration of the CustomSuperChessGame class
 class CustomSuperChessGame;

@@ -21,8 +21,7 @@
 #include <QApplication>
 #include <QDebug>
 #include <QSizePolicy>
-#include "ChessEngine/SuperChessGame.hpp"
-#include "ChessEngine/AbilityLibrary.hpp"
+#include "ChessEngine/AbilitySystem.hpp"
 #include <QThread>
 #include <QInputDialog>
 #include <QButtonGroup>
