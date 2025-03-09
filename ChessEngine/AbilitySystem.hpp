@@ -126,7 +126,7 @@ public:
 
     // utility
     U64 GetBoardOf(Piece piece, Color color);
-    U64 GetBoardOf(Color color);
+    U64 GetBoardOf(Color color) const;
     bool IsSuperPiece(const Square &key) const;
     bool InCheck(Color color) const;
     bool IsWin(Color color) const;
@@ -155,4 +155,10 @@ public:
     int GetNumAbilities(Square sq);
     void PrintAbilityNames(Square sq);
     void PrintAbilityNames(Square sq, AbilityType type);
+
+    // King helper methods
+    U64 GetWhiteKingMoves() const;
+    U64 GetBlackKingMoves() const;
+    Square GetWhiteKingPosition() const;
+    Square GetBlackKingPosition() const;
 };

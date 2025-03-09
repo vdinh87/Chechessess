@@ -105,11 +105,21 @@ public:
     {
         try
         {
+            // Check if white king exists
+            if (this->WhitePiecesArray[King] == 0)
+                return 0; // No moves if king doesn't exist
+
             Square whiteKingPos = GetWhiteKingPosition();
             return this->GetAttacks(whiteKingPos);
         }
+        catch (const std::exception &e)
+        {
+            qDebug() << "Error getting white king moves:" << e.what();
+            return 0;
+        }
         catch (...)
         {
+            qDebug() << "Unknown error getting white king moves";
             return 0;
         }
     }
@@ -118,11 +128,21 @@ public:
     {
         try
         {
+            // Check if black king exists
+            if (this->BlackPiecesArray[King] == 0)
+                return 0; // No moves if king doesn't exist
+
             Square blackKingPos = GetBlackKingPosition();
             return this->GetAttacks(blackKingPos);
         }
+        catch (const std::exception &e)
+        {
+            qDebug() << "Error getting black king moves:" << e.what();
+            return 0;
+        }
         catch (...)
         {
+            qDebug() << "Unknown error getting black king moves";
             return 0;
         }
     }
@@ -1011,17 +1031,18 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
                                    .arg(targetSquare / 8 + 1);
             ui->textEdit->append(moveText);
 
-            // Check if sub-game is over (checkmate)
-            CustomSuperChessGame *activeGame = cg->GetActiveGame();
+            // Check for checkmate in the main game regardless of free move mode
             if (activeGame)
             {
                 // More thorough check before declaring checkmate
                 bool whiteKingHasMoves = false;
                 bool blackKingHasMoves = false;
+                bool whiteInCheckmate = false;
+                bool blackInCheckmate = false;
 
                 try
                 {
-                    // Check if white king has moves using our safe helper methods
+                    // Check if white king has moves
                     uint64_t whiteKingMoves = activeGame->GetWhiteKingMoves();
                     whiteKingHasMoves = whiteKingMoves != 0;
                     qDebug() << "White king at" << activeGame->GetWhiteKingPosition() << "has moves:" << whiteKingMoves;
@@ -1030,220 +1051,150 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
                     uint64_t blackKingMoves = activeGame->GetBlackKingMoves();
                     blackKingHasMoves = blackKingMoves != 0;
                     qDebug() << "Black king at" << activeGame->GetBlackKingPosition() << "has moves:" << blackKingMoves;
-                }
-                catch (...)
-                {
-                    qDebug() << "Error checking king moves";
-                }
 
-                // Log more info about the checkmate state
-                bool whiteInCheckmate = activeGame->IsWin(white);
-                bool blackInCheckmate = activeGame->IsWin(black);
+                    // Check if white is in check
+                    bool whiteInCheck = activeGame->InCheck(white);
+                    qDebug() << "White in check:" << whiteInCheck;
 
-                qDebug() << "Checkmate detection: White in checkmate:" << whiteInCheckmate
-                         << "White king has moves:" << whiteKingHasMoves
-                         << "Black in checkmate:" << blackInCheckmate
-                         << "Black king has moves:" << blackKingHasMoves;
+                    // Check if black is in check
+                    bool blackInCheck = activeGame->InCheck(black);
+                    qDebug() << "Black in check:" << blackInCheck;
 
-                if (whiteInCheckmate && !blackKingHasMoves)
-                {
-                    ui->textEdit->append("White wins the sub-game!");
+                    // Checkmate happens when a king is in check AND has no valid moves
+                    whiteInCheckmate = whiteInCheck && !whiteKingHasMoves;
+                    blackInCheckmate = blackInCheck && !blackKingHasMoves;
 
-                    // Create transition effect back to main game
-                    QWidget *chessWidget = findChild<QWidget *>("chesswdg");
-                    if (chessWidget)
+                    // Also check the direct IsWin method which handles the logic in one place
+                    bool whiteWinsDirectCheck = activeGame->IsWin(white);
+                    bool blackWinsDirectCheck = activeGame->IsWin(black);
+
+                    qDebug() << "Checkmate detection:"
+                             << "White in checkmate:" << whiteInCheckmate
+                             << "White king has moves:" << whiteKingHasMoves
+                             << "Black in checkmate:" << blackInCheckmate
+                             << "Black king has moves:" << blackKingHasMoves
+                             << "Direct IsWin(white):" << whiteWinsDirectCheck
+                             << "Direct IsWin(black):" << blackWinsDirectCheck;
+
+                    // Additional debugging for king positions and existence
+                    qDebug() << "White king bitboard:" << activeGame->GetBoardOf(King, white);
+                    qDebug() << "Black king bitboard:" << activeGame->GetBoardOf(King, black);
+
+                    // If any detection method indicates checkmate, handle it
+                    if (whiteInCheckmate || blackInCheckmate || whiteWinsDirectCheck || blackWinsDirectCheck)
                     {
-                        // Raise the chess widget to ensure it's above text boxes
-                        chessWidget->raise();
+                        // Determine the winner color (white wins if black is in checkmate or white wins directly)
+                        bool whiteWins = blackInCheckmate || whiteWinsDirectCheck;
 
-                        // Create blur effect
-                        QGraphicsBlurEffect *blurEffect = new QGraphicsBlurEffect(this);
-                        blurEffect->setBlurRadius(10);
-                        chessWidget->setGraphicsEffect(blurEffect);
-
-                        // Create animation for blur
-                        QPropertyAnimation *blurAnimation = new QPropertyAnimation(blurEffect, "blurRadius");
-                        blurAnimation->setDuration(500);
-                        blurAnimation->setStartValue(10);
-                        blurAnimation->setEndValue(0);
-                        blurAnimation->setEasingCurve(QEasingCurve::InOutQuad);
-
-                        // Create animation for zoom (return to original size)
-                        QPropertyAnimation *zoomAnimation = new QPropertyAnimation(chessWidget, "geometry");
-                        zoomAnimation->setDuration(500);
-
-                        // We're zoomed in to nearly the full window size, so our current geometry is large
-                        QRect currentGeometry = chessWidget->geometry();
-
-                        // Get the original size from property if available
-                        QRect originalGeometry;
-                        QVariant originalSizeVar = chessWidget->property("originalSize");
-                        if (originalSizeVar.isValid())
+                        // Check if this is a subgame
+                        if (cg->IsInSubGame())
                         {
-                            QSize originalSize = originalSizeVar.toSize();
-                            // Calculate position to center the original sized widget
-                            int centerX = currentGeometry.center().x() - (originalSize.width() / 2);
-                            int centerY = currentGeometry.center().y() - (originalSize.height() / 2);
-                            originalGeometry = QRect(centerX, centerY, originalSize.width(), originalSize.height());
+                            qDebug() << "Checkmate detected in subgame!";
+                            ui->textEdit->append(QString("%1 wins the sub-game!").arg(whiteWins ? "White" : "Black"));
+
+                            // Create transition effect back to main game
+                            QWidget *chessWidget = findChild<QWidget *>("chesswdg");
+                            if (chessWidget)
+                            {
+                                // Raise the chess widget to ensure it's above text boxes
+                                chessWidget->raise();
+
+                                // Create blur effect
+                                QGraphicsBlurEffect *blurEffect = new QGraphicsBlurEffect(this);
+                                blurEffect->setBlurRadius(10);
+                                chessWidget->setGraphicsEffect(blurEffect);
+
+                                // Create animation for blur
+                                QPropertyAnimation *blurAnimation = new QPropertyAnimation(blurEffect, "blurRadius");
+                                blurAnimation->setDuration(500);
+                                blurAnimation->setStartValue(10);
+                                blurAnimation->setEndValue(0);
+                                blurAnimation->setEasingCurve(QEasingCurve::InOutQuad);
+
+                                // Create animation for zoom (return to original size)
+                                QPropertyAnimation *zoomAnimation = new QPropertyAnimation(chessWidget, "geometry");
+                                zoomAnimation->setDuration(500);
+
+                                // We're zoomed in to nearly the full window size, so our current geometry is large
+                                QRect currentGeometry = chessWidget->geometry();
+
+                                // Get the original size from property if available
+                                QRect originalGeometry;
+                                QVariant originalSizeVar = chessWidget->property("originalSize");
+                                if (originalSizeVar.isValid())
+                                {
+                                    QSize originalSize = originalSizeVar.toSize();
+                                    // Calculate position to center the original sized widget
+                                    int centerX = currentGeometry.center().x() - (originalSize.width() / 2);
+                                    int centerY = currentGeometry.center().y() - (originalSize.height() / 2);
+                                    originalGeometry = QRect(centerX, centerY, originalSize.width(), originalSize.height());
+                                }
+                                else
+                                {
+                                    // Fallback if no stored size - just shrink back to a more reasonable size
+                                    // Use 1/3 of the current size to create a dramatic effect
+                                    int width = currentGeometry.width() / 3;
+                                    int height = currentGeometry.height() / 3;
+                                    int left = currentGeometry.center().x() - (width / 2);
+                                    int top = currentGeometry.center().y() - (height / 2);
+                                    originalGeometry = QRect(left, top, width, height);
+                                }
+
+                                zoomAnimation->setStartValue(currentGeometry);
+                                zoomAnimation->setEndValue(originalGeometry);
+                                zoomAnimation->setEasingCurve(QEasingCurve::InQuad);
+
+                                // Create a container for animations
+                                QParallelAnimationGroup *animGroup = new QParallelAnimationGroup(this);
+                                animGroup->addAnimation(blurAnimation);
+                                animGroup->addAnimation(zoomAnimation);
+
+                                // Connect animation finished signal
+                                connect(animGroup, &QParallelAnimationGroup::finished, this, [this]()
+                                        {
+                                    // End the sub-game and return to main game
+                                    cg->EndSubGame();
+                                    
+                                    // Update the board to show the main game state
+                                    updateBoardFromGame();
+                                    
+                                    // Add a delayed update here:
+                                    QTimer::singleShot(50, this, [this]() {
+                                        forceUpdatePieceSizes(); // Force the piece sizes to be consistent
+                                    });
+                                    
+                                    // Remove blur effect
+                                    QWidget* chessWidget = findChild<QWidget *>("chesswdg");
+                                    if (chessWidget && chessWidget->graphicsEffect())
+                                    {
+                                        chessWidget->setGraphicsEffect(nullptr);
+                                    }
+                                    
+                                    // Log return to main game
+                                    ui->textEdit->append("Returned to main game"); });
+
+                                // Start the animation
+                                animGroup->start(QAbstractAnimation::DeleteWhenStopped);
+                            }
+                            else
+                            {
+                                // End the subgame with the appropriate winner if no widget found
+                                cg->EndSubGame();
+
+                                // Update the main board
+                                updateBoardFromGame();
+                            }
                         }
                         else
                         {
-                            // Fallback if no stored size - just shrink back to a more reasonable size
-                            // Use 1/3 of the current size to create a dramatic effect
-                            int width = currentGeometry.width() / 3;
-                            int height = currentGeometry.height() / 3;
-                            int left = currentGeometry.center().x() - (width / 2);
-                            int top = currentGeometry.center().y() - (height / 2);
-                            originalGeometry = QRect(left, top, width, height);
+                            // Main game checkmate
+                            showGameOver(whiteWins);
                         }
-
-                        zoomAnimation->setStartValue(currentGeometry);
-                        zoomAnimation->setEndValue(originalGeometry);
-                        zoomAnimation->setEasingCurve(QEasingCurve::InQuad);
-
-                        // Create a container for animations
-                        QParallelAnimationGroup *animGroup = new QParallelAnimationGroup(this);
-                        animGroup->addAnimation(blurAnimation);
-                        animGroup->addAnimation(zoomAnimation);
-
-                        // Connect animation finished signal
-                        connect(animGroup, &QParallelAnimationGroup::finished, this, [this]()
-                                {
-                        // End the sub-game and return to main game
-                        cg->EndSubGame();
-                        
-                        // Update the board to show the main game state
-                        updateBoardFromGame();
-                        
-                        // Add a delayed update here:
-                        QTimer::singleShot(50, this, [this]() {
-                            forceUpdatePieceSizes(); // Force the piece sizes to be consistent
-                        });
-                        
-                        // Remove blur effect
-                        QWidget* chessWidget = findChild<QWidget *>("chesswdg");
-                        if (chessWidget && chessWidget->graphicsEffect())
-                        {
-                            chessWidget->setGraphicsEffect(nullptr);
-                        }
-                        
-                        // Log return to main game
-                        ui->textEdit->append("Returned to main game");
-                        
-                        // Check for checkmate in main game
-                        SuperChessGame* activeGame = cg->GetActiveGame();
-                        if (activeGame->IsWin(white))
-                        {
-                            showGameOver(true);  // White wins
-                        }
-                        else if (activeGame->IsWin(black))
-                        {
-                            showGameOver(false); // Black wins
-                        } });
-
-                        // Start the animation
-                        animGroup->start(QAbstractAnimation::DeleteWhenStopped);
                     }
                 }
-                else if (blackInCheckmate && !whiteKingHasMoves)
+                catch (const std::exception &e)
                 {
-                    ui->textEdit->append("Black wins the sub-game!");
-
-                    // Create transition effect back to main game
-                    QWidget *chessWidget = findChild<QWidget *>("chesswdg");
-                    if (chessWidget)
-                    {
-                        // Raise the chess widget to ensure it's above text boxes
-                        chessWidget->raise();
-
-                        // Create blur effect
-                        QGraphicsBlurEffect *blurEffect = new QGraphicsBlurEffect(this);
-                        blurEffect->setBlurRadius(10);
-                        chessWidget->setGraphicsEffect(blurEffect);
-
-                        // Create animation for blur
-                        QPropertyAnimation *blurAnimation = new QPropertyAnimation(blurEffect, "blurRadius");
-                        blurAnimation->setDuration(500);
-                        blurAnimation->setStartValue(10);
-                        blurAnimation->setEndValue(0);
-                        blurAnimation->setEasingCurve(QEasingCurve::InOutQuad);
-
-                        // Create animation for zoom (return to original size)
-                        QPropertyAnimation *zoomAnimation = new QPropertyAnimation(chessWidget, "geometry");
-                        zoomAnimation->setDuration(500);
-
-                        // We're zoomed in to nearly the full window size, so our current geometry is large
-                        QRect currentGeometry = chessWidget->geometry();
-
-                        // Get the original size from property if available
-                        QRect originalGeometry;
-                        QVariant originalSizeVar = chessWidget->property("originalSize");
-                        if (originalSizeVar.isValid())
-                        {
-                            QSize originalSize = originalSizeVar.toSize();
-                            // Calculate position to center the original sized widget
-                            int centerX = currentGeometry.center().x() - (originalSize.width() / 2);
-                            int centerY = currentGeometry.center().y() - (originalSize.height() / 2);
-                            originalGeometry = QRect(centerX, centerY, originalSize.width(), originalSize.height());
-                        }
-                        else
-                        {
-                            // Fallback if no stored size - just shrink back to a more reasonable size
-                            // Use 1/3 of the current size to create a dramatic effect
-                            int width = currentGeometry.width() / 3;
-                            int height = currentGeometry.height() / 3;
-                            int left = currentGeometry.center().x() - (width / 2);
-                            int top = currentGeometry.center().y() - (height / 2);
-                            originalGeometry = QRect(left, top, width, height);
-                        }
-
-                        zoomAnimation->setStartValue(currentGeometry);
-                        zoomAnimation->setEndValue(originalGeometry);
-                        zoomAnimation->setEasingCurve(QEasingCurve::InQuad);
-
-                        // Create a container for animations
-                        QParallelAnimationGroup *animGroup = new QParallelAnimationGroup(this);
-                        animGroup->addAnimation(blurAnimation);
-                        animGroup->addAnimation(zoomAnimation);
-
-                        // Connect animation finished signal
-                        connect(animGroup, &QParallelAnimationGroup::finished, this, [this]()
-                                {
-                        // End the sub-game and return to main game
-                        cg->EndSubGame();
-                        
-                        // Update the board to show the main game state
-                        updateBoardFromGame();
-                        
-                        // Add a delayed update here:
-                        QTimer::singleShot(50, this, [this]() {
-                            forceUpdatePieceSizes(); // Force the piece sizes to be consistent
-                        });
-                        
-                        // Remove blur effect
-                        QWidget* chessWidget = findChild<QWidget *>("chesswdg");
-                        if (chessWidget && chessWidget->graphicsEffect())
-                        {
-                            chessWidget->setGraphicsEffect(nullptr);
-                        }
-                        
-                        // Log return to main game
-                        ui->textEdit->append("Returned to main game");
-                        
-                        // Check for checkmate in main game
-                        SuperChessGame* activeGame = cg->GetActiveGame();
-                        if (activeGame->IsWin(white))
-                        {
-                            showGameOver(true);  // White wins
-                        }
-                        else if (activeGame->IsWin(black))
-                        {
-                            showGameOver(false); // Black wins
-                        } });
-
-                        // Start the animation
-                        animGroup->start(QAbstractAnimation::DeleteWhenStopped);
-                    }
+                    qDebug() << "Error in checkmate detection:" << e.what();
                 }
             }
         }
@@ -1297,48 +1248,164 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
             // Check for checkmate in the main game regardless of free move mode
             if (activeGame)
             {
-                // Only check for checkmate in normal mode, not in free move mode
-                if (!freeMoveMode)
+                // More thorough check before declaring checkmate
+                bool whiteKingHasMoves = false;
+                bool blackKingHasMoves = false;
+                bool whiteInCheckmate = false;
+                bool blackInCheckmate = false;
+
+                try
                 {
-                    // More thorough check before declaring checkmate
-                    bool whiteInCheckmate = false;
-                    bool blackInCheckmate = false;
-                    bool whiteKingHasMoves = false;
-                    bool blackKingHasMoves = false;
+                    // Check if white king has moves
+                    uint64_t whiteKingMoves = activeGame->GetWhiteKingMoves();
+                    whiteKingHasMoves = whiteKingMoves != 0;
 
-                    try
+                    uint64_t blackKingMoves = activeGame->GetBlackKingMoves();
+                    blackKingHasMoves = blackKingMoves != 0;
+
+                    // Check if white is in check
+                    bool whiteInCheck = activeGame->InCheck(white);
+                    qDebug() << "White in check:" << whiteInCheck;
+
+                    // Check if black is in check
+                    bool blackInCheck = activeGame->InCheck(black);
+                    qDebug() << "Black in check:" << blackInCheck;
+
+                    // Checkmate happens when a king is in check AND has no valid moves
+                    whiteInCheckmate = whiteInCheck && !whiteKingHasMoves;
+                    blackInCheckmate = blackInCheck && !blackKingHasMoves;
+
+                    // Also check the direct IsWin method which handles the logic in one place
+                    bool whiteWinsDirectCheck = activeGame->IsWin(white);
+                    bool blackWinsDirectCheck = activeGame->IsWin(black);
+
+                    qDebug() << "Checkmate detection:"
+                             << "White in checkmate:" << whiteInCheckmate
+                             << "White king has moves:" << whiteKingHasMoves
+                             << "Black in checkmate:" << blackInCheckmate
+                             << "Black king has moves:" << blackKingHasMoves
+                             << "Direct IsWin(white):" << whiteWinsDirectCheck
+                             << "Direct IsWin(black):" << blackWinsDirectCheck;
+
+                    // Additional debugging for king positions and existence
+                    qDebug() << "White king bitboard:" << activeGame->GetBoardOf(King, white);
+                    qDebug() << "Black king bitboard:" << activeGame->GetBoardOf(King, black);
+
+                    // If any detection method indicates checkmate, handle it
+                    if (whiteInCheckmate || blackInCheckmate || whiteWinsDirectCheck || blackWinsDirectCheck)
                     {
-                        // Check if kings have any valid moves using our safe helper methods
-                        uint64_t whiteKingMoves = activeGame->GetWhiteKingMoves();
-                        whiteKingHasMoves = whiteKingMoves != 0;
+                        // Determine the winner color (white wins if black is in checkmate or white wins directly)
+                        bool whiteWins = blackInCheckmate || whiteWinsDirectCheck;
 
-                        uint64_t blackKingMoves = activeGame->GetBlackKingMoves();
-                        blackKingHasMoves = blackKingMoves != 0;
+                        // Check if this is a subgame
+                        if (cg->IsInSubGame())
+                        {
+                            qDebug() << "Checkmate detected in subgame!";
+                            ui->textEdit->append(QString("%1 wins the sub-game!").arg(whiteWins ? "White" : "Black"));
 
-                        // Standard checkmate detection
-                        whiteInCheckmate = activeGame->IsWin(white);
-                        blackInCheckmate = activeGame->IsWin(black);
+                            // Create transition effect back to main game
+                            QWidget *chessWidget = findChild<QWidget *>("chesswdg");
+                            if (chessWidget)
+                            {
+                                // Raise the chess widget to ensure it's above text boxes
+                                chessWidget->raise();
 
-                        qDebug() << "Main game checkmate detection:"
-                                 << "White in checkmate:" << whiteInCheckmate
-                                 << "White king has moves:" << whiteKingHasMoves
-                                 << "Black in checkmate:" << blackInCheckmate
-                                 << "Black king has moves:" << blackKingHasMoves;
-                    }
-                    catch (const std::exception &e)
-                    {
-                        qDebug() << "Error in checkmate detection:" << e.what();
-                    }
+                                // Create blur effect
+                                QGraphicsBlurEffect *blurEffect = new QGraphicsBlurEffect(this);
+                                blurEffect->setBlurRadius(10);
+                                chessWidget->setGraphicsEffect(blurEffect);
 
-                    // Only declare checkmate if IsWin returns true
-                    if (whiteInCheckmate)
-                    {
-                        showGameOver(true);
+                                // Create animation for blur
+                                QPropertyAnimation *blurAnimation = new QPropertyAnimation(blurEffect, "blurRadius");
+                                blurAnimation->setDuration(500);
+                                blurAnimation->setStartValue(10);
+                                blurAnimation->setEndValue(0);
+                                blurAnimation->setEasingCurve(QEasingCurve::InOutQuad);
+
+                                // Create animation for zoom (return to original size)
+                                QPropertyAnimation *zoomAnimation = new QPropertyAnimation(chessWidget, "geometry");
+                                zoomAnimation->setDuration(500);
+
+                                // We're zoomed in to nearly the full window size, so our current geometry is large
+                                QRect currentGeometry = chessWidget->geometry();
+
+                                // Get the original size from property if available
+                                QRect originalGeometry;
+                                QVariant originalSizeVar = chessWidget->property("originalSize");
+                                if (originalSizeVar.isValid())
+                                {
+                                    QSize originalSize = originalSizeVar.toSize();
+                                    // Calculate position to center the original sized widget
+                                    int centerX = currentGeometry.center().x() - (originalSize.width() / 2);
+                                    int centerY = currentGeometry.center().y() - (originalSize.height() / 2);
+                                    originalGeometry = QRect(centerX, centerY, originalSize.width(), originalSize.height());
+                                }
+                                else
+                                {
+                                    // Fallback if no stored size - just shrink back to a more reasonable size
+                                    // Use 1/3 of the current size to create a dramatic effect
+                                    int width = currentGeometry.width() / 3;
+                                    int height = currentGeometry.height() / 3;
+                                    int left = currentGeometry.center().x() - (width / 2);
+                                    int top = currentGeometry.center().y() - (height / 2);
+                                    originalGeometry = QRect(left, top, width, height);
+                                }
+
+                                zoomAnimation->setStartValue(currentGeometry);
+                                zoomAnimation->setEndValue(originalGeometry);
+                                zoomAnimation->setEasingCurve(QEasingCurve::InQuad);
+
+                                // Create a container for animations
+                                QParallelAnimationGroup *animGroup = new QParallelAnimationGroup(this);
+                                animGroup->addAnimation(blurAnimation);
+                                animGroup->addAnimation(zoomAnimation);
+
+                                // Connect animation finished signal
+                                connect(animGroup, &QParallelAnimationGroup::finished, this, [this]()
+                                        {
+                                    // End the sub-game and return to main game
+                                    cg->EndSubGame();
+                                    
+                                    // Update the board to show the main game state
+                                    updateBoardFromGame();
+                                    
+                                    // Add a delayed update here:
+                                    QTimer::singleShot(50, this, [this]() {
+                                        forceUpdatePieceSizes(); // Force the piece sizes to be consistent
+                                    });
+                                    
+                                    // Remove blur effect
+                                    QWidget* chessWidget = findChild<QWidget *>("chesswdg");
+                                    if (chessWidget && chessWidget->graphicsEffect())
+                                    {
+                                        chessWidget->setGraphicsEffect(nullptr);
+                                    }
+                                    
+                                    // Log return to main game
+                                    ui->textEdit->append("Returned to main game"); });
+
+                                // Start the animation
+                                animGroup->start(QAbstractAnimation::DeleteWhenStopped);
+                            }
+                            else
+                            {
+                                // End the subgame with the appropriate winner if no widget found
+                                cg->EndSubGame();
+
+                                // Update the main board
+                                updateBoardFromGame();
+                            }
+                        }
+                        else
+                        {
+                            // Main game checkmate
+                            showGameOver(whiteWins);
+                        }
                     }
-                    else if (blackInCheckmate)
-                    {
-                        showGameOver(false);
-                    }
+                }
+                catch (const std::exception &e)
+                {
+                    qDebug() << "Error in checkmate detection:" << e.what();
                 }
             }
         }

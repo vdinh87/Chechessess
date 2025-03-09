@@ -299,9 +299,11 @@ U64 SuperChessGame::GetBoardOf(Piece piece, Color color)
     return (color == white) ? WhitePiecesArray[piece] : BlackPiecesArray[piece];
 }
 
-U64 SuperChessGame::GetBoardOf(Color color)
+U64 SuperChessGame::GetBoardOf(Color color) const
 {
-    return (color == white) ? WhitePieces : BlackPieces;
+    if (color == white)
+        return WhitePieces;
+    return BlackPieces;
 }
 
 bool SuperChessGame::InCheck(Color color) const
@@ -311,10 +313,74 @@ bool SuperChessGame::InCheck(Color color) const
 
 bool SuperChessGame::IsWin(Color color) const
 {
-    // For super chess game, check if the opponent king is missing
+    std::cout << "IsWin check for " << (color == white ? "white" : "black") << std::endl;
+
+    // First check if the opponent king is missing (which is a win condition in SuperChessGame)
     Color opponent = (color == white) ? black : white;
     U64 kingBitboard = (opponent == white) ? WhitePiecesArray[King] : BlackPiecesArray[King];
-    return kingBitboard == 0;
+
+    // If king is captured, it's a win
+    if (kingBitboard == 0)
+    {
+        std::cout << "Win by king capture: " << (opponent == white ? "white" : "black") << " king is missing" << std::endl;
+        return true;
+    }
+
+    // Otherwise check for traditional checkmate
+
+    // First check if opponent is in check
+    bool isInCheck = InCheck(opponent);
+    std::cout << (opponent == white ? "White" : "Black") << " in check: " << (isInCheck ? "yes" : "no") << std::endl;
+
+    if (!isInCheck)
+    {
+        return false; // Not in check, so definitely not checkmate
+    }
+
+    // Find the king square
+    Square kingSquare = static_cast<Square>(get_LSB(kingBitboard));
+
+    // Try all possible moves for the king first
+    U64 kingMoves = GetAttacks(kingSquare);
+    std::cout << "King at " << kingSquare << " has " << count_bits(kingMoves) << " possible moves" << std::endl;
+
+    // If king has any legal moves, it's not checkmate
+    if (kingMoves)
+    {
+        return false;
+    }
+
+    // If king has no moves, check if any other piece can block the check or capture the checking piece
+    U64 pieces = (opponent == white) ? WhitePieces : BlackPieces;
+    pieces &= ~kingBitboard; // Remove king from the pieces to check
+
+    while (pieces)
+    {
+        Square square = static_cast<Square>(get_LSB(pieces));
+
+        try
+        {
+            // Get all possible moves for this piece
+            U64 attacks = GetAttacks(square);
+            std::cout << "Piece at " << square << " has " << count_bits(attacks) << " possible moves" << std::endl;
+
+            // If we found any legal moves, it's not checkmate
+            if (attacks)
+            {
+                return false;
+            }
+        }
+        catch (const std::exception &e)
+        {
+            std::cout << "Error getting attacks for piece at " << square << ": " << e.what() << std::endl;
+        }
+
+        pieces &= pieces - 1; // Clear least significant bit
+    }
+
+    // If we get here, no piece has any legal moves that escape check
+    std::cout << "Checkmate: " << (opponent == white ? "White" : "Black") << " has no legal moves to escape check" << std::endl;
+    return true;
 }
 
 void SuperChessGame::InitSuperPieces(const SuperPieceInfo &white_info, const SuperPieceInfo &black_info)
@@ -369,33 +435,250 @@ U64 SuperChessGame::GetAttacks(Square square_) const
             which_function = i;
     }
 
+    // Get basic attacks
     attacks = ChessGame::GetAttacks(square_, board, which_function);
+
+    if (which_function == King)
+    {
+        std::cout << "Initial king moves for square " << square_ << ": " << std::hex << attacks << std::dec << std::endl;
+    }
 
     // Super piece modifications
     const auto it = super_pieces.find(square_);
     if (it != super_pieces.end())
+    {
+        // Add any attack modifications from abilities
         it->second->ModifyMove(attacks);
-
-    // Filter out illegal moves
-    attacks = FilterTeam(attacks, piece);
-
-    // Only apply check filtering in actual game play, not in free move mode
-    // Since we don't have access to the free move flag here, we'll make it conditional
-    // in the main UI instead
-
-    // We'll leave this commented out for now to debug the issue
-    // attacks = FilterCheck(attacks, piece);
-
-    if (GetPieceType(piece) == King)
-    {
-        // For kings, filter out moves that would put it in check
-        // Again, leave this commented out for debugging
-        // attacks = attacks & FilterLegalKingMoves(attacks, piece);
     }
-    else
+
+    // Special handling for kings - filter moves that would put king in check
+    if (which_function == King)
     {
-        // For other pieces, filter out moves that would leave the king in check (pins)
-        // attacks = attacks & FilterPin(attacks, piece);
+        // Determine if this is white or black king
+        bool isWhiteKing = piece & WhitePiecesArray[King];
+        std::cout << "Processing " << (isWhiteKing ? "WHITE" : "BLACK") << " king at square " << square_ << std::endl;
+
+        // Get all squares attacked by opponent
+        U64 attackedSquares = 0;
+
+        if (isWhiteKing)
+        {
+            // Calculate all squares attacked by black pieces
+            // We need to create a local copy of the board to modify temporarily
+            U64 localBoard = board;
+            localBoard &= ~piece; // Temporarily remove king to see through its position
+
+            // Pawns (special handling for diagonal attacks)
+            U64 blackPawns = BlackPiecesArray[Pawn];
+            U64 pawnAttacks = 0;
+            while (blackPawns)
+            {
+                Square pawnSq = static_cast<Square>(get_LSB(blackPawns));
+                int pawnRow = pawnSq / 8;
+                int pawnCol = pawnSq % 8;
+
+                // Pawns attack diagonally forward (from black's perspective, that's down the board)
+                if (pawnRow > 0) // Not on first rank
+                {
+                    if (pawnCol > 0)
+                    {                                          // Not on a-file
+                        pawnAttacks |= (1ULL << (pawnSq - 9)); // Diagonal left (from black's perspective)
+                    }
+                    if (pawnCol < 7)
+                    {                                          // Not on h-file
+                        pawnAttacks |= (1ULL << (pawnSq - 7)); // Diagonal right (from black's perspective)
+                    }
+                }
+
+                blackPawns &= blackPawns - 1; // Clear LSB
+            }
+            attackedSquares |= pawnAttacks;
+            std::cout << "  Black pawn attacks: " << std::hex << pawnAttacks << std::dec << std::endl;
+
+            // Knights
+            U64 blackKnights = BlackPiecesArray[Knight];
+            U64 knightAttacks = 0;
+            while (blackKnights)
+            {
+                Square knightSq = static_cast<Square>(get_LSB(blackKnights));
+                U64 attacks = ChessGame::GetAttacks(knightSq, localBoard, Knight);
+                knightAttacks |= attacks;
+                blackKnights &= blackKnights - 1; // Clear LSB
+            }
+            attackedSquares |= knightAttacks;
+            std::cout << "  Black knight attacks: " << std::hex << knightAttacks << std::dec << std::endl;
+
+            // Bishops
+            U64 blackBishops = BlackPiecesArray[Bishop];
+            U64 bishopAttacks = 0;
+            while (blackBishops)
+            {
+                Square bishopSq = static_cast<Square>(get_LSB(blackBishops));
+                U64 attacks = ChessGame::GetAttacks(bishopSq, localBoard, Bishop);
+                bishopAttacks |= attacks;
+                blackBishops &= blackBishops - 1; // Clear LSB
+            }
+            attackedSquares |= bishopAttacks;
+            std::cout << "  Black bishop attacks: " << std::hex << bishopAttacks << std::dec << std::endl;
+
+            // Rooks
+            U64 blackRooks = BlackPiecesArray[Rook];
+            U64 rookAttacks = 0;
+            while (blackRooks)
+            {
+                Square rookSq = static_cast<Square>(get_LSB(blackRooks));
+                U64 attacks = ChessGame::GetAttacks(rookSq, localBoard, Rook);
+                rookAttacks |= attacks;
+                blackRooks &= blackRooks - 1; // Clear LSB
+            }
+            attackedSquares |= rookAttacks;
+            std::cout << "  Black rook attacks: " << std::hex << rookAttacks << std::dec << std::endl;
+
+            // Queens
+            U64 blackQueens = BlackPiecesArray[Queen];
+            U64 queenAttacks = 0;
+            while (blackQueens)
+            {
+                Square queenSq = static_cast<Square>(get_LSB(blackQueens));
+                U64 attacks = ChessGame::GetAttacks(queenSq, localBoard, Queen);
+                std::cout << "  Queen at " << queenSq << " attacks: " << std::hex << attacks << std::dec << std::endl;
+                queenAttacks |= attacks;
+                blackQueens &= blackQueens - 1; // Clear LSB
+            }
+            attackedSquares |= queenAttacks;
+            std::cout << "  All black queen attacks: " << std::hex << queenAttacks << std::dec << std::endl;
+
+            // Black king
+            U64 blackKing = BlackPiecesArray[King];
+            U64 kingAttacks = 0;
+            if (blackKing)
+            {
+                Square kingPos = static_cast<Square>(get_LSB(blackKing));
+                kingAttacks = ChessGame::GetAttacks(kingPos, localBoard, King);
+                attackedSquares |= kingAttacks;
+            }
+            std::cout << "  Black king attacks: " << std::hex << kingAttacks << std::dec << std::endl;
+        }
+        else // Black king
+        {
+            // Calculate all squares attacked by white pieces
+            // We need to create a local copy of the board to modify temporarily
+            U64 localBoard = board;
+            localBoard &= ~piece; // Temporarily remove king to see through its position
+
+            // Pawns (special handling for diagonal attacks)
+            U64 whitePawns = WhitePiecesArray[Pawn];
+            U64 pawnAttacks = 0;
+            while (whitePawns)
+            {
+                Square pawnSq = static_cast<Square>(get_LSB(whitePawns));
+                int pawnRow = pawnSq / 8;
+                int pawnCol = pawnSq % 8;
+
+                // Pawns attack diagonally forward (from white's perspective, that's up the board)
+                if (pawnRow < 7) // Not on eighth rank
+                {
+                    if (pawnCol > 0)
+                    {                                          // Not on a-file
+                        pawnAttacks |= (1ULL << (pawnSq + 7)); // Diagonal left (from white's perspective)
+                    }
+                    if (pawnCol < 7)
+                    {                                          // Not on h-file
+                        pawnAttacks |= (1ULL << (pawnSq + 9)); // Diagonal right (from white's perspective)
+                    }
+                }
+
+                whitePawns &= whitePawns - 1; // Clear LSB
+            }
+            attackedSquares |= pawnAttacks;
+            std::cout << "  White pawn attacks: " << std::hex << pawnAttacks << std::dec << std::endl;
+
+            // Knights
+            U64 whiteKnights = WhitePiecesArray[Knight];
+            U64 knightAttacks = 0;
+            while (whiteKnights)
+            {
+                Square knightSq = static_cast<Square>(get_LSB(whiteKnights));
+                U64 attacks = ChessGame::GetAttacks(knightSq, localBoard, Knight);
+                knightAttacks |= attacks;
+                whiteKnights &= whiteKnights - 1; // Clear LSB
+            }
+            attackedSquares |= knightAttacks;
+            std::cout << "  White knight attacks: " << std::hex << knightAttacks << std::dec << std::endl;
+
+            // Bishops
+            U64 whiteBishops = WhitePiecesArray[Bishop];
+            U64 bishopAttacks = 0;
+            while (whiteBishops)
+            {
+                Square bishopSq = static_cast<Square>(get_LSB(whiteBishops));
+                U64 attacks = ChessGame::GetAttacks(bishopSq, localBoard, Bishop);
+                bishopAttacks |= attacks;
+                whiteBishops &= whiteBishops - 1; // Clear LSB
+            }
+            attackedSquares |= bishopAttacks;
+            std::cout << "  White bishop attacks: " << std::hex << bishopAttacks << std::dec << std::endl;
+
+            // Rooks
+            U64 whiteRooks = WhitePiecesArray[Rook];
+            U64 rookAttacks = 0;
+            while (whiteRooks)
+            {
+                Square rookSq = static_cast<Square>(get_LSB(whiteRooks));
+                U64 attacks = ChessGame::GetAttacks(rookSq, localBoard, Rook);
+                rookAttacks |= attacks;
+                whiteRooks &= whiteRooks - 1; // Clear LSB
+            }
+            attackedSquares |= rookAttacks;
+            std::cout << "  White rook attacks: " << std::hex << rookAttacks << std::dec << std::endl;
+
+            // Queens
+            U64 whiteQueens = WhitePiecesArray[Queen];
+            U64 queenAttacks = 0;
+            while (whiteQueens)
+            {
+                Square queenSq = static_cast<Square>(get_LSB(whiteQueens));
+                U64 attacks = ChessGame::GetAttacks(queenSq, localBoard, Queen);
+                std::cout << "  Queen at " << queenSq << " attacks: " << std::hex << attacks << std::dec << std::endl;
+                queenAttacks |= attacks;
+                whiteQueens &= whiteQueens - 1; // Clear LSB
+            }
+            attackedSquares |= queenAttacks;
+            std::cout << "  All white queen attacks: " << std::hex << queenAttacks << std::dec << std::endl;
+
+            // White king
+            U64 whiteKing = WhitePiecesArray[King];
+            U64 kingAttacks = 0;
+            if (whiteKing)
+            {
+                Square kingPos = static_cast<Square>(get_LSB(whiteKing));
+                kingAttacks = ChessGame::GetAttacks(kingPos, localBoard, King);
+                attackedSquares |= kingAttacks;
+            }
+            std::cout << "  White king attacks: " << std::hex << kingAttacks << std::dec << std::endl;
+        }
+
+        std::cout << "All squares attacked by opponent: " << std::hex << attackedSquares << std::dec << std::endl;
+        std::cout << "Before filtering, king moves: " << std::hex << attacks << std::dec << std::endl;
+
+        // Remove squares that are under attack from legal king moves
+        attacks &= ~attackedSquares;
+
+        // Remove moves to squares occupied by pieces of the same color
+        U64 ownPieces = isWhiteKing ? GetBoardOf(white) : GetBoardOf(black);
+        std::cout << "Own pieces: " << std::hex << ownPieces << std::dec << std::endl;
+        attacks &= ~ownPieces;
+
+        std::cout << "King at " << square_ << " after filtering, has moves: " << std::hex << attacks << std::dec << std::endl;
+
+        // Debug: show which squares the king can move to
+        U64 tempMoves = attacks;
+        while (tempMoves)
+        {
+            Square targetSq = static_cast<Square>(get_LSB(tempMoves));
+            std::cout << "King can legally move to square: " << targetSq << std::endl;
+            tempMoves &= tempMoves - 1;
+        }
     }
 
     return attacks;
@@ -411,12 +694,6 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
     // Validate move
     if (!(from & board) || from_sq == to_sq)
         return actions;
-
-    // For debugging purposes, let's skip the strict validation for now
-    // U64 validMoves = GetAttacks(from_sq);
-    // if (!((validMoves >> to_sq) & 1ULL)) {
-    //     return actions;  // Return empty actions if the move isn't valid
-    // }
 
     // Execute move
     Color color = GetColor(from);
@@ -436,18 +713,25 @@ std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 
     // Check if opponent is in check
     Color oppositeColor = (color == white) ? black : white;
-    if (ChessGame::InCheck(board, oppositeColor, 0))
+    bool opponentInCheck = InCheck(oppositeColor);
+    if (opponentInCheck)
+    {
+        std::cout << "Opponent is in check!" << std::endl;
         actions.push_back(Action::Check);
+
+        // If opponent is in check, check for checkmate
+        if (IsWin(color))
+        {
+            std::cout << "Checkmate detected! " << (color == white ? "White" : "Black") << " wins!" << std::endl;
+            actions.push_back(Action::Checkmate);
+        }
+    }
 
     // Critical: Update the board state to reflect changes
     UpdateBoard();
 
     // Add extra debug print to confirm we updated
     std::cout << "Board updated after move" << std::endl;
-
-    // Check for checkmate
-    if (IsWin(white) || IsWin(black))
-        actions.push_back(Action::Checkmate);
 
     return actions;
 }
@@ -553,4 +837,279 @@ std::vector<SuperPieceInfo> SuperChessGame::GetPiecesInGraveyard(Color color) co
             pieces.push_back(p.first.second);
         }
     return pieces;
+}
+
+// Simpler implementation that better handles line attacks
+U64 SuperChessGame::GetWhiteKingMoves() const
+{
+    try
+    {
+        // Find the white king
+        U64 kingBitboard = WhitePiecesArray[King];
+        if (kingBitboard == 0)
+        {
+            std::cout << "White king not found on board" << std::endl;
+            return 0; // No king = no moves
+        }
+
+        // Get the king's square
+        Square kingSquare = static_cast<Square>(get_LSB(kingBitboard));
+        std::cout << "White king found at square " << kingSquare << std::endl;
+
+        // Get all possible moves for the king (ignoring check)
+        U64 possibleMoves = GetAttacks(kingSquare);
+        std::cout << "Raw possible moves bitboard: " << std::hex << possibleMoves << std::dec << std::endl;
+
+        // Remove moves to squares occupied by own pieces
+        possibleMoves &= ~GetBoardOf(white);
+        std::cout << "After removing own pieces: " << std::hex << possibleMoves << std::dec << std::endl;
+
+        // Now check for each potential move if it would leave the king in check
+        U64 legalMoves = 0;
+        U64 attackedSquares = 0; // Squares under attack by black
+
+        // Get all squares attacked by black pieces
+        // Start with pawns (special handling)
+        U64 blackPawns = BlackPiecesArray[Pawn];
+        while (blackPawns)
+        {
+            Square pawnSq = static_cast<Square>(get_LSB(blackPawns));
+            int pawnRow = pawnSq / 8;
+            int pawnCol = pawnSq % 8;
+
+            // Pawns attack diagonally forward
+            if (pawnRow > 0)
+            {
+                if (pawnCol > 0)
+                { // Can attack to the left
+                    attackedSquares |= (1ULL << (pawnSq - 9));
+                }
+                if (pawnCol < 7)
+                { // Can attack to the right
+                    attackedSquares |= (1ULL << (pawnSq - 7));
+                }
+            }
+
+            blackPawns &= blackPawns - 1; // Clear LSB
+        }
+
+        // Handle knights
+        U64 blackKnights = BlackPiecesArray[Knight];
+        while (blackKnights)
+        {
+            Square knightSq = static_cast<Square>(get_LSB(blackKnights));
+            attackedSquares |= ChessGame::GetAttacks(knightSq, board, Knight);
+            blackKnights &= blackKnights - 1; // Clear LSB
+        }
+
+        // Handle black king
+        U64 blackKing = BlackPiecesArray[King];
+        if (blackKing)
+        {
+            Square kingPos = static_cast<Square>(get_LSB(blackKing));
+            attackedSquares |= ChessGame::GetAttacks(kingPos, board, King);
+        }
+
+        // For sliding pieces (bishop, rook, queen), we need special handling
+        // Bishops
+        U64 blackBishops = BlackPiecesArray[Bishop];
+        while (blackBishops)
+        {
+            Square bishopSq = static_cast<Square>(get_LSB(blackBishops));
+            attackedSquares |= ChessGame::GetAttacks(bishopSq, board, Bishop);
+            blackBishops &= blackBishops - 1;
+        }
+
+        // Rooks
+        U64 blackRooks = BlackPiecesArray[Rook];
+        while (blackRooks)
+        {
+            Square rookSq = static_cast<Square>(get_LSB(blackRooks));
+            attackedSquares |= ChessGame::GetAttacks(rookSq, board, Rook);
+            blackRooks &= blackRooks - 1;
+        }
+
+        // Queens (most important for line attacks)
+        U64 blackQueens = BlackPiecesArray[Queen];
+        while (blackQueens)
+        {
+            Square queenSq = static_cast<Square>(get_LSB(blackQueens));
+            U64 queenAttacks = ChessGame::GetAttacks(queenSq, board, Queen);
+            std::cout << "Queen at " << queenSq << " attacks: " << std::hex << queenAttacks << std::dec << std::endl;
+            attackedSquares |= queenAttacks;
+            blackQueens &= blackQueens - 1;
+        }
+
+        std::cout << "All black attacks bitboard: " << std::hex << attackedSquares << std::dec << std::endl;
+
+        // King cannot move to any attacked square
+        legalMoves = possibleMoves & ~attackedSquares;
+
+        std::cout << "White king has " << count_bits(possibleMoves) << " possible moves and "
+                  << count_bits(legalMoves) << " legal moves" << std::endl;
+
+        // Debug: print each legal move for verification
+        U64 temp = legalMoves;
+        while (temp)
+        {
+            Square sq = static_cast<Square>(get_LSB(temp));
+            std::cout << "Legal move to square: " << sq << std::endl;
+            temp &= temp - 1;
+        }
+
+        return legalMoves;
+    }
+    catch (const std::exception &e)
+    {
+        std::cout << "Error in GetWhiteKingMoves: " << e.what() << std::endl;
+        return 0; // Return 0 (no moves) on error
+    }
+}
+
+// Similar simplified implementation for black king
+U64 SuperChessGame::GetBlackKingMoves() const
+{
+    try
+    {
+        // Find the black king
+        U64 kingBitboard = BlackPiecesArray[King];
+        if (kingBitboard == 0)
+        {
+            std::cout << "Black king not found on board" << std::endl;
+            return 0; // No king = no moves
+        }
+
+        // Get the king's square
+        Square kingSquare = static_cast<Square>(get_LSB(kingBitboard));
+        std::cout << "Black king found at square " << kingSquare << std::endl;
+
+        // Get all possible moves for the king (ignoring check)
+        U64 possibleMoves = GetAttacks(kingSquare);
+        std::cout << "Raw possible moves bitboard: " << std::hex << possibleMoves << std::dec << std::endl;
+
+        // Remove moves to squares occupied by own pieces
+        possibleMoves &= ~GetBoardOf(black);
+        std::cout << "After removing own pieces: " << std::hex << possibleMoves << std::dec << std::endl;
+
+        // Now check for each potential move if it would leave the king in check
+        U64 legalMoves = 0;
+        U64 attackedSquares = 0; // Squares under attack by white
+
+        // Get all squares attacked by white pieces
+        // Start with pawns (special handling)
+        U64 whitePawns = WhitePiecesArray[Pawn];
+        while (whitePawns)
+        {
+            Square pawnSq = static_cast<Square>(get_LSB(whitePawns));
+            int pawnRow = pawnSq / 8;
+            int pawnCol = pawnSq % 8;
+
+            // Pawns attack diagonally forward
+            if (pawnRow < 7)
+            {
+                if (pawnCol > 0)
+                { // Can attack to the left
+                    attackedSquares |= (1ULL << (pawnSq + 7));
+                }
+                if (pawnCol < 7)
+                { // Can attack to the right
+                    attackedSquares |= (1ULL << (pawnSq + 9));
+                }
+            }
+
+            whitePawns &= whitePawns - 1; // Clear LSB
+        }
+
+        // Handle knights
+        U64 whiteKnights = WhitePiecesArray[Knight];
+        while (whiteKnights)
+        {
+            Square knightSq = static_cast<Square>(get_LSB(whiteKnights));
+            attackedSquares |= ChessGame::GetAttacks(knightSq, board, Knight);
+            whiteKnights &= whiteKnights - 1; // Clear LSB
+        }
+
+        // Handle white king
+        U64 whiteKing = WhitePiecesArray[King];
+        if (whiteKing)
+        {
+            Square kingPos = static_cast<Square>(get_LSB(whiteKing));
+            attackedSquares |= ChessGame::GetAttacks(kingPos, board, King);
+        }
+
+        // For sliding pieces (bishop, rook, queen), we need special handling
+        // Bishops
+        U64 whiteBishops = WhitePiecesArray[Bishop];
+        while (whiteBishops)
+        {
+            Square bishopSq = static_cast<Square>(get_LSB(whiteBishops));
+            attackedSquares |= ChessGame::GetAttacks(bishopSq, board, Bishop);
+            whiteBishops &= whiteBishops - 1;
+        }
+
+        // Rooks
+        U64 whiteRooks = WhitePiecesArray[Rook];
+        while (whiteRooks)
+        {
+            Square rookSq = static_cast<Square>(get_LSB(whiteRooks));
+            attackedSquares |= ChessGame::GetAttacks(rookSq, board, Rook);
+            whiteRooks &= whiteRooks - 1;
+        }
+
+        // Queens (most important for line attacks)
+        U64 whiteQueens = WhitePiecesArray[Queen];
+        while (whiteQueens)
+        {
+            Square queenSq = static_cast<Square>(get_LSB(whiteQueens));
+            U64 queenAttacks = ChessGame::GetAttacks(queenSq, board, Queen);
+            std::cout << "Queen at " << queenSq << " attacks: " << std::hex << queenAttacks << std::dec << std::endl;
+            attackedSquares |= queenAttacks;
+            whiteQueens &= whiteQueens - 1;
+        }
+
+        std::cout << "All white attacks bitboard: " << std::hex << attackedSquares << std::dec << std::endl;
+
+        // King cannot move to any attacked square
+        legalMoves = possibleMoves & ~attackedSquares;
+
+        std::cout << "Black king has " << count_bits(possibleMoves) << " possible moves and "
+                  << count_bits(legalMoves) << " legal moves" << std::endl;
+
+        // Debug: print each legal move for verification
+        U64 temp = legalMoves;
+        while (temp)
+        {
+            Square sq = static_cast<Square>(get_LSB(temp));
+            std::cout << "Legal move to square: " << sq << std::endl;
+            temp &= temp - 1;
+        }
+
+        return legalMoves;
+    }
+    catch (const std::exception &e)
+    {
+        std::cout << "Error in GetBlackKingMoves: " << e.what() << std::endl;
+        return 0; // Return 0 (no moves) on error
+    }
+}
+
+// Add these helper functions to get the king positions
+Square SuperChessGame::GetWhiteKingPosition() const
+{
+    U64 kingBitboard = WhitePiecesArray[King];
+    if (kingBitboard == 0)
+    {
+        return static_cast<Square>(64); // Invalid square to indicate no king
+    }
+    return static_cast<Square>(get_LSB(kingBitboard));
+}
+
+Square SuperChessGame::GetBlackKingPosition() const
+{
+    U64 kingBitboard = BlackPiecesArray[King];
+    if (kingBitboard == 0)
+    {
+        return static_cast<Square>(64); // Invalid square to indicate no king
+    }
+    return static_cast<Square>(get_LSB(kingBitboard));
 }
