@@ -130,6 +130,9 @@ public:
     bool IsSuperPiece(const Square &key) const;
     bool InCheck(Color color) const;
     bool IsWin(Color color) const;
+    bool IsDefiniteCheckmate(Color color) const;
+    bool CanPieceBlockOrCapture(Square pieceSquare, Square attackerSquare) const;
+    bool IsDirectCheckmate(Color color) const;
     void CapTier(Tier &t, Piece p_type) const;
     void MakeAbilityVector(std::vector<std::unique_ptr<Ability>> &v, SuperPieceInfo info);
     void Swap(Square from, Square to);

@@ -308,11 +308,19 @@ U64 SuperChessGame::GetBoardOf(Color color) const
 
 bool SuperChessGame::InCheck(Color color) const
 {
+    // Check if the king exists first
+    if (AllColorPiecesArray[color][King] == 0)
+    {
+        // King doesn't exist, technically not in check but may be a win for opponent
+        return false;
+    }
+
     return ChessGame::InCheck(ChessGame::GetBoard(), color, static_cast<U64>(1ULL << GetSquare(AllColorPiecesArray[color][King])));
 }
 
 bool SuperChessGame::IsWin(Color color) const
 {
+    std::cout << "\n==== CHECKMATE DETECTION START ====\n";
     std::cout << "IsWin check for " << (color == white ? "white" : "black") << std::endl;
 
     // First check if the opponent king is missing (which is a win condition in SuperChessGame)
@@ -326,6 +334,15 @@ bool SuperChessGame::IsWin(Color color) const
         return true;
     }
 
+    // Before proceeding, check if our king exists
+    U64 ownKingBitboard = (color == white) ? WhitePiecesArray[King] : BlackPiecesArray[King];
+    if (ownKingBitboard == 0)
+    {
+        std::cout << "Cannot check for win - own king is missing" << std::endl;
+        std::cout << "==== CHECKMATE DETECTION END (OWN KING MISSING) ====\n";
+        return false;
+    }
+
     // Otherwise check for traditional checkmate
 
     // First check if opponent is in check
@@ -334,6 +351,7 @@ bool SuperChessGame::IsWin(Color color) const
 
     if (!isInCheck)
     {
+        std::cout << "==== CHECKMATE DETECTION END (NOT IN CHECK) ====\n";
         return false; // Not in check, so definitely not checkmate
     }
 
@@ -341,45 +359,280 @@ bool SuperChessGame::IsWin(Color color) const
     Square kingSquare = static_cast<Square>(get_LSB(kingBitboard));
 
     // Try all possible moves for the king first
-    U64 kingMoves = GetAttacks(kingSquare);
+    U64 kingMoves = 0;
+
+    // Get legal king moves using our improved method
+    if (opponent == white)
+    {
+        kingMoves = GetWhiteKingMoves();
+    }
+    else
+    {
+        kingMoves = GetBlackKingMoves();
+    }
+
     std::cout << "King at " << kingSquare << " has " << count_bits(kingMoves) << " possible moves" << std::endl;
 
     // If king has any legal moves, it's not checkmate
     if (kingMoves)
     {
+        std::cout << "==== CHECKMATE DETECTION END (KING CAN MOVE) ====\n";
         return false;
     }
 
-    // If king has no moves, check if any other piece can block the check or capture the checking piece
-    U64 pieces = (opponent == white) ? WhitePieces : BlackPieces;
-    pieces &= ~kingBitboard; // Remove king from the pieces to check
+    std::cout << "King has no legal moves, checking if other pieces can save it...\n";
 
-    while (pieces)
+    // If king has no moves, we need to check if any other piece can block or capture the checking piece
+
+    // First, identify the attacking piece(s)
+    // Find which opponent pieces are giving check
+    U64 attackers = 0;
+    U64 attackerBitboard = 0;
+
+    // Color of the player giving check (the attacker)
+    Color checkerColor = color;
+
+    // Check if any opponent pieces are checking the king
+    for (int pieceType = 0; pieceType < 6; pieceType++)
     {
-        Square square = static_cast<Square>(get_LSB(pieces));
+        U64 piecesBitboard = (checkerColor == white) ? WhitePiecesArray[pieceType] : BlackPiecesArray[pieceType];
+        U64 tempPieces = piecesBitboard;
 
-        try
+        while (tempPieces)
         {
-            // Get all possible moves for this piece
-            U64 attacks = GetAttacks(square);
-            std::cout << "Piece at " << square << " has " << count_bits(attacks) << " possible moves" << std::endl;
+            Square sq = static_cast<Square>(get_LSB(tempPieces));
+            U64 attacks = ChessGame::GetAttacks(sq, board, pieceType);
 
-            // If we found any legal moves, it's not checkmate
-            if (attacks)
+            // Check if this piece is attacking the king
+            if (attacks & kingBitboard)
             {
-                return false;
+                attackers++;
+                attackerBitboard |= (1ULL << sq);
+                std::cout << "Piece type " << pieceType << " at " << sq << " is giving check" << std::endl;
+            }
+
+            tempPieces &= tempPieces - 1; // Clear LSB
+        }
+    }
+
+    // If more than one piece is giving check, we can only escape by moving the king
+    // Since we already checked that the king has no moves, it's checkmate
+    if (attackers > 1)
+    {
+        std::cout << "Multiple attackers, king has no moves - checkmate" << std::endl;
+        std::cout << "==== CHECKMATE DETECTION END (MULTIPLE ATTACKERS) ====\n";
+        return true;
+    }
+
+    // If only one piece is giving check, see if it can be captured or blocked
+    if (attackers == 1)
+    {
+        // Find the square of the checking piece
+        Square attackerSquare = static_cast<Square>(get_LSB(attackerBitboard));
+        std::cout << "Single attacker at square " << attackerSquare << std::endl;
+
+        // 1. Check if the checking piece can be captured by any other piece
+
+        // Get all pieces of the opponent (the player in check)
+        U64 defenderPieces = (opponent == white) ? WhitePieces : BlackPieces;
+        defenderPieces &= ~kingBitboard; // Remove king from defenders
+
+        // Debug dump the defender pieces
+        std::cout << "Defender pieces bitboard: " << std::hex << defenderPieces << std::dec << std::endl;
+
+        U64 tempDefenders = defenderPieces;
+        while (tempDefenders)
+        {
+            Square sq = static_cast<Square>(get_LSB(tempDefenders));
+            std::cout << "Defender at square " << sq;
+
+            // Determine piece type
+            for (int i = 0; i < 6; i++)
+            {
+                if ((1ULL << sq) & ((opponent == white) ? WhitePiecesArray[i] : BlackPiecesArray[i]))
+                {
+                    std::cout << " is a " << ((opponent == white) ? "white " : "black ") << i << std::endl;
+                    break;
+                }
+            }
+
+            tempDefenders &= tempDefenders - 1;
+        }
+
+        while (defenderPieces)
+        {
+            Square defenderSquare = static_cast<Square>(get_LSB(defenderPieces));
+            // Skip the king, we already checked king moves
+            if (defenderSquare != kingSquare)
+            {
+                int defenderType = -1;
+
+                // Find piece type
+                for (int i = 0; i < 6; i++)
+                {
+                    if ((1ULL << defenderSquare) & ((opponent == white) ? WhitePiecesArray[i] : BlackPiecesArray[i]))
+                    {
+                        defenderType = i;
+                        break;
+                    }
+                }
+
+                std::cout << "Checking if defender at " << defenderSquare << " (type " << defenderType << ") can capture attacker" << std::endl;
+
+                if (defenderType != -1)
+                {
+                    // Get moves for this piece using our improved method
+                    U64 defenderAttacks = GetAttacks(defenderSquare);
+                    std::cout << "Defender attacks bitboard: " << std::hex << defenderAttacks << std::dec << std::endl;
+                    std::cout << "Attacker bitboard: " << std::hex << attackerBitboard << std::dec << std::endl;
+
+                    // Check if the defender can capture the attacker
+                    if (defenderAttacks & attackerBitboard)
+                    {
+                        std::cout << "Checking piece at " << attackerSquare << " can be captured by piece at " << defenderSquare << std::endl;
+                        std::cout << "==== CHECKMATE DETECTION END (ATTACKER CAN BE CAPTURED) ====\n";
+                        return false; // Not checkmate, the attacker can be captured
+                    }
+                    else
+                    {
+                        std::cout << "Defender at " << defenderSquare << " cannot capture attacker" << std::endl;
+                    }
+                }
+            }
+
+            defenderPieces &= defenderPieces - 1; // Clear LSB
+        }
+
+        // 2. For sliding pieces (Bishop, Rook, Queen), check if the check can be blocked
+        // Get the piece type of the attacker
+        int attackerType = -1;
+        for (int i = 0; i < 6; i++)
+        {
+            if ((1ULL << attackerSquare) & ((color == white) ? WhitePiecesArray[i] : BlackPiecesArray[i]))
+            {
+                attackerType = i;
+                break;
             }
         }
-        catch (const std::exception &e)
-        {
-            std::cout << "Error getting attacks for piece at " << square << ": " << e.what() << std::endl;
-        }
 
-        pieces &= pieces - 1; // Clear least significant bit
+        std::cout << "Attacker type: " << attackerType << std::endl;
+
+        // Only sliding pieces can be blocked (Bishop, Rook, Queen)
+        if (attackerType == Bishop || attackerType == Rook || attackerType == Queen)
+        {
+            std::cout << "Attacker is a sliding piece, checking for blocking" << std::endl;
+
+            // Determine the ray between the attacker and the king
+            U64 blockingSquares = 0;
+
+            // Generate the ray from attacker to king
+            int attackerRow = attackerSquare / 8;
+            int attackerCol = attackerSquare % 8;
+            int kingRow = kingSquare / 8;
+            int kingCol = kingSquare % 8;
+
+            std::cout << "Attacker at row " << attackerRow << ", col " << attackerCol << std::endl;
+            std::cout << "King at row " << kingRow << ", col " << kingCol << std::endl;
+
+            // Determine direction (diagonal, horizontal, vertical)
+            int rowStep = 0;
+            int colStep = 0;
+
+            if (attackerRow < kingRow)
+                rowStep = 1;
+            else if (attackerRow > kingRow)
+                rowStep = -1;
+
+            if (attackerCol < kingCol)
+                colStep = 1;
+            else if (attackerCol > kingCol)
+                colStep = -1;
+
+            std::cout << "Ray direction: rowStep=" << rowStep << ", colStep=" << colStep << std::endl;
+
+            // Generate blocking squares (squares between attacker and king)
+            int row = attackerRow + rowStep;
+            int col = attackerCol + colStep;
+
+            while (row != kingRow || col != kingCol)
+            {
+                Square blockingSquare = static_cast<Square>(row * 8 + col);
+                std::cout << "Potential blocking square: " << blockingSquare << " (row " << row << ", col " << col << ")" << std::endl;
+                blockingSquares |= (1ULL << blockingSquare);
+                row += rowStep;
+                col += colStep;
+            }
+
+            std::cout << "Blocking squares bitboard: " << std::hex << blockingSquares << std::dec << std::endl;
+
+            // Check if any defender piece can move to a blocking square
+            defenderPieces = (opponent == white) ? WhitePieces : BlackPieces;
+            defenderPieces &= ~kingBitboard; // Remove king from defenders
+
+            while (defenderPieces)
+            {
+                Square defenderSquare = static_cast<Square>(get_LSB(defenderPieces));
+
+                // Skip the king, we already checked king moves
+                if (defenderSquare != kingSquare)
+                {
+                    int defenderType = -1;
+
+                    // Find piece type
+                    for (int i = 0; i < 6; i++)
+                    {
+                        if ((1ULL << defenderSquare) & ((opponent == white) ? WhitePiecesArray[i] : BlackPiecesArray[i]))
+                        {
+                            defenderType = i;
+                            break;
+                        }
+                    }
+
+                    std::cout << "Checking if defender at " << defenderSquare << " (type " << defenderType << ") can block the check" << std::endl;
+
+                    if (defenderType != -1)
+                    {
+                        // Get moves for this piece
+                        U64 defenderAttacks = GetAttacks(defenderSquare);
+                        std::cout << "Defender attacks bitboard: " << std::hex << defenderAttacks << std::dec << std::endl;
+
+                        // Check if the defender can block any square
+                        U64 possibleBlocks = defenderAttacks & blockingSquares;
+                        if (possibleBlocks)
+                        {
+                            std::cout << "Check can be blocked by piece at " << defenderSquare << std::endl;
+
+                            // Debug: show which squares can be blocked
+                            U64 tempBlocks = possibleBlocks;
+                            while (tempBlocks)
+                            {
+                                Square blockSq = static_cast<Square>(get_LSB(tempBlocks));
+                                std::cout << "  Can block at square " << blockSq << std::endl;
+                                tempBlocks &= tempBlocks - 1;
+                            }
+
+                            std::cout << "==== CHECKMATE DETECTION END (CHECK CAN BE BLOCKED) ====\n";
+                            return false; // Not checkmate, the check can be blocked
+                        }
+                        else
+                        {
+                            std::cout << "Defender at " << defenderSquare << " cannot block the check" << std::endl;
+                        }
+                    }
+                }
+
+                defenderPieces &= defenderPieces - 1; // Clear LSB
+            }
+        }
+        else
+        {
+            std::cout << "Attacker is not a sliding piece, cannot be blocked" << std::endl;
+        }
     }
 
     // If we get here, no piece has any legal moves that escape check
     std::cout << "Checkmate: " << (opponent == white ? "White" : "Black") << " has no legal moves to escape check" << std::endl;
+    std::cout << "==== CHECKMATE DETECTION END (CHECKMATE CONFIRMED) ====\n";
     return true;
 }
 
@@ -687,51 +940,106 @@ U64 SuperChessGame::GetAttacks(Square square_) const
 std::vector<Action> SuperChessGame::Move(Square from_sq, Square to_sq)
 {
     std::vector<Action> actions;
-    // Basic implementation
-    U64 from = 1ULL << from_sq;
-    U64 to = 1ULL << to_sq;
-
-    // Validate move
-    if (!(from & board) || from_sq == to_sq)
-        return actions;
-
-    // Execute move
-    Color color = GetColor(from);
-    Piece fromPiece = GetPieceType(from);
-    Piece toPiece = GetPieceType(to);
-
-    // Add a debug print to see if we're reaching this point
-    std::cout << "Executing move from " << SquareStrings[from_sq] << " to " << SquareStrings[to_sq] << std::endl;
-
-    ExecuteMove(color, from_sq, to_sq, fromPiece, toPiece);
-
-    // if capturing
-    if ((board & to) != 0)
-        actions.push_back(Action::Capture);
-    else
-        actions.push_back(Action::Move);
-
-    // Check if opponent is in check
-    Color oppositeColor = (color == white) ? black : white;
-    bool opponentInCheck = InCheck(oppositeColor);
-    if (opponentInCheck)
+    try
     {
-        std::cout << "Opponent is in check!" << std::endl;
-        actions.push_back(Action::Check);
+        // Basic implementation
+        U64 from = 1ULL << from_sq;
+        U64 to = 1ULL << to_sq;
 
-        // If opponent is in check, check for checkmate
-        if (IsWin(color))
+        // Validate move
+        if (!(from & board) || from_sq == to_sq)
+            return actions;
+
+        // Execute move
+        Color color = GetColor(from);
+        Piece fromPiece = GetPieceType(from);
+        Piece toPiece = GetPieceType(to);
+
+        // Add a debug print to see if we're reaching this point
+        std::cout << "Executing move from " << SquareStrings[from_sq] << " to " << SquareStrings[to_sq] << std::endl;
+
+        ExecuteMove(color, from_sq, to_sq, fromPiece, toPiece);
+
+        // if capturing
+        if ((board & to) != 0)
+            actions.push_back(Action::Capture);
+        else
+            actions.push_back(Action::Move);
+
+        // Check if opponent is in check
+        Color oppositeColor = (color == white) ? black : white;
+
+        // Verify both kings exist before calling InCheck
+        bool whiteKingExists = WhitePiecesArray[King] != 0;
+        bool blackKingExists = BlackPiecesArray[King] != 0;
+
+        if (!whiteKingExists || !blackKingExists)
         {
-            std::cout << "Checkmate detected! " << (color == white ? "White" : "Black") << " wins!" << std::endl;
-            actions.push_back(Action::Checkmate);
+            // One of the kings is missing - handle appropriately
+            if (!whiteKingExists)
+            {
+                std::cout << "White king is missing - Black wins!" << std::endl;
+                actions.push_back(Action::Checkmate);
+            }
+            else if (!blackKingExists)
+            {
+                std::cout << "Black king is missing - White wins!" << std::endl;
+                actions.push_back(Action::Checkmate);
+            }
         }
+        else
+        {
+            // Both kings exist, safe to check for check/checkmate
+            bool opponentInCheck = InCheck(oppositeColor);
+            if (opponentInCheck)
+            {
+                std::cout << "Opponent is in check!" << std::endl;
+                actions.push_back(Action::Check);
+
+                try
+                {
+                    // Try all three checkmate detection methods and only declare checkmate if all agree
+                    bool isWinResult = IsWin(color);
+                    bool isDefiniteCheckmateResult = IsDefiniteCheckmate(color);
+                    bool isDirectCheckmateResult = IsDirectCheckmate(color);
+
+                    std::cout << "Checkmate detection results: IsWin=" << isWinResult
+                              << ", IsDefiniteCheckmate=" << isDefiniteCheckmateResult
+                              << ", IsDirectCheckmate=" << isDirectCheckmateResult << std::endl;
+
+                    // Only declare checkmate if all methods agree
+                    if (isWinResult && isDefiniteCheckmateResult && isDirectCheckmateResult)
+                    {
+                        std::cout << "Checkmate confirmed! " << (color == white ? "White" : "Black") << " wins!" << std::endl;
+                        actions.push_back(Action::Checkmate);
+                    }
+                    else
+                    {
+                        std::cout << "Check, but NOT checkmate." << std::endl;
+                    }
+                }
+                catch (const std::exception &e)
+                {
+                    std::cout << "Exception during checkmate detection: " << e.what() << std::endl;
+                    std::cout << "Check, but checkmate detection failed." << std::endl;
+                }
+            }
+        }
+
+        // Critical: Update the board state to reflect changes
+        UpdateBoard();
+
+        // Add extra debug print to confirm we updated
+        std::cout << "Board updated after move" << std::endl;
     }
-
-    // Critical: Update the board state to reflect changes
-    UpdateBoard();
-
-    // Add extra debug print to confirm we updated
-    std::cout << "Board updated after move" << std::endl;
+    catch (const std::exception &e)
+    {
+        std::cout << "Exception during move execution: " << e.what() << std::endl;
+    }
+    catch (...)
+    {
+        std::cout << "Unknown exception during move execution" << std::endl;
+    }
 
     return actions;
 }
@@ -746,6 +1054,15 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
     std::cout << "Black pieces: " << BlackPieces << std::endl;
     std::cout << "From square bit: " << (1ULL << from_sq) << std::endl;
     std::cout << "To square bit: " << (1ULL << to_sq) << std::endl;
+
+    // Save the super piece from the source square before any operations
+    bool hasSuperPieceAtFromSq = IsSuperPiece(from_sq);
+    std::shared_ptr<SuperPiece> superPieceToMove = nullptr;
+
+    if (hasSuperPieceAtFromSq)
+    {
+        superPieceToMove = super_pieces[from_sq];
+    }
 
     // First handle captures before executing the move
     bool captureExists = (board & (1ULL << to_sq)) != 0;
@@ -767,12 +1084,12 @@ void SuperChessGame::ExecuteMove(Color color, Square from_sq, Square to_sq, Piec
     std::cout << "Calling ChessGame::ExecuteMove" << std::endl;
     ChessGame::ExecuteMove(color, from_sq, to_sq, from_piece, to_piece);
 
-    // If the piece we're moving is a super piece, update its position
-    if (IsSuperPiece(from_sq))
+    // If we had a super piece at the source square, move it to the destination
+    if (hasSuperPieceAtFromSq && superPieceToMove != nullptr)
     {
         std::cout << "Moving super piece from " << SquareStrings[from_sq] << " to " << SquareStrings[to_sq] << std::endl;
         // Move the super piece from from_sq to to_sq
-        super_pieces[to_sq] = std::move(super_pieces[from_sq]);
+        super_pieces[to_sq] = superPieceToMove;
         super_pieces.erase(from_sq);
 
         // Update the square in the super piece object
@@ -1112,4 +1429,271 @@ Square SuperChessGame::GetBlackKingPosition() const
         return static_cast<Square>(64); // Invalid square to indicate no king
     }
     return static_cast<Square>(get_LSB(kingBitboard));
+}
+
+// Add this method after the IsWin method
+bool SuperChessGame::IsDefiniteCheckmate(Color color) const
+{
+    // This is a simplified and robust checkmate detector that only returns true
+    // when we're absolutely certain it's checkmate.
+
+    // First, identify the player who might be in checkmate
+    Color defender = (color == white) ? black : white;
+
+    // Check if the king exists
+    U64 kingBitboard = (defender == white) ? WhitePiecesArray[King] : BlackPiecesArray[King];
+    if (kingBitboard == 0)
+    {
+        // King captured = automatic win
+        return true;
+    }
+
+    // Also check if our own king exists
+    U64 ownKingBitboard = (color == white) ? WhitePiecesArray[King] : BlackPiecesArray[King];
+    if (ownKingBitboard == 0)
+    {
+        // Our king is missing, cannot declare checkmate
+        return false;
+    }
+
+    // Check if the king is in check
+    if (!InCheck(defender))
+    {
+        // Not in check, definitely not checkmate
+        return false;
+    }
+
+    // Shortcut - if king has any legal moves, it's not checkmate
+    Square kingSquare = static_cast<Square>(get_LSB(kingBitboard));
+    U64 kingMoves = (defender == white) ? GetWhiteKingMoves() : GetBlackKingMoves();
+    if (kingMoves != 0)
+    {
+        // King can move, not checkmate
+        return false;
+    }
+
+    // Get all defender pieces (excluding king) and check if any can move
+    U64 defenderPieces = (defender == white) ? WhitePieces : BlackPieces;
+    defenderPieces &= ~kingBitboard; // Remove king
+
+    // For each defender piece, check if it has ANY legal moves
+    U64 tempDefenders = defenderPieces;
+    while (tempDefenders)
+    {
+        Square sq = static_cast<Square>(get_LSB(tempDefenders));
+
+        // Get all possible moves for this piece
+        U64 moves;
+        try
+        {
+            moves = GetAttacks(sq);
+            if (moves != 0)
+            {
+                // Any piece with any legal move means we're not in checkmate
+                return false;
+            }
+        }
+        catch (const std::exception &e)
+        {
+            // Skip this piece if there's an error
+        }
+
+        tempDefenders &= tempDefenders - 1; // Clear LSB
+    }
+
+    // If we get here, the king is in check and neither it nor any other piece can move
+    return true;
+}
+
+// Add this method after the IsDefiniteCheckmate method
+bool SuperChessGame::CanPieceBlockOrCapture(Square pieceSquare, Square attackerSquare) const
+{
+    // Get the attacks for the piece
+    U64 pieceAttacks = GetAttacks(pieceSquare);
+
+    // Check if the piece can directly capture the attacker
+    if (pieceAttacks & (1ULL << attackerSquare))
+    {
+        std::cout << "Piece at " << pieceSquare << " can directly capture attacker at " << attackerSquare << std::endl;
+        return true;
+    }
+
+    // Get the piece type of the attacker
+    int attackerType = -1;
+    U64 attackerBit = 1ULL << attackerSquare;
+
+    for (int i = 0; i < 6; i++)
+    {
+        if (attackerBit & WhitePiecesArray[i] || attackerBit & BlackPiecesArray[i])
+        {
+            attackerType = i;
+            break;
+        }
+    }
+
+    // Only sliding pieces can be blocked
+    if (attackerType != Bishop && attackerType != Rook && attackerType != Queen)
+    {
+        return false;
+    }
+
+    // Find the king of the same color as the piece
+    Color pieceColor = (pieceSquare & WhitePieces) ? white : black;
+    U64 kingBitboard = (pieceColor == white) ? WhitePiecesArray[King] : BlackPiecesArray[King];
+    Square kingSquare = static_cast<Square>(get_LSB(kingBitboard));
+
+    // Calculate the ray between attacker and king
+    int attackerRow = attackerSquare / 8;
+    int attackerCol = attackerSquare % 8;
+    int kingRow = kingSquare / 8;
+    int kingCol = kingSquare % 8;
+
+    // Determine direction
+    int rowStep = 0;
+    int colStep = 0;
+
+    if (attackerRow < kingRow)
+        rowStep = 1;
+    else if (attackerRow > kingRow)
+        rowStep = -1;
+
+    if (attackerCol < kingCol)
+        colStep = 1;
+    else if (attackerCol > kingCol)
+        colStep = -1;
+
+    // Generate blocking squares
+    U64 blockingSquares = 0;
+    int row = attackerRow + rowStep;
+    int col = attackerCol + colStep;
+
+    while (row != kingRow || col != kingCol)
+    {
+        blockingSquares |= (1ULL << (row * 8 + col));
+        row += rowStep;
+        col += colStep;
+    }
+
+    // Check if the piece can block any square in the ray
+    if (pieceAttacks & blockingSquares)
+    {
+        std::cout << "Piece at " << pieceSquare << " can block the attack" << std::endl;
+        return true;
+    }
+
+    return false;
+}
+
+// Add this method after the CanPieceBlockOrCapture method
+bool SuperChessGame::IsDirectCheckmate(Color color) const
+{
+    std::cout << "\n==== DIRECT CHECKMATE CHECK START ====\n";
+
+    // First, identify the player who might be in checkmate
+    Color defender = (color == white) ? black : white;
+
+    // Check if the king exists
+    U64 kingBitboard = (defender == white) ? WhitePiecesArray[King] : BlackPiecesArray[King];
+    if (kingBitboard == 0)
+    {
+        std::cout << "King captured = automatic win\n";
+        std::cout << "==== DIRECT CHECKMATE CHECK END (KING CAPTURED) ====\n";
+        return true;
+    }
+
+    // Also check if our own king exists
+    U64 ownKingBitboard = (color == white) ? WhitePiecesArray[King] : BlackPiecesArray[King];
+    if (ownKingBitboard == 0)
+    {
+        std::cout << "Cannot check for checkmate - own king is missing\n";
+        std::cout << "==== DIRECT CHECKMATE CHECK END (OWN KING MISSING) ====\n";
+        return false;
+    }
+
+    // Check if the king is in check
+    if (!InCheck(defender))
+    {
+        std::cout << "Not in check, definitely not checkmate\n";
+        std::cout << "==== DIRECT CHECKMATE CHECK END (NOT IN CHECK) ====\n";
+        return false;
+    }
+
+    // Find the king square
+    Square kingSquare = static_cast<Square>(get_LSB(kingBitboard));
+
+    // Check if the king has any legal moves
+    U64 kingMoves = (defender == white) ? GetWhiteKingMoves() : GetBlackKingMoves();
+    if (kingMoves != 0)
+    {
+        std::cout << "King can move, not checkmate\n";
+        std::cout << "==== DIRECT CHECKMATE CHECK END (KING CAN MOVE) ====\n";
+        return false;
+    }
+
+    // Find which pieces are attacking the king
+    std::vector<Square> attackers;
+    Color attackerColor = (defender == white) ? black : white;
+
+    // Check each piece of the attacker's color
+    for (int pieceType = 0; pieceType < 6; pieceType++)
+    {
+        U64 pieces = (attackerColor == white) ? WhitePiecesArray[pieceType] : BlackPiecesArray[pieceType];
+        U64 tempPieces = pieces;
+
+        while (tempPieces)
+        {
+            Square sq = static_cast<Square>(get_LSB(tempPieces));
+            U64 attacks = ChessGame::GetAttacks(sq, board, pieceType);
+
+            // Check if this piece is attacking the king
+            if (attacks & kingBitboard)
+            {
+                attackers.push_back(sq);
+                std::cout << "Piece at " << sq << " is attacking the king\n";
+            }
+
+            tempPieces &= tempPieces - 1; // Clear LSB
+        }
+    }
+
+    // If more than one piece is giving check, the king must move
+    // Since we already checked that the king has no moves, it's checkmate
+    if (attackers.size() > 1)
+    {
+        std::cout << "Multiple attackers and king can't move = checkmate\n";
+        std::cout << "==== DIRECT CHECKMATE CHECK END (MULTIPLE ATTACKERS) ====\n";
+        return true;
+    }
+
+    // If only one piece is giving check, see if any defender piece can block or capture it
+    if (attackers.size() == 1)
+    {
+        Square attackerSquare = attackers[0];
+
+        // Get all pieces of the defender's color (excluding the king)
+        U64 defenderPieces = (defender == white) ? WhitePieces : BlackPieces;
+        defenderPieces &= ~kingBitboard; // Remove king
+
+        // Check each defender piece
+        U64 tempDefenders = defenderPieces;
+        while (tempDefenders)
+        {
+            Square defenderSquare = static_cast<Square>(get_LSB(tempDefenders));
+
+            // Check if this piece can block or capture the attacker
+            if (CanPieceBlockOrCapture(defenderSquare, attackerSquare))
+            {
+                std::cout << "Piece at " << defenderSquare << " can block or capture the attacker\n";
+                std::cout << "==== DIRECT CHECKMATE CHECK END (CAN BLOCK OR CAPTURE) ====\n";
+                return false;
+            }
+
+            tempDefenders &= tempDefenders - 1; // Clear LSB
+        }
+    }
+
+    // If we get here, the king is in check, can't move, and no other piece can block or capture
+    std::cout << "Checkmate confirmed: king in check, can't move, and no piece can block or capture\n";
+    std::cout << "==== DIRECT CHECKMATE CHECK END (CHECKMATE CONFIRMED) ====\n";
+    return true;
 }
