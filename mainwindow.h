@@ -32,6 +32,10 @@ public:
     void initializeUI();
     void appendToLog(const QString &text);
 
+    // Add method to update ability description
+    void updateAbilityDescription(const QString &text, bool isHtml = false);
+    void resetAbilityDescription();
+
     // Add a toggle for free move mode
     void toggleFreeMoveMode() { freeMoveMode = !freeMoveMode; }
     bool isFreeMoveMode() const { return freeMoveMode; }

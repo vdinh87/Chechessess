@@ -45,6 +45,15 @@ private:
     Piece attackingPieceType;
     Piece defendingPieceType;
 
+public:
+    CustomSuperChessGame(MainWindow *window = nullptr)
+        : SuperChessGame(), mainWindow(window), inSubGame(false), activeSubGame(nullptr), attackingPieceType(Pawn), defendingPieceType(Pawn) {}
+
+    // Constructor for subgames with specific piece types
+    CustomSuperChessGame(MainWindow *window, const SuperPieceInfo &white_info, const SuperPieceInfo &black_info)
+        : SuperChessGame(white_info, black_info), mainWindow(window), inSubGame(false), activeSubGame(nullptr),
+          attackingPieceType(Pawn), defendingPieceType(Pawn) {}
+
     // Helper methods for debugging
     QString pieceToString(Piece piece) const
     {
@@ -77,15 +86,6 @@ private:
         }
         return "??";
     }
-
-public:
-    CustomSuperChessGame(MainWindow *window = nullptr)
-        : SuperChessGame(), mainWindow(window), inSubGame(false), activeSubGame(nullptr), attackingPieceType(Pawn), defendingPieceType(Pawn) {}
-
-    // Constructor for subgames with specific piece types
-    CustomSuperChessGame(MainWindow *window, const SuperPieceInfo &white_info, const SuperPieceInfo &black_info)
-        : SuperChessGame(white_info, black_info), mainWindow(window), inSubGame(false), activeSubGame(nullptr),
-          attackingPieceType(Pawn), defendingPieceType(Pawn) {}
 
     // UI integration methods - only keep methods that connect UI with engine
 
@@ -148,7 +148,9 @@ public:
         U64 bit = 1ULL << sq;
         if (!(bit & board))
         {
-            return Invalid;
+            // Return an actual Piece type as default
+            // Using Pawn as a placeholder since there's no "invalid" Piece value
+            return Pawn;
         }
         return ChessGame::GetPieceType(bit);
     }
@@ -331,8 +333,8 @@ public:
 
         // Add debug output to verify the subgame's initial state
         qDebug() << "SubGame initialized with standard position";
-        qDebug() << "White pieces:" << activeGame->GetBoardOf(white);
-        qDebug() << "Black pieces:" << activeGame->GetBoardOf(black);
+        qDebug() << "White pieces:" << activeSubGame->GetBoardOf(white);
+        qDebug() << "Black pieces:" << activeSubGame->GetBoardOf(black);
 
         // Set subgame properties
         activeSubGame->capture_from = from;
@@ -352,6 +354,30 @@ public:
                                         .arg(pieceToString(defendingPieceType))
                                         .arg(attacker == white ? "Black" : "White")
                                         .arg(squareToString(to)));
+
+            // Update the ability description label on the right with both pieces' abilities
+            QString abilityText;
+
+            // Only show each piece type once if they're the same
+            if (attackingPieceType == defendingPieceType)
+            {
+                abilityText = QString("<b>%1 Abilities:</b><br>%2")
+                                  .arg(pieceToString(attackingPieceType))
+                                  .arg(getAbilityDescription(attackingPieceType).replace("\n", "<br>"));
+            }
+            else
+            {
+                abilityText = QString("<b>%1 %2 Abilities:</b><br>%3<br><br><b>%4 %5 Abilities:</b><br>%6")
+                                  .arg(attacker == white ? "White" : "Black")
+                                  .arg(pieceToString(attackingPieceType))
+                                  .arg(getAbilityDescription(attackingPieceType).replace("\n", "<br>"))
+                                  .arg(attacker == white ? "Black" : "White")
+                                  .arg(pieceToString(defendingPieceType))
+                                  .arg(getAbilityDescription(defendingPieceType).replace("\n", "<br>"));
+            }
+
+            // Use the new helper method to update the ability description
+            mainWindow->updateAbilityDescription(abilityText, true);
 
             // Show a special dialog for the super chess game
             showSuperChessDialog(attackingPieceType, defendingPieceType, attacker);
@@ -409,6 +435,9 @@ public:
             if (mainWindow)
             {
                 mainWindow->appendToLog("Super Chess game ended");
+
+                // Reset the ability description label when subgame ends
+                mainWindow->resetAbilityDescription();
             }
         }
     }
@@ -492,45 +521,80 @@ public:
         descLabel->setAlignment(Qt::AlignCenter);
         layout->addWidget(descLabel);
 
-        // Attacker details
-        QFrame *attackerFrame = new QFrame();
-        attackerFrame->setFrameShape(QFrame::StyledPanel);
-        QVBoxLayout *attackerLayout = new QVBoxLayout(attackerFrame);
+        // Check if both pieces are the same type
+        if (attackerPiece == defenderPiece)
+        {
+            // If they're the same type, only show one frame with abilities
+            QFrame *pieceFrame = new QFrame();
+            pieceFrame->setFrameShape(QFrame::StyledPanel);
+            QVBoxLayout *pieceLayout = new QVBoxLayout(pieceFrame);
 
-        QLabel *attackerTitle = new QLabel(QString("%1 %2")
-                                               .arg(attackerColor == white ? "White" : "Black")
-                                               .arg(pieceToString(attackerPiece)));
-        attackerTitle->setAlignment(Qt::AlignCenter);
-        QFont boldFont = attackerTitle->font();
-        boldFont.setBold(true);
-        attackerTitle->setFont(boldFont);
-        attackerLayout->addWidget(attackerTitle);
+            QLabel *pieceTitle = new QLabel(QString("%1 Abilities")
+                                                .arg(pieceToString(attackerPiece)));
+            pieceTitle->setAlignment(Qt::AlignCenter);
+            QFont boldFont = pieceTitle->font();
+            boldFont.setBold(true);
+            pieceTitle->setFont(boldFont);
+            pieceLayout->addWidget(pieceTitle);
 
-        // Attacker abilities (examples - would need to be pulled from actual abilities)
-        QLabel *attackerAbilities = new QLabel(getAbilityDescription(attackerPiece));
-        attackerAbilities->setWordWrap(true);
-        attackerLayout->addWidget(attackerAbilities);
+            // Abilities
+            QLabel *pieceAbilities = new QLabel(getAbilityDescription(attackerPiece));
+            pieceAbilities->setWordWrap(true);
+            pieceLayout->addWidget(pieceAbilities);
 
-        layout->addWidget(attackerFrame);
+            layout->addWidget(pieceFrame);
 
-        // Defender details
-        QFrame *defenderFrame = new QFrame();
-        defenderFrame->setFrameShape(QFrame::StyledPanel);
-        QVBoxLayout *defenderLayout = new QVBoxLayout(defenderFrame);
+            // Show which piece belongs to which player
+            QLabel *playerInfo = new QLabel(QString("%1 %2 vs %3 %4")
+                                                .arg(attackerColor == white ? "White" : "Black")
+                                                .arg(pieceToString(attackerPiece))
+                                                .arg(attackerColor == white ? "Black" : "White")
+                                                .arg(pieceToString(defenderPiece)));
+            playerInfo->setAlignment(Qt::AlignCenter);
+            layout->addWidget(playerInfo);
+        }
+        else
+        {
+            // Attacker details
+            QFrame *attackerFrame = new QFrame();
+            attackerFrame->setFrameShape(QFrame::StyledPanel);
+            QVBoxLayout *attackerLayout = new QVBoxLayout(attackerFrame);
 
-        QLabel *defenderTitle = new QLabel(QString("%1 %2")
-                                               .arg(attackerColor == white ? "Black" : "White")
-                                               .arg(pieceToString(defenderPiece)));
-        defenderTitle->setAlignment(Qt::AlignCenter);
-        defenderTitle->setFont(boldFont);
-        defenderLayout->addWidget(defenderTitle);
+            QLabel *attackerTitle = new QLabel(QString("%1 %2")
+                                                   .arg(attackerColor == white ? "White" : "Black")
+                                                   .arg(pieceToString(attackerPiece)));
+            attackerTitle->setAlignment(Qt::AlignCenter);
+            QFont boldFont = attackerTitle->font();
+            boldFont.setBold(true);
+            attackerTitle->setFont(boldFont);
+            attackerLayout->addWidget(attackerTitle);
 
-        // Defender abilities
-        QLabel *defenderAbilities = new QLabel(getAbilityDescription(defenderPiece));
-        defenderAbilities->setWordWrap(true);
-        defenderLayout->addWidget(defenderAbilities);
+            // Attacker abilities
+            QLabel *attackerAbilities = new QLabel(getAbilityDescription(attackerPiece));
+            attackerAbilities->setWordWrap(true);
+            attackerLayout->addWidget(attackerAbilities);
 
-        layout->addWidget(defenderFrame);
+            layout->addWidget(attackerFrame);
+
+            // Defender details
+            QFrame *defenderFrame = new QFrame();
+            defenderFrame->setFrameShape(QFrame::StyledPanel);
+            QVBoxLayout *defenderLayout = new QVBoxLayout(defenderFrame);
+
+            QLabel *defenderTitle = new QLabel(QString("%1 %2")
+                                                   .arg(attackerColor == white ? "Black" : "White")
+                                                   .arg(pieceToString(defenderPiece)));
+            defenderTitle->setAlignment(Qt::AlignCenter);
+            defenderTitle->setFont(boldFont);
+            defenderLayout->addWidget(defenderTitle);
+
+            // Defender abilities
+            QLabel *defenderAbilities = new QLabel(getAbilityDescription(defenderPiece));
+            defenderAbilities->setWordWrap(true);
+            defenderLayout->addWidget(defenderAbilities);
+
+            layout->addWidget(defenderFrame);
+        }
 
         // Battle instructions
         QLabel *instructionsLabel = new QLabel("Play the mini-game to determine if the capture succeeds!");
@@ -554,17 +618,31 @@ public:
         switch (piece)
         {
         case Pawn:
-            return "• Two Tiles: Can move forward two squares\n• Convert: Can convert captured pieces to own side";
+            return "• Two Tiles: Can move forward two squares in one turn.\n"
+                   "• Convert: Can convert captured enemy pieces to become friendly pieces.\n"
+                   "• Two Tiles Backwards: Can move backwards two squares in one turn.\n"
+                   "• Convert Super: Can convert captured pieces into super pieces.";
         case Knight:
-            return "• Big L: Can jump in an L-shape over other pieces\n• Protection: Cannot be captured when next to a friendly piece";
+            return "• Big L: Extended jump movement in an L-shape pattern.\n"
+                   "• Protection: Gains immunity to capture when adjacent to friendly pieces.\n"
+                   "• Knight Tier 2: Special ability that enhances knight's attack potential.";
         case Bishop:
-            return "• Swap: Can swap positions with another piece\n• Take Cover: Can hide behind other pieces";
+            return "• Swap: Can swap positions with another friendly piece.\n"
+                   "• Take Cover: Can move behind friendly pieces for protection.\n"
+                   "• Resurrect: Can bring back a captured piece from the graveyard.";
         case Rook:
-            return "• Swap: Can swap positions with another piece\n• Ram Buff: Stronger when aligned with other rooks";
+            return "• Swap: Can swap positions with another friendly piece.\n"
+                   "• Ram Buff: Gains attack power when aligned with other rooks.\n"
+                   "• Rook Tier 2: Special ability that extends rook's control of the board.";
         case Queen:
-            return "• Inspire: Nearby friendly pieces move faster\n• Kamikaze: Can sacrifice itself to remove enemy pieces";
+            return "• Inspire: Boosts movement abilities of nearby friendly pieces.\n"
+                   "• Kamikaze: Can sacrifice itself to eliminate multiple enemy pieces in one move.";
         case King:
-            return "• Inspire: Nearby friendly pieces are stronger\n• Teleport: Can teleport to empty squares\n• Convert: Can convert enemy pieces";
+            return "• Inspire: Enhances attack power of nearby friendly pieces.\n"
+                   "• Turn Into Dead: Can transform enemy pieces to harmless state.\n"
+                   "• Teleport: Can instantly move to any empty square on the board.\n"
+                   "• Sniper Shot: Can attack pieces at a distance without moving.\n"
+                   "• Convert: Can turn enemy pieces into friendly pieces.";
         default:
             return "No special abilities";
         }
@@ -1370,9 +1448,9 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
                         uint64_t blackKingCheckers = activeGame->GetCheckingPieces(black);
 
                         qDebug() << "Enhanced checkmate debugging:";
-                        qDebug() << "White king at" << activeGame->squareToString(whiteKingPos)
+                        qDebug() << "White king at" << QChar('a' + (whiteKingPos % 8)) << (whiteKingPos / 8 + 1)
                                  << "has" << __builtin_popcountll(whiteKingMoves) << "moves";
-                        qDebug() << "Black king at" << activeGame->squareToString(blackKingPos)
+                        qDebug() << "Black king at" << QChar('a' + (blackKingPos % 8)) << (blackKingPos / 8 + 1)
                                  << "has" << __builtin_popcountll(blackKingMoves) << "moves";
 
                         // Visualize king's legal moves
@@ -1389,8 +1467,36 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
                             int checkerIndex = get_ls1b_index(checkers);
                             Square checkerSquare = static_cast<Square>(checkerIndex);
                             Piece checkerType = activeGame->GetPieceAtSquare(checkerSquare);
-                            qDebug() << "White king is checked by" << activeGame->pieceToString(checkerType)
-                                     << "at" << activeGame->squareToString(checkerSquare);
+
+                            // Convert piece type to string manually
+                            QString pieceTypeStr;
+                            switch (checkerType)
+                            {
+                            case Pawn:
+                                pieceTypeStr = "Pawn";
+                                break;
+                            case Knight:
+                                pieceTypeStr = "Knight";
+                                break;
+                            case Bishop:
+                                pieceTypeStr = "Bishop";
+                                break;
+                            case Rook:
+                                pieceTypeStr = "Rook";
+                                break;
+                            case Queen:
+                                pieceTypeStr = "Queen";
+                                break;
+                            case King:
+                                pieceTypeStr = "King";
+                                break;
+                            default:
+                                pieceTypeStr = "Unknown";
+                                break;
+                            }
+
+                            qDebug() << "White king is checked by" << pieceTypeStr
+                                     << "at" << QChar('a' + (checkerSquare % 8)) << (checkerSquare / 8 + 1);
                             checkers &= checkers - 1; // Remove the least significant bit
                         }
 
@@ -1400,8 +1506,36 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
                             int checkerIndex = get_ls1b_index(checkers);
                             Square checkerSquare = static_cast<Square>(checkerIndex);
                             Piece checkerType = activeGame->GetPieceAtSquare(checkerSquare);
-                            qDebug() << "Black king is checked by" << activeGame->pieceToString(checkerType)
-                                     << "at" << activeGame->squareToString(checkerSquare);
+
+                            // Convert piece type to string manually
+                            QString pieceTypeStr;
+                            switch (checkerType)
+                            {
+                            case Pawn:
+                                pieceTypeStr = "Pawn";
+                                break;
+                            case Knight:
+                                pieceTypeStr = "Knight";
+                                break;
+                            case Bishop:
+                                pieceTypeStr = "Bishop";
+                                break;
+                            case Rook:
+                                pieceTypeStr = "Rook";
+                                break;
+                            case Queen:
+                                pieceTypeStr = "Queen";
+                                break;
+                            case King:
+                                pieceTypeStr = "King";
+                                break;
+                            default:
+                                pieceTypeStr = "Unknown";
+                                break;
+                            }
+
+                            qDebug() << "Black king is checked by" << pieceTypeStr
+                                     << "at" << QChar('a' + (checkerSquare % 8)) << (checkerSquare / 8 + 1);
                             checkers &= checkers - 1; // Remove the least significant bit
                         }
 
@@ -1785,10 +1919,14 @@ void MainWindow::showGameOver(bool isWhiteWinner)
 void MainWindow::on_actionNew_Game_triggered()
 {
     // Reset the chess game to its initial state
+    cg = new CustomSuperChessGame(this);
     cg->NewGame();
 
     // Clear any highlight and reset the drag source
     dragSourceSquare = invalid;
+
+    // Reset the ability description
+    resetAbilityDescription();
 
     // Update the board to show the new game state
     updateBoardFromGame();
@@ -2038,5 +2176,33 @@ void MainWindow::appendToLog(const QString &message)
     if (ui && ui->textEdit)
     {
         ui->textEdit->append(message);
+    }
+}
+
+// Add implementation for the ability description update methods
+void MainWindow::updateAbilityDescription(const QString &text, bool isHtml)
+{
+    if (ui && ui->label_67)
+    {
+        ui->label_67->setText(text);
+        if (isHtml)
+        {
+            ui->label_67->setTextFormat(Qt::RichText);
+        }
+        else
+        {
+            ui->label_67->setTextFormat(Qt::AutoText);
+        }
+        ui->label_67->setWordWrap(true);
+        ui->label_67->setMinimumHeight(200);
+    }
+}
+
+void MainWindow::resetAbilityDescription()
+{
+    if (ui && ui->label_67)
+    {
+        ui->label_67->setText("Ability Description:");
+        ui->label_67->setTextFormat(Qt::AutoText);
     }
 }
