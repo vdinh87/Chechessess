@@ -42,9 +42,13 @@ protected:
 
     // Utility functions
     bool IsSlider(const U64 board_) const;
+    bool IsSlider(Piece pieceType) const;
     bool CheckIfMoved(Square original_square) const;
     ChessMove GetPreviousMove() const;
     virtual void UpdateBoard();
+
+    // Get the ray (path) between two squares - used for checking blocking moves
+    U64 GetRay(Square from, Square to) const;
 
     // Move functions
     virtual void ExecuteMove(Color color, Square from_sq, Square to_sq, Piece from_piece, Piece to_piece);

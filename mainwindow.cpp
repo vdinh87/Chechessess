@@ -127,6 +127,50 @@ public:
         }
     }
 
+    // Add helper method to get checking pieces for debugging
+    uint64_t GetCheckingPieces(Color kingColor) const
+    {
+        try
+        {
+            Color targetColor = (kingColor == white) ? black : white;
+            Square kingPos = (kingColor == white) ? GetWhiteKingPosition() : GetBlackKingPosition();
+            return ChessGame::InCheck(this->GetBoard(), kingColor, 0);
+        }
+        catch (...)
+        {
+            return 0;
+        }
+    }
+
+    // Helper function to get the piece type at a given square (for debugging)
+    Piece GetPieceAtSquare(Square sq) const
+    {
+        U64 bit = 1ULL << sq;
+        if (!(bit & board))
+        {
+            return Invalid;
+        }
+        return ChessGame::GetPieceType(bit);
+    }
+
+    // Display a bitboard in a human-readable form for debugging
+    QString BitboardToString(U64 bitboard) const
+    {
+        QString result = "\n";
+        for (int rank = 7; rank >= 0; rank--)
+        {
+            result += QString("%1 ").arg(rank + 1);
+            for (int file = 0; file < 8; file++)
+            {
+                int sq = rank * 8 + file;
+                result += (bitboard & (1ULL << sq)) ? "X " : ". ";
+            }
+            result += "\n";
+        }
+        result += "  a b c d e f g h\n";
+        return result;
+    }
+
     // UI debug method
     void LogPiecePositions() const
     {
@@ -209,7 +253,6 @@ public:
         // We're in a subgame
         qDebug() << "Before Move call";
         // First, print the current state of the board for debugging
-        qDebug() << "Board BEFORE move:";
         qDebug() << "White pieces:" << activeGame->GetBoardOf(white);
         qDebug() << "Black pieces:" << activeGame->GetBoardOf(black);
         qDebug() << "From piece exists:" << ((activeGame->board & from_bit) != 0);
@@ -218,7 +261,6 @@ public:
         qDebug() << "After Move call, actions size:" << actions.size();
 
         // Print the state after the move
-        qDebug() << "Board AFTER move:";
         qDebug() << "White pieces:" << activeGame->GetBoardOf(white);
         qDebug() << "Black pieces:" << activeGame->GetBoardOf(black);
         qDebug() << "To piece exists:" << ((activeGame->board & to_bit) != 0);
@@ -289,8 +331,8 @@ public:
 
         // Add debug output to verify the subgame's initial state
         qDebug() << "SubGame initialized with standard position";
-        qDebug() << "White pieces:" << activeSubGame->GetBoardOf(white);
-        qDebug() << "Black pieces:" << activeSubGame->GetBoardOf(black);
+        qDebug() << "White pieces:" << activeGame->GetBoardOf(white);
+        qDebug() << "Black pieces:" << activeGame->GetBoardOf(black);
 
         // Set subgame properties
         activeSubGame->capture_from = from;
@@ -1319,11 +1361,65 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
                         whiteInCheckmate = activeGame->IsWin(white);
                         blackInCheckmate = activeGame->IsWin(black);
 
+                        // Enhanced debugging - show positions and attack information
+                        Square whiteKingPos = activeGame->GetWhiteKingPosition();
+                        Square blackKingPos = activeGame->GetBlackKingPosition();
+
+                        // Get checking pieces for each king
+                        uint64_t whiteKingCheckers = activeGame->GetCheckingPieces(white);
+                        uint64_t blackKingCheckers = activeGame->GetCheckingPieces(black);
+
+                        qDebug() << "Enhanced checkmate debugging:";
+                        qDebug() << "White king at" << activeGame->squareToString(whiteKingPos)
+                                 << "has" << __builtin_popcountll(whiteKingMoves) << "moves";
+                        qDebug() << "Black king at" << activeGame->squareToString(blackKingPos)
+                                 << "has" << __builtin_popcountll(blackKingMoves) << "moves";
+
+                        // Visualize king's legal moves
+                        qDebug() << "White king's legal moves:" << activeGame->BitboardToString(whiteKingMoves);
+                        qDebug() << "Black king's legal moves:" << activeGame->BitboardToString(blackKingMoves);
+
+                        qDebug() << "White king has" << __builtin_popcountll(whiteKingCheckers) << "checking pieces";
+                        qDebug() << "Black king has" << __builtin_popcountll(blackKingCheckers) << "checking pieces";
+
+                        // For each checking piece, show its type and position
+                        uint64_t checkers = whiteKingCheckers;
+                        while (checkers)
+                        {
+                            int checkerIndex = get_ls1b_index(checkers);
+                            Square checkerSquare = static_cast<Square>(checkerIndex);
+                            Piece checkerType = activeGame->GetPieceAtSquare(checkerSquare);
+                            qDebug() << "White king is checked by" << activeGame->pieceToString(checkerType)
+                                     << "at" << activeGame->squareToString(checkerSquare);
+                            checkers &= checkers - 1; // Remove the least significant bit
+                        }
+
+                        checkers = blackKingCheckers;
+                        while (checkers)
+                        {
+                            int checkerIndex = get_ls1b_index(checkers);
+                            Square checkerSquare = static_cast<Square>(checkerIndex);
+                            Piece checkerType = activeGame->GetPieceAtSquare(checkerSquare);
+                            qDebug() << "Black king is checked by" << activeGame->pieceToString(checkerType)
+                                     << "at" << activeGame->squareToString(checkerSquare);
+                            checkers &= checkers - 1; // Remove the least significant bit
+                        }
+
                         qDebug() << "Main game checkmate detection:"
                                  << "White in checkmate:" << whiteInCheckmate
                                  << "White king has moves:" << whiteKingHasMoves
                                  << "Black in checkmate:" << blackInCheckmate
                                  << "Black king has moves:" << blackKingHasMoves;
+
+                        // If a king is in check but has moves, log the moves for debugging
+                        if (__builtin_popcountll(whiteKingCheckers) > 0 && whiteKingHasMoves)
+                        {
+                            qDebug() << "White king is in check but has moves - possible bug in checkmate detection";
+                        }
+                        if (__builtin_popcountll(blackKingCheckers) > 0 && blackKingHasMoves)
+                        {
+                            qDebug() << "Black king is in check but has moves - possible bug in checkmate detection";
+                        }
                     }
                     catch (const std::exception &e)
                     {
