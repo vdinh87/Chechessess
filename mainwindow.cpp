@@ -28,6 +28,9 @@
 #include <QRadioButton>
 #include <QGroupBox>
 #include <QDialogButtonBox>
+#include <QPainter>
+#include <QPainterPath>
+#include <QStackedWidget>
 #include <QtGlobal>
 #include <QDateTime>
 #include <random>
@@ -502,23 +505,92 @@ public:
 
         QDialog dialog(mainWindow);
         dialog.setWindowTitle("Super Chess Battle");
-        dialog.setMinimumSize(400, 300);
+        dialog.setMinimumSize(450, 350);
+
+        // Apply stylesheet to the dialog for a fantasy theme
+        dialog.setStyleSheet(
+            "QDialog {"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2e2d2c, stop:1 #1f1e1d);"
+            "  border: 2px solid #3a3937;"
+            "  border-radius: 10px;"
+            "}"
+            "QLabel {"
+            "  font-family: 'Book Antiqua', 'Palatino Linotype', serif;"
+            "  color: #e8e6e3;"
+            "}"
+            "QFrame {"
+            "  border: 1px solid #3a3937;"
+            "  border-radius: 8px;"
+            "  background: rgba(40, 40, 38, 0.7);"
+            "}"
+            "QPushButton {"
+            "  font-family: 'Book Antiqua', 'Palatino Linotype', serif;"
+            "  font-weight: bold;"
+            "  font-size: 12pt;"
+            "  color: #e8e6e3;"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #7b5c3d, stop:1 #5a3d20);"
+            "  border: 1px solid #8b6c4d;"
+            "  border-radius: 5px;"
+            "  padding: 8px 16px;"
+            "}"
+            "QPushButton:hover {"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #8b6c4d, stop:1 #6a4d30);"
+            "}");
 
         QVBoxLayout *layout = new QVBoxLayout(&dialog);
+        layout->setSpacing(12);
+        layout->setContentsMargins(16, 16, 16, 16);
 
-        // Title
-        QLabel *titleLabel = new QLabel("Super Chess Battle!");
+        // Add a decorative banner image or styled header
+        QLabel *bannerLabel = new QLabel();
+        bannerLabel->setAlignment(Qt::AlignCenter);
+        bannerLabel->setStyleSheet("background: transparent; border: none;");
+
+        // Create a parchment-like background for the title
+        QPixmap bannerBg(400, 60);
+        bannerBg.fill(Qt::transparent);
+        QPainter painter(&bannerBg);
+        painter.setRenderHint(QPainter::Antialiasing);
+
+        // Draw background with slightly rough edges
+        QPainterPath path;
+        path.addRoundedRect(0, 0, 400, 60, 10, 10);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(123, 92, 61, 180));
+        painter.drawPath(path);
+
+        // Add subtle texture
+        painter.setPen(QPen(QColor(255, 255, 255, 20)));
+        for (int i = 0; i < 60; i += 4)
+        {
+            painter.drawLine(0, i, 400, i);
+        }
+
+        painter.end();
+        bannerLabel->setPixmap(bannerBg);
+
+        // Title text overlay
+        QLabel *titleLabel = new QLabel("⚔️ SUPER CHESS BATTLE ⚔️");
         titleLabel->setAlignment(Qt::AlignCenter);
-        QFont titleFont = titleLabel->font();
-        titleFont.setPointSize(16);
-        titleFont.setBold(true);
+        QFont titleFont("Book Antiqua", 18, QFont::Bold);
+        titleFont.setLetterSpacing(QFont::AbsoluteSpacing, 2);
         titleLabel->setFont(titleFont);
-        layout->addWidget(titleLabel);
+        titleLabel->setStyleSheet("color: #e8d4b8; background: transparent; border: none;");
 
-        // Description
-        QLabel *descLabel = new QLabel("The pieces have transformed into Super Pieces with special abilities!");
+        // Stack the title over the banner using a QStackedWidget
+        QStackedWidget *titleStack = new QStackedWidget();
+        titleStack->addWidget(bannerLabel);
+        titleStack->addWidget(titleLabel);
+        titleStack->setCurrentIndex(1);
+        layout->addWidget(titleStack);
+
+        // Description with fancy styling
+        QLabel *descLabel = new QLabel("The pieces have transformed into Super Pieces with magical abilities!");
         descLabel->setWordWrap(true);
         descLabel->setAlignment(Qt::AlignCenter);
+        QFont descFont("Book Antiqua", 11, QFont::StyleItalic);
+        descLabel->setFont(descFont);
+        descLabel->setStyleSheet("color: #c19a49; background: transparent; border: none; margin-bottom: 8px;");
         layout->addWidget(descLabel);
 
         // Check if both pieces are the same type
@@ -527,19 +599,53 @@ public:
             // If they're the same type, only show one frame with abilities
             QFrame *pieceFrame = new QFrame();
             pieceFrame->setFrameShape(QFrame::StyledPanel);
+            pieceFrame->setStyleSheet("padding: 12px;");
             QVBoxLayout *pieceLayout = new QVBoxLayout(pieceFrame);
 
             QLabel *pieceTitle = new QLabel(QString("%1 Abilities")
                                                 .arg(pieceToString(attackerPiece)));
             pieceTitle->setAlignment(Qt::AlignCenter);
-            QFont boldFont = pieceTitle->font();
-            boldFont.setBold(true);
+            QFont boldFont("Book Antiqua", 13, QFont::Bold);
             pieceTitle->setFont(boldFont);
+            pieceTitle->setStyleSheet("color: #c19a49; border: none; background: transparent;");
             pieceLayout->addWidget(pieceTitle);
 
-            // Abilities
-            QLabel *pieceAbilities = new QLabel(getAbilityDescription(attackerPiece));
+            // Add piece icon
+            QString colorStr = "white"; // Default for visual
+            QString pieceStr = attackerPiece == Pawn ? "pawn" : attackerPiece == Knight ? "knight"
+                                                            : attackerPiece == Bishop   ? "bishop"
+                                                            : attackerPiece == Rook     ? "rook"
+                                                            : attackerPiece == Queen    ? "queen"
+                                                                                        : "king";
+            QString imagePath = QString(":/img/%1_%2.png").arg(colorStr, pieceStr);
+            QLabel *pieceIcon = new QLabel();
+            pieceIcon->setAlignment(Qt::AlignCenter);
+            pieceIcon->setStyleSheet("background: transparent; border: none;");
+            QPixmap piecePixmap(imagePath);
+            if (!piecePixmap.isNull())
+            {
+                pieceIcon->setPixmap(piecePixmap.scaled(48, 48, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            }
+            pieceLayout->addWidget(pieceIcon);
+
+            // Abilities with styled text
+            QLabel *pieceAbilities = new QLabel();
             pieceAbilities->setWordWrap(true);
+            pieceAbilities->setTextFormat(Qt::RichText);
+
+            // Style the ability text with HTML
+            QString abilityText = getAbilityDescription(attackerPiece);
+            abilityText.replace("• ", "<span style='color: #c19a49; font-weight: bold;'>●</span> <span style='color: #b8c8e0; font-weight: bold;'>");
+            abilityText.replace(":\n", ":</span><br>");
+            abilityText.replace("\n", "</span><br><span style='color: #c19a49; font-weight: bold;'>●</span> <span style='color: #b8c8e0; font-weight: bold;'>");
+
+            // Close any unclosed spans at the end
+            if (abilityText.count("<span") > abilityText.count("</span>"))
+            {
+                abilityText += "</span>";
+            }
+
+            pieceAbilities->setText(abilityText);
             pieceLayout->addWidget(pieceAbilities);
 
             layout->addWidget(pieceFrame);
@@ -551,34 +657,76 @@ public:
                                                 .arg(attackerColor == white ? "Black" : "White")
                                                 .arg(pieceToString(defenderPiece)));
             playerInfo->setAlignment(Qt::AlignCenter);
+            QFont infoFont("Book Antiqua", 11);
+            playerInfo->setFont(infoFont);
+            playerInfo->setStyleSheet("color: #e8e6e3; background: transparent; border: none;");
             layout->addWidget(playerInfo);
         }
         else
         {
+            // Use a horizontal layout for two different piece types
+            QHBoxLayout *piecesLayout = new QHBoxLayout();
+            piecesLayout->setSpacing(16);
+
             // Attacker details
             QFrame *attackerFrame = new QFrame();
             attackerFrame->setFrameShape(QFrame::StyledPanel);
+            attackerFrame->setStyleSheet("padding: 12px;");
             QVBoxLayout *attackerLayout = new QVBoxLayout(attackerFrame);
 
             QLabel *attackerTitle = new QLabel(QString("%1 %2")
                                                    .arg(attackerColor == white ? "White" : "Black")
                                                    .arg(pieceToString(attackerPiece)));
             attackerTitle->setAlignment(Qt::AlignCenter);
-            QFont boldFont = attackerTitle->font();
-            boldFont.setBold(true);
+            QFont boldFont("Book Antiqua", 12, QFont::Bold);
             attackerTitle->setFont(boldFont);
+            attackerTitle->setStyleSheet("color: #c19a49; border: none; background: transparent;");
             attackerLayout->addWidget(attackerTitle);
 
+            // Add piece icon
+            QString attackerColorStr = (attackerColor == white) ? "white" : "black";
+            QString attackerPieceStr = attackerPiece == Pawn ? "pawn" : attackerPiece == Knight ? "knight"
+                                                                    : attackerPiece == Bishop   ? "bishop"
+                                                                    : attackerPiece == Rook     ? "rook"
+                                                                    : attackerPiece == Queen    ? "queen"
+                                                                                                : "king";
+            QString attackerImagePath = QString(":/img/%1_%2.png").arg(attackerColorStr, attackerPieceStr);
+            QLabel *attackerIcon = new QLabel();
+            attackerIcon->setAlignment(Qt::AlignCenter);
+            attackerIcon->setStyleSheet("background: transparent; border: none;");
+            QPixmap attackerPixmap(attackerImagePath);
+            if (!attackerPixmap.isNull())
+            {
+                attackerIcon->setPixmap(attackerPixmap.scaled(48, 48, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            }
+            attackerLayout->addWidget(attackerIcon);
+
             // Attacker abilities
-            QLabel *attackerAbilities = new QLabel(getAbilityDescription(attackerPiece));
+            QLabel *attackerAbilities = new QLabel();
             attackerAbilities->setWordWrap(true);
+            attackerAbilities->setTextFormat(Qt::RichText);
+
+            // Style the ability text with HTML
+            QString attackerAbilityText = getAbilityDescription(attackerPiece);
+            attackerAbilityText.replace("• ", "<span style='color: #c19a49; font-weight: bold;'>●</span> <span style='color: #b8c8e0; font-weight: bold;'>");
+            attackerAbilityText.replace(":\n", ":</span><br>");
+            attackerAbilityText.replace("\n", "</span><br><span style='color: #c19a49; font-weight: bold;'>●</span> <span style='color: #b8c8e0; font-weight: bold;'>");
+
+            // Close any unclosed spans at the end
+            if (attackerAbilityText.count("<span") > attackerAbilityText.count("</span>"))
+            {
+                attackerAbilityText += "</span>";
+            }
+
+            attackerAbilities->setText(attackerAbilityText);
             attackerLayout->addWidget(attackerAbilities);
 
-            layout->addWidget(attackerFrame);
+            piecesLayout->addWidget(attackerFrame);
 
             // Defender details
             QFrame *defenderFrame = new QFrame();
             defenderFrame->setFrameShape(QFrame::StyledPanel);
+            defenderFrame->setStyleSheet("padding: 12px;");
             QVBoxLayout *defenderLayout = new QVBoxLayout(defenderFrame);
 
             QLabel *defenderTitle = new QLabel(QString("%1 %2")
@@ -586,24 +734,62 @@ public:
                                                    .arg(pieceToString(defenderPiece)));
             defenderTitle->setAlignment(Qt::AlignCenter);
             defenderTitle->setFont(boldFont);
+            defenderTitle->setStyleSheet("color: #c19a49; border: none; background: transparent;");
             defenderLayout->addWidget(defenderTitle);
 
+            // Add defender piece icon
+            QString defenderColorStr = (attackerColor == white) ? "black" : "white";
+            QString defenderPieceStr = defenderPiece == Pawn ? "pawn" : defenderPiece == Knight ? "knight"
+                                                                    : defenderPiece == Bishop   ? "bishop"
+                                                                    : defenderPiece == Rook     ? "rook"
+                                                                    : defenderPiece == Queen    ? "queen"
+                                                                                                : "king";
+            QString defenderImagePath = QString(":/img/%1_%2.png").arg(defenderColorStr, defenderPieceStr);
+            QLabel *defenderIcon = new QLabel();
+            defenderIcon->setAlignment(Qt::AlignCenter);
+            defenderIcon->setStyleSheet("background: transparent; border: none;");
+            QPixmap defenderPixmap(defenderImagePath);
+            if (!defenderPixmap.isNull())
+            {
+                defenderIcon->setPixmap(defenderPixmap.scaled(48, 48, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            }
+            defenderLayout->addWidget(defenderIcon);
+
             // Defender abilities
-            QLabel *defenderAbilities = new QLabel(getAbilityDescription(defenderPiece));
+            QLabel *defenderAbilities = new QLabel();
             defenderAbilities->setWordWrap(true);
+            defenderAbilities->setTextFormat(Qt::RichText);
+
+            // Style the ability text with HTML
+            QString defenderAbilityText = getAbilityDescription(defenderPiece);
+            defenderAbilityText.replace("• ", "<span style='color: #c19a49; font-weight: bold;'>●</span> <span style='color: #b8c8e0; font-weight: bold;'>");
+            defenderAbilityText.replace(":\n", ":</span><br>");
+            defenderAbilityText.replace("\n", "</span><br><span style='color: #c19a49; font-weight: bold;'>●</span> <span style='color: #b8c8e0; font-weight: bold;'>");
+
+            // Close any unclosed spans at the end
+            if (defenderAbilityText.count("<span") > defenderAbilityText.count("</span>"))
+            {
+                defenderAbilityText += "</span>";
+            }
+
+            defenderAbilities->setText(defenderAbilityText);
             defenderLayout->addWidget(defenderAbilities);
 
-            layout->addWidget(defenderFrame);
+            piecesLayout->addWidget(defenderFrame);
+            layout->addLayout(piecesLayout);
         }
 
         // Battle instructions
         QLabel *instructionsLabel = new QLabel("Play the mini-game to determine if the capture succeeds!");
         instructionsLabel->setWordWrap(true);
         instructionsLabel->setAlignment(Qt::AlignCenter);
+        QFont instructionsFont("Book Antiqua", 11, QFont::StyleItalic);
+        instructionsLabel->setFont(instructionsFont);
+        instructionsLabel->setStyleSheet("color: #e8e6e3; margin-top: 8px;");
         layout->addWidget(instructionsLabel);
 
         // OK button
-        QPushButton *okButton = new QPushButton("Start Battle");
+        QPushButton *okButton = new QPushButton("Begin Battle");
         layout->addWidget(okButton);
 
         QObject::connect(okButton, &QPushButton::clicked, &dialog, &QDialog::accept);
@@ -618,31 +804,32 @@ public:
         switch (piece)
         {
         case Pawn:
-            return "• Two Tiles: Can move forward two squares in one turn.\n"
-                   "• Convert: Can convert captured enemy pieces to become friendly pieces.\n"
-                   "• Two Tiles Backwards: Can move backwards two squares in one turn.\n"
-                   "• Convert Super: Can convert captured pieces into super pieces.";
+            return "• Two Tiles: Move forward two squares in a single move, unleashing a swift advance.\n"
+                   "• Convert: Turn captured enemy pieces to your side, claiming their allegiance.\n"
+                   "• Two Tiles Backwards: Retreat two squares in one strategic maneuver.\n"
+                   "• Convert Super: Transform captured pieces into powerful super pieces.";
         case Knight:
-            return "• Big L: Extended jump movement in an L-shape pattern.\n"
-                   "• Protection: Gains immunity to capture when adjacent to friendly pieces.\n"
-                   "• Knight Tier 2: Special ability that enhances knight's attack potential.";
+            return "• Big L: Execute extended L-shaped jumps, surprising enemies from unexpected angles.\n"
+                   "• Protection: Gain immunity to capture when adjacent to friendly pieces, forming an impenetrable unit.\n"
+                   "• Fortify: Strengthen adjacent pawns, granting them enhanced movement abilities.";
         case Bishop:
-            return "• Swap: Can swap positions with another friendly piece.\n"
-                   "• Take Cover: Can move behind friendly pieces for protection.\n"
-                   "• Resurrect: Can bring back a captured piece from the graveyard.";
+            return "• Swap: Exchange positions with another friendly piece, creating tactical opportunities.\n"
+                   "• Take Cover: Seek protection behind friendly pieces, becoming invulnerable to direct attacks.\n"
+                   "• Resurrect: Summon a fallen piece from the graveyard, bringing it back to the battlefield.";
         case Rook:
-            return "• Swap: Can swap positions with another friendly piece.\n"
-                   "• Ram Buff: Gains attack power when aligned with other rooks.\n"
-                   "• Rook Tier 2: Special ability that extends rook's control of the board.";
+            return "• Swap: Exchange positions with another friendly piece for strategic repositioning.\n"
+                   "• Ram Buff: Channel power when aligned with other rooks, creating an unstoppable force.\n"
+                   "• Fortification: Strengthen all pieces in the same rank or file, creating a defensive line.";
         case Queen:
-            return "• Inspire: Boosts movement abilities of nearby friendly pieces.\n"
-                   "• Kamikaze: Can sacrifice itself to eliminate multiple enemy pieces in one move.";
+            return "• Inspire: Enhance the movement abilities of nearby friendly pieces, creating a zone of power.\n"
+                   "• Kamikaze: Sacrifice yourself to eliminate multiple enemy pieces in a devastating attack.\n"
+                   "• Royal Command: Force an enemy piece to skip its next turn.";
         case King:
-            return "• Inspire: Enhances attack power of nearby friendly pieces.\n"
-                   "• Turn Into Dead: Can transform enemy pieces to harmless state.\n"
-                   "• Teleport: Can instantly move to any empty square on the board.\n"
-                   "• Sniper Shot: Can attack pieces at a distance without moving.\n"
-                   "• Convert: Can turn enemy pieces into friendly pieces.";
+            return "• Inspire: Empower nearby friendly pieces with enhanced attack capabilities.\n"
+                   "• Turn Into Dead: Transform enemy pieces into powerless, immobile stones.\n"
+                   "• Teleport: Instantly move to any empty square on the board, escaping danger.\n"
+                   "• Sniper Shot: Strike pieces from a distance without moving, eliminating threats remotely.\n"
+                   "• Convert: Persuade enemy pieces to join your side, turning the tide of battle.";
         default:
             return "No special abilities";
         }
@@ -714,6 +901,8 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
         return;
     }
 
+    qDebug() << "Updating labels from bitboard:" << QString::number(bitboard, 16);
+
     for (int i = 0; i < 64 && i < draggableLabels.size(); i++)
     {
         DraggableLabel *label = draggableLabels[i];
@@ -729,6 +918,8 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
         bool bit = is_bit_set(bitboard, i);
         if (bit)
         {
+            qDebug() << "Highlighting square at index" << i << "(" << col << "," << row << ")";
+
             // Store the original style
             if (!label->property("originalStyle").isValid())
             {
@@ -741,34 +932,66 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
                 label->setProperty("originalPixmap", QVariant::fromValue(label->pixmap()));
             }
 
+            // Find the parent frame (the actual square)
+            QFrame *parentSquare = qobject_cast<QFrame *>(label->parent());
+
             // Highlight the square with green color
             // Use a slightly transparent green on top of the square color
             QString highlightStyle;
             if (isDark)
             {
                 // Slightly lighter green for dark squares
-                highlightStyle = "background-color: #7BAF6B;"; // Greenish color for dark squares
+                highlightStyle = "background-color: rgba(123, 175, 107, 0.8);"; // Semi-transparent green for dark squares
             }
             else
             {
                 // Regular green for light squares
-                highlightStyle = "background-color: #AAD785;"; // Greenish color for light squares
+                highlightStyle = "background-color: rgba(170, 215, 133, 0.8);"; // Semi-transparent green for light squares
             }
 
+            // Apply highlighting to both the label and its parent square
             label->setStyleSheet(highlightStyle);
+
+            // Make sure the label covers the entire square
+            if (parentSquare)
+            {
+                // Store original square style if needed
+                if (!parentSquare->property("originalStyle").isValid())
+                {
+                    parentSquare->setProperty("originalStyle", parentSquare->styleSheet());
+                }
+
+                // Apply the highlight to the parent square
+                parentSquare->setStyleSheet(highlightStyle);
+            }
+
+            // Make sure the label itself is also fully highlighted
+            label->setContentsMargins(0, 0, 0, 0);
+            label->setMinimumSize(parentSquare ? parentSquare->size() : QSize(40, 40));
         }
-        else if (label->styleSheet().contains("#7BAF6B") || label->styleSheet().contains("#AAD785"))
+        else if (label->styleSheet().contains("background-color"))
         {
-            // Restore the original style
+            // Restore the original style for the label
             QVariant originalStyle = label->property("originalStyle");
             if (originalStyle.isValid())
             {
                 label->setStyleSheet(originalStyle.toString());
             }
-            else
+
+            // Also restore the original style for the parent square
+            QFrame *parentSquare = qobject_cast<QFrame *>(label->parent());
+            if (parentSquare)
             {
-                // If no original style is saved, set the default square color
-                label->setStyleSheet(QString("background-color: %1;").arg(squareColor));
+                QVariant originalSquareStyle = parentSquare->property("originalStyle");
+                if (originalSquareStyle.isValid())
+                {
+                    parentSquare->setStyleSheet(originalSquareStyle.toString());
+                }
+                else
+                {
+                    // Restore default square color if no original style
+                    parentSquare->setStyleSheet(QString("background-color: %1;").arg(squareColor));
+                }
             }
         }
     }
@@ -777,17 +1000,22 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
 void MainWindow::handleDragStarted(DraggableLabel *source)
 {
     if (!source)
+    {
+        qDebug() << "handleDragStarted called with null source";
         return;
+    }
 
-    // Clear previous highlights
+    qDebug() << "Drag started from" << source->objectName();
+
+    // Clear previous highlights from both labels and parent squares
     for (DraggableLabel *label : allLabels)
     {
         if (!label)
             continue;
 
-        if (label->styleSheet().contains("#7BAF6B") || label->styleSheet().contains("#AAD785"))
+        if (label->styleSheet().contains("background-color"))
         {
-            // Restore original style
+            // Restore original style for the label
             QVariant originalStyle = label->property("originalStyle");
             if (originalStyle.isValid())
             {
@@ -795,15 +1023,31 @@ void MainWindow::handleDragStarted(DraggableLabel *source)
             }
             else
             {
-                // Determine square color if original style not available
-                int idx = indexOf(allLabels, label);
-                if (idx >= 0 && idx < 64)
+                // Fallback to transparent background
+                label->setStyleSheet("background-color: transparent;");
+            }
+
+            // Also restore the parent square style
+            QFrame *parentSquare = qobject_cast<QFrame *>(label->parent());
+            if (parentSquare)
+            {
+                QVariant originalSquareStyle = parentSquare->property("originalStyle");
+                if (originalSquareStyle.isValid())
                 {
-                    int row = idx / 8;
-                    int col = idx % 8;
-                    bool isDark = (row + col) % 2 != 0;
-                    QString squareColor = isDark ? "#B58863" : "#F0D9B5";
-                    label->setStyleSheet(QString("background-color: %1;").arg(squareColor));
+                    parentSquare->setStyleSheet(originalSquareStyle.toString());
+                }
+                else
+                {
+                    // Determine square color if original style not available
+                    int idx = indexOf(allLabels, label);
+                    if (idx >= 0 && idx < 64)
+                    {
+                        int row = idx / 8;
+                        int col = idx % 8;
+                        bool isDark = (row + col) % 2 != 0;
+                        QString squareColor = isDark ? "#B58863" : "#F0D9B5";
+                        parentSquare->setStyleSheet(QString("background-color: %1;").arg(squareColor));
+                    }
                 }
             }
         }
@@ -812,10 +1056,14 @@ void MainWindow::handleDragStarted(DraggableLabel *source)
     // Find the square the drag started from
     int index = indexOf(allLabels, source);
     if (index == -1)
+    {
+        qDebug() << "Could not find source index in allLabels";
         return;
+    }
 
     int row = index / 8;
     int col = index % 8;
+    qDebug() << "Drag source square: (" << col << "," << row << ")";
 
     // Convert to chess notation
     char file = 'a' + col;
@@ -828,6 +1076,7 @@ void MainWindow::handleDragStarted(DraggableLabel *source)
     // In free move mode, highlight all squares except the source
     if (freeMoveMode)
     {
+        qDebug() << "In free move mode, highlighting all valid squares";
         for (int i = 0; i < allLabels.size(); i++)
         {
             // Skip the source square
@@ -843,21 +1092,47 @@ void MainWindow::handleDragStarted(DraggableLabel *source)
             int c = i % 8;
             bool isDark = (r + c) % 2 != 0;
 
-            // Use appropriate highlighting color based on square color
+            // Find the parent square frame
+            QFrame *parentSquare = qobject_cast<QFrame *>(label->parent());
+            if (!parentSquare)
+                continue;
+
+            // Use appropriate highlighting color based on square color - semi-transparent for better appearance
+            QString highlightStyle;
             if (isDark)
             {
-                label->setStyleSheet("background-color: #7BAF6B;"); // Darker green for dark squares
+                highlightStyle = "background-color: rgba(123, 175, 107, 0.8);"; // Semi-transparent green for dark squares
             }
             else
             {
-                label->setStyleSheet("background-color: #AAD785;"); // Lighter green for light squares
+                highlightStyle = "background-color: rgba(170, 215, 133, 0.8);"; // Semi-transparent green for light squares
             }
+
+            // Store original styles if needed
+            if (!label->property("originalStyle").isValid())
+            {
+                label->setProperty("originalStyle", label->styleSheet());
+            }
+            if (!parentSquare->property("originalStyle").isValid())
+            {
+                parentSquare->setProperty("originalStyle", parentSquare->styleSheet());
+            }
+
+            // Apply highlight to both the label and parent square
+            label->setStyleSheet(highlightStyle);
+            parentSquare->setStyleSheet(highlightStyle);
+
+            // Make sure the label covers the entire square
+            label->setContentsMargins(0, 0, 0, 0);
+            label->setMinimumSize(parentSquare->size());
         }
     }
     else
     {
+        qDebug() << "In standard mode, getting valid moves for piece at square" << square;
         // Standard mode: Get valid moves for the piece
         uint64_t moves = cg->get_moves_bitboard(square);
+        qDebug() << "Valid moves bitboard:" << QString::number(moves, 16);
 
         // Highlight valid moves
         updateLabelsFromBitboard(moves, allLabels);
@@ -931,14 +1206,17 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
         return;
     }
 
+    qDebug() << "Processing drop from" << source->objectName() << "to" << target->objectName();
+
     // Clear all highlighted squares
     for (DraggableLabel *label : allLabels)
     {
         if (!label)
             continue;
 
-        if (label->styleSheet().contains("#7BAF6B") || label->styleSheet().contains("#AAD785"))
+        if (label->styleSheet().contains("background-color"))
         {
+            qDebug() << "Restoring original style for" << label->objectName();
             // Restore original style
             QVariant originalStyle = label->property("originalStyle");
             if (originalStyle.isValid())
@@ -1787,12 +2065,15 @@ void MainWindow::updateBoardFromGame()
             qDebug() << "Empty square at" << squareStr.c_str() << "index" << i;
             label->clear();
             label->setPixmap(QPixmap());
+
+            // Keep transparent background but don't change size
             QString baseStyle = QString("background-color: transparent;");
             label->setStyleSheet(baseStyle);
             label->setProperty("originalStyle", baseStyle);
 
-            // Reset any margins
-            label->setContentsMargins(0, 0, 0, 0);
+            // Don't reset margins for empty squares - keep them full size
+            // But do set alignment to center to ensure future pieces are centered
+            label->setAlignment(Qt::AlignCenter);
 
             // Disable dragging for empty squares
             label->setDraggable(false);
@@ -1803,7 +2084,7 @@ void MainWindow::updateBoardFromGame()
             Color pieceColor = activeGame->GetColor(squareBit);
             Piece piece = activeGame->GetPieceType(squareBit);
 
-            // Construct image path
+            // Construct image path - Note the resources use underscore: "white_rook.png"
             QString colorStr = (pieceColor == Color::white) ? "white" : "black";
             QString pieceStr;
 
@@ -1832,31 +2113,83 @@ void MainWindow::updateBoardFromGame()
                 break;
             }
 
+            // Try both image path formats to ensure compatibility
             QString imagePath = QString(":/img/%1_%2.png").arg(colorStr, pieceStr);
             QPixmap piecePixmap(imagePath);
+
+            // If first format fails, try with hyphen instead of underscore
+            if (piecePixmap.isNull())
+            {
+                qDebug() << "First image path failed, trying alternative format";
+                imagePath = QString(":/img/%1-%2.png").arg(colorStr, pieceStr);
+                piecePixmap = QPixmap(imagePath);
+            }
 
             if (piecePixmap.isNull())
             {
                 qDebug() << "ERROR: Failed to load piece image:" << imagePath;
-                continue;
+                qDebug() << "Trying to load a blank piece placeholder";
+
+                // Try to load a blank image as fallback
+                piecePixmap = QPixmap(":/img/blank.png");
+
+                if (piecePixmap.isNull())
+                {
+                    qDebug() << "WARNING: Could not load any image, skipping this piece";
+                    continue;
+                }
             }
 
-            qDebug() << "Setting piece at" << squareStr.c_str() << "to" << colorStr << pieceStr;
+            qDebug() << "Setting piece at" << squareStr.c_str() << "to" << colorStr << pieceStr
+                     << "with image size:" << piecePixmap.size();
 
             // Use scale factor to size the pieces
             int pieceSize = squareSize * PIECE_SCALE_FACTOR;
-            QPixmap scaledPixmap = piecePixmap.scaled(pieceSize, pieceSize,
-                                                      Qt::KeepAspectRatio,
-                                                      Qt::SmoothTransformation);
 
-            // Set transparent background for the label
+            // Safely scale the pixmap
+            QPixmap scaledPixmap;
+            try
+            {
+                scaledPixmap = piecePixmap.scaled(pieceSize, pieceSize,
+                                                  Qt::KeepAspectRatio,
+                                                  Qt::SmoothTransformation);
+            }
+            catch (const std::exception &e)
+            {
+                qDebug() << "ERROR: Failed to scale image:" << e.what();
+                continue;
+            }
+
+            if (scaledPixmap.isNull())
+            {
+                qDebug() << "ERROR: Scaled pixmap is null, skipping this piece";
+                continue;
+            }
+
+            // Set transparent background for the label - but keep covering the full square
             QString baseStyle = QString("background-color: transparent;");
             label->setStyleSheet(baseStyle);
             label->setProperty("originalStyle", baseStyle);
 
-            // Set the pixmap for the piece
-            label->setPixmap(scaledPixmap);
-            label->setAlignment(Qt::AlignCenter);
+            // Safely set the pixmap for the piece
+            try
+            {
+                // Set the pixmap but maintain the full square size for the label
+                label->setPixmap(scaledPixmap);
+                label->setAlignment(Qt::AlignCenter); // Keep the piece centered
+
+                // Add small margins for visual appearance, but keep label full size
+                int margin = qMax(2, squareSize / 16); // Small margin (min 2px)
+                label->setContentsMargins(margin, margin, margin, margin);
+
+                // Ensure the label maintains its size policy
+                label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+            }
+            catch (const std::exception &e)
+            {
+                qDebug() << "ERROR: Failed to set pixmap:" << e.what();
+                continue;
+            }
 
             // Add margins to make pieces appear smaller within squares
             int margin = squareSize / 12; // Smaller margin (1/12 of square size)
@@ -1937,96 +2270,157 @@ void MainWindow::on_actionNew_Game_triggered()
 
 void MainWindow::forceUpdatePieceSizes()
 {
-    qDebug() << "forceUpdatePieceSizes called, allLabels.size():" << allLabels.size();
-    if (allLabels.empty())
+    try
     {
-        qDebug() << "No labels to update sizes for";
-        return;
-    }
-
-    // Find the chessboard widget to get its size
-    QWidget *chesswdg = findChild<QWidget *>("chesswdg");
-    if (!chesswdg)
-    {
-        qDebug() << "ERROR: Could not find chesswdg widget";
-        return;
-    }
-
-    // Calculate the board size and square size
-    int boardSize = qMin(chesswdg->width(), chesswdg->height());
-    int squareSize = boardSize / 8;
-
-    qDebug() << "Board size:" << boardSize << "Square size:" << squareSize;
-
-    // Update all piece sizes
-    int updatedCount = 0;
-    for (int i = 0; i < allLabels.size(); i++)
-    {
-        DraggableLabel *label = allLabels[i];
-        if (!label || label->pixmap().isNull())
-            continue;
-
-        // Get the piece image
-        QPixmap originalPixmap = label->pixmap();
-
-        // Use the scale factor for consistent sizing
-        int pieceSize = squareSize * PIECE_SCALE_FACTOR;
-
-        // Only resize if necessary (avoid unnecessary operations)
-        if (originalPixmap.width() != pieceSize || originalPixmap.height() != pieceSize)
+        qDebug() << "forceUpdatePieceSizes called, allLabels.size():" << allLabels.size();
+        if (allLabels.empty())
         {
-            // Scale to the correct size
-            QPixmap scaledPixmap = originalPixmap.scaled(pieceSize, pieceSize,
-                                                         Qt::KeepAspectRatio,
-                                                         Qt::SmoothTransformation);
-
-            // Update the label
-            label->setPixmap(scaledPixmap);
-            label->setAlignment(Qt::AlignCenter);
-
-            // Add margins to make pieces appear smaller within squares
-            int margin = squareSize / 12; // Smaller margin (1/12 of square size)
-            label->setContentsMargins(margin, margin, margin, margin);
-
-            updatedCount++;
+            qDebug() << "No labels to update sizes for";
+            return;
         }
-    }
 
-    qDebug() << "Updated sizes for" << updatedCount << "pieces";
+        // Find the chessboard widget to get its size
+        QWidget *chesswdg = findChild<QWidget *>("chesswdg");
+        if (!chesswdg)
+        {
+            qDebug() << "ERROR: Could not find chesswdg widget";
+            return;
+        }
+
+        // Calculate the board size and square size
+        int boardSize = qMin(chesswdg->width(), chesswdg->height());
+        if (boardSize <= 0)
+        {
+            qDebug() << "ERROR: Invalid board size:" << boardSize;
+            return;
+        }
+
+        int squareSize = boardSize / 8;
+        if (squareSize <= 0)
+        {
+            qDebug() << "ERROR: Invalid square size:" << squareSize;
+            return;
+        }
+
+        qDebug() << "Board size:" << boardSize << "Square size:" << squareSize;
+
+        // Update all piece sizes
+        int updatedCount = 0;
+        for (int i = 0; i < allLabels.size(); i++)
+        {
+            DraggableLabel *label = allLabels[i];
+            if (!label)
+            {
+                qDebug() << "WARNING: Null label at index" << i;
+                continue;
+            }
+
+            if (label->pixmap().isNull())
+                continue;
+
+            // Get the piece image
+            QPixmap originalPixmap = label->pixmap();
+            if (originalPixmap.isNull())
+            {
+                qDebug() << "WARNING: Null pixmap in label at index" << i;
+                continue;
+            }
+
+            // Use the scale factor for consistent sizing
+            int pieceSize = squareSize * PIECE_SCALE_FACTOR;
+            if (pieceSize <= 0)
+            {
+                qDebug() << "ERROR: Invalid piece size:" << pieceSize;
+                continue;
+            }
+
+            // Only resize if necessary (avoid unnecessary operations)
+            if (originalPixmap.width() != pieceSize || originalPixmap.height() != pieceSize)
+            {
+                try
+                {
+                    // Scale to the correct size
+                    QPixmap scaledPixmap = originalPixmap.scaled(pieceSize, pieceSize,
+                                                                 Qt::KeepAspectRatio,
+                                                                 Qt::SmoothTransformation);
+
+                    if (scaledPixmap.isNull())
+                    {
+                        qDebug() << "ERROR: Failed to scale pixmap at index" << i;
+                        continue;
+                    }
+
+                    // Update the label
+                    label->setPixmap(scaledPixmap);
+                    label->setAlignment(Qt::AlignCenter);
+
+                    // Add small margins for visual appearance, but keep label full size
+                    int margin = qMax(2, squareSize / 16); // Small margin (min 2px)
+                    label->setContentsMargins(margin, margin, margin, margin);
+
+                    // Ensure the label maintains its size policy
+                    label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+                    updatedCount++;
+                }
+                catch (const std::exception &e)
+                {
+                    qDebug() << "ERROR: Exception while updating piece size:" << e.what();
+                }
+                catch (...)
+                {
+                    qDebug() << "ERROR: Unknown exception while updating piece size";
+                }
+            }
+        }
+
+        qDebug() << "Updated" << updatedCount << "pieces with new sizes";
+    }
+    catch (const std::exception &e)
+    {
+        qDebug() << "ERROR in forceUpdatePieceSizes:" << e.what();
+    }
+    catch (...)
+    {
+        qDebug() << "UNKNOWN ERROR in forceUpdatePieceSizes";
+    }
 }
 
 void MainWindow::initializeUI()
 {
-    qDebug() << "Initializing UI...";
-
-    // Create and setup the UI
-    ui->setupUi(this);
-
-    // Initialize the chessboard - REMOVE THE BACKGROUND IMAGE to avoid showing two boards
-    ui->chesswdg->setStyleSheet("QWidget#chesswdg { background-color: white; }");
-    ui->chesswdg->setObjectName("chesswdg"); // Ensure the object name is set
-
-    // Clear any existing grid layout that might have been created by the UI file
-    QLayout *existingLayout = ui->chesswdg->layout();
-    if (existingLayout)
+    try
     {
-        qDebug() << "Clearing existing layout from UI file";
-        QLayoutItem *item;
-        while ((item = existingLayout->takeAt(0)) != nullptr)
+        qDebug() << "Initializing UI...";
+
+        // First find and clear any existing chessboard layout
+        QWidget *chesswdg = findChild<QWidget *>("chesswdg");
+        if (!chesswdg)
         {
-            if (item->widget())
-            {
-                item->widget()->deleteLater();
-            }
-            delete item;
+            qDebug() << "ERROR: Could not find chesswdg widget!";
+            return;
         }
-        delete existingLayout;
-    }
 
-    // Layout initialization
-    QWidget *chesswdg = findChild<QWidget *>("chesswdg");
-    if (chesswdg)
-    {
+        // Clear any existing layout and widgets from chesswdg
+        QLayout *existingLayout = chesswdg->layout();
+        if (existingLayout)
+        {
+            qDebug() << "Clearing existing layout from UI file";
+            QLayoutItem *item;
+            while ((item = existingLayout->takeAt(0)) != nullptr)
+            {
+                if (item->widget())
+                {
+                    item->widget()->deleteLater();
+                }
+                delete item;
+            }
+            delete existingLayout;
+        }
+
+        // Clear existing collections if any
+        allFrames.clear();
+        allLabels.clear();
+
         qDebug() << "Found chesswdg, setting up chessboard grid";
 
         // Set a fixed size policy for the chess widget to ensure it occupies proper space
@@ -2049,9 +2443,30 @@ void MainWindow::initializeUI()
         {
             for (int c = 0; c < 8; c++)
             {
+                // Create a safe index and check bounds
                 int idx = r * 8 + c;
+                if (idx < 0 || idx >= 64)
+                {
+                    qDebug() << "ERROR: Invalid board index:" << idx;
+                    continue;
+                }
+
+                // Create the square frame
                 QFrame *square = new QFrame(chesswdg);
-                DraggableLabel *label = new DraggableLabel(square); // Pass square as parent
+                if (!square)
+                {
+                    qDebug() << "ERROR: Failed to create square at" << r << c;
+                    continue;
+                }
+
+                // Create the label for pieces
+                DraggableLabel *label = new DraggableLabel(square);
+                if (!label)
+                {
+                    qDebug() << "ERROR: Failed to create label at" << r << c;
+                    delete square; // Clean up
+                    continue;
+                }
 
                 // Set fixed size policy for squares to ensure they are uniform
                 square->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -2060,141 +2475,136 @@ void MainWindow::initializeUI()
                 // Configure square
                 square->setObjectName(QString("square%1").arg(idx));
 
-                // Set alternating colors for the checkerboard pattern
-                if ((r + c) % 2 == 0)
+                // Set the layout for the square and add the label
+                QVBoxLayout *squareLayout = new QVBoxLayout(square);
+                if (!squareLayout)
                 {
-                    square->setStyleSheet("background-color: #F0D9B5;"); // Light square
-                }
-                else
-                {
-                    square->setStyleSheet("background-color: #B58863;"); // Dark square
+                    qDebug() << "ERROR: Failed to create square layout at" << r << c;
+                    delete label;
+                    delete square;
+                    continue;
                 }
 
-                // Configure label
-                label->setObjectName(QString("label%1").arg(idx));
+                // Key change: Remove all margins and make labels fill the square completely
+                squareLayout->setContentsMargins(0, 0, 0, 0);
+                squareLayout->setSpacing(0);
+                squareLayout->addWidget(label, 1, Qt::AlignCenter); // Use 1 for stretch factor
+
+                // Configure the label to fill the parent completely
+                label->setObjectName(QString("label_%1").arg(idx));
                 label->setAlignment(Qt::AlignCenter);
-                label->setContentsMargins(0, 0, 0, 0);
+                label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+                label->setMinimumSize(40, 40); // Set minimum size for the label too
 
-                // Create layout for the square
-                QVBoxLayout *layout = new QVBoxLayout(square);
-                layout->setContentsMargins(0, 0, 0, 0);
-                layout->addWidget(label);
+                // Make sure the label has transparent background to see chess square colors
+                label->setStyleSheet("background-color: transparent;");
 
-                // Add to grid and to the list of all labels
-                grid->addWidget(square, r, c);
-                allLabels.push_back(label);
+                // Set this MainWindow instance as the parent window for the label
+                label->setMainWindow(this);
+
+                // Apply the checkerboard pattern
+                bool isWhiteSquare = (r + c) % 2 == 0;
+                QString bgColor = isWhiteSquare ? "#f0d9b5" : "#b58863"; // Light/dark brown
+                square->setStyleSheet(QString("background-color: %1;").arg(bgColor));
+
+                // Add the square to the grid layout
+                grid->addWidget(square, 7 - r, c);
+
+                // Store references to the frames and labels
                 allFrames.push_back(square);
+                allLabels.push_back(label);
 
-                qDebug() << "Created square" << square->objectName() << "with label" << label->objectName();
+                // Connect signals for drag and drop operations
+                connect(label, &DraggableLabel::dragStarted, this, &MainWindow::handleDragStarted);
+                connect(label, &DraggableLabel::dragEntered, this, &MainWindow::handleDragEntered);
+                connect(label, &DraggableLabel::dropOccurred, this, &MainWindow::handleDrop);
             }
         }
 
-        qDebug() << "Chessboard created with" << allLabels.size() << "labels";
-    }
-    else
-    {
-        qDebug() << "ERROR: Could not find chesswdg widget!";
-    }
-}
-
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow)
-{
-    qDebug() << "MainWindow constructor started";
-
-    // Initialize the UI
-    initializeUI();
-
-    qDebug() << "UI initialized, allLabels size:" << allLabels.size();
-
-    // Set up any other connections needed
-    cg = new CustomSuperChessGame(this); // Initialize with this window as pointer
-    cg->NewGame();                       // Initialize the game board
-    qDebug() << "CustomSuperChessGame created";
-
-    // Connect signals/slots for all the labels
-    for (auto label : allLabels)
-    {
-        if (!label)
+        // Ensure we created all 64 squares and labels
+        if (allFrames.size() != 64 || allLabels.size() != 64)
         {
-            qDebug() << "WARNING: Null label found in allLabels";
-            continue;
+            qDebug() << "WARNING: Not all chess squares/labels were created! Frames:" << allFrames.size() << "Labels:" << allLabels.size();
         }
 
-        connect(label, &DraggableLabel::dragStarted, this, &MainWindow::handleDragStarted);
-        connect(label, &DraggableLabel::dragEntered, this, &MainWindow::handleDragEntered);
-        connect(label, &DraggableLabel::dropOccurred, this, &MainWindow::handleDrop);
-
-        label->setDraggable(true);
-        label->setMainWindow(this);
-
-        qDebug() << "Connected label:" << label->objectName() << "draggable set to true";
+        // Now that all labels are initialized, update the board with the current piece positions
+        QTimer::singleShot(100, this, &MainWindow::updateBoardFromGame);
     }
-
-    // Connect free move mode button
-    connect(ui->freeMoveButton, &QPushButton::toggled, this, [this](bool checked)
-            {
-    freeMoveMode = checked;
-    QString modeMessage = checked ? "Free Move Mode: ENABLED" : "Free Move Mode: DISABLED";
-    ui->textEdit->append(modeMessage);
-    qDebug() << modeMessage; });
-
-    // Initialize the game engine
-    cg->NewGame();
-    qDebug() << "Game initialized";
-
-    // Update the board with the initial positions
-    updateBoardFromGame();
-    qDebug() << "Board updated from game";
-
-    // Set window size to ensure the board is properly displayed
-    resize(900, 700);
-
-    // Apply the larger piece size immediately after initialization
-    QTimer::singleShot(100, this, [this]()
-                       {
-    QWidget *chesswdg = findChild<QWidget *>("chesswdg");
-    if (chesswdg) {
-        qDebug() << "Forcing resize on chessboard. Size:" << chesswdg->size();
-        // Ensure the widget has been properly sized
-        chesswdg->updateGeometry();
-        // Force an update after the layout has settled
-        forceUpdatePieceSizes();
-    } });
-
-    qDebug() << "MainWindow constructor completed";
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
-    delete cg; // Add this
-}
-
-void MainWindow::appendToLog(const QString &message)
-{
-    if (ui && ui->textEdit)
+    catch (const std::exception &e)
     {
-        ui->textEdit->append(message);
+        qDebug() << "ERROR initializing UI:" << e.what();
+    }
+    catch (...)
+    {
+        qDebug() << "UNKNOWN ERROR initializing UI";
     }
 }
 
-// Add implementation for the ability description update methods
+// Enhanced styling for the ability description panel
 void MainWindow::updateAbilityDescription(const QString &text, bool isHtml)
 {
     if (ui && ui->label_67)
     {
-        ui->label_67->setText(text);
+        // Apply a stylish background with border radius and gradient
+        ui->label_67->setStyleSheet(
+            "QLabel {"
+            "  font-family: 'Book Antiqua', 'Palatino Linotype', serif;"
+            "  font-size: 11pt;"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2e2d2c, stop:1 #1f1e1d);"
+            "  color: #e8e6e3;"
+            "  border: 2px solid #3a3937;"
+            "  border-radius: 10px;"
+            "  padding: 14px;"
+            "  margin: 5px;"
+            "}"
+            "QLabel a { color: #c19a49; }" // Gold color for any links or special elements
+        );
+
+        // Create a custom styled HTML wrapper for the content
+        QString headerStyle = "display: block; text-align: center; font-family: 'Book Antiqua', 'Palatino Linotype', serif; "
+                              "font-size: 15pt; font-weight: bold; color: #c19a49; margin-bottom: 10px; "
+                              "border-bottom: 1px solid #c19a49; padding-bottom: 5px; letter-spacing: 1px;";
+
+        QString containerStyle = "padding: 8px; background-color: rgba(30, 30, 28, 0.7); border-radius: 5px;";
+
+        // Apply custom HTML styling to the content with medieval/fantasy styling
+        QString styledText = text;
         if (isHtml)
         {
-            ui->label_67->setTextFormat(Qt::RichText);
+            // Create a decorated header
+            styledText = "<div style='" + headerStyle + "'>✧ ABILITIES ✧</div>" +
+                         "<div style='" + containerStyle + "'>";
+
+            // Replace the <b> tags with styled headers
+            QString processedText = text;
+            processedText.replace("<b>", "<div style='color: #c19a49; font-size: 13pt; font-weight: bold; margin-top: 10px; text-decoration: underline;'>");
+            processedText.replace("</b>", "</div>");
+
+            // Style the bullet points for abilities
+            processedText.replace("• ", "<div style='margin: 5px 0;'><span style='color: #c19a49; font-weight: bold;'>❖</span> <span style='color: #b8c8e0; font-weight: bold;'>");
+            processedText.replace("<br>•", "</span></div><div style='margin: 5px 0;'><span style='color: #c19a49; font-weight: bold;'>❖</span> <span style='color: #b8c8e0; font-weight: bold;'>");
+
+            // Close any unclosed spans or divs
+            if (processedText.count("<span") > processedText.count("</span>"))
+            {
+                processedText += "</span>";
+            }
+            if (processedText.count("<div") > processedText.count("</div>"))
+            {
+                processedText += "</div>";
+            }
+
+            styledText += processedText + "</div>";
+
+            // Add a decorative footer
+            styledText += "<div style='text-align: center; margin-top: 10px; color: #c19a49;'>⚜ ⚜ ⚜</div>";
         }
-        else
-        {
-            ui->label_67->setTextFormat(Qt::AutoText);
-        }
+
+        ui->label_67->setText(styledText);
+        ui->label_67->setTextFormat(Qt::RichText); // Always use rich text for styled content
         ui->label_67->setWordWrap(true);
-        ui->label_67->setMinimumHeight(200);
+        ui->label_67->setMinimumHeight(350); // More height for the enhanced styling
+        ui->label_67->setAlignment(Qt::AlignTop | Qt::AlignLeft);
     }
 }
 
@@ -2202,7 +2612,137 @@ void MainWindow::resetAbilityDescription()
 {
     if (ui && ui->label_67)
     {
-        ui->label_67->setText("Ability Description:");
-        ui->label_67->setTextFormat(Qt::AutoText);
+        // Apply the same styled background but with a default message
+        ui->label_67->setStyleSheet(
+            "QLabel {"
+            "  font-family: 'Book Antiqua', 'Palatino Linotype', serif;"
+            "  font-size: 11pt;"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2e2d2c, stop:1 #1f1e1d);"
+            "  color: #e8e6e3;"
+            "  border: 2px solid #3a3937;"
+            "  border-radius: 10px;"
+            "  padding: 14px;"
+            "  margin: 5px;"
+            "}");
+
+        // Create a decorative HTML layout for the default state
+        QString headerStyle = "display: block; text-align: center; font-family: 'Book Antiqua', 'Palatino Linotype', serif; "
+                              "font-size: 15pt; font-weight: bold; color: #c19a49; margin-bottom: 10px; "
+                              "border-bottom: 1px solid #c19a49; padding-bottom: 5px; letter-spacing: 1px;";
+
+        QString messageStyle = "display: block; text-align: center; color: #888888; font-style: italic; margin-top: 20px;";
+
+        QString decorStyle = "display: block; text-align: center; color: #c19a49; font-size: 20pt; margin: 30px 0;";
+
+        // Assemble the styled content
+        QString content =
+            "<div style='" + headerStyle + "'>✧ ABILITIES ✧</div>" +
+            "<div style='" + messageStyle + "'>Capture a piece to see special abilities</div>" +
+            "<div style='" + decorStyle + "'>⚔</div>" +
+            "<div style='" + messageStyle + "'>Each piece has unique powers in chess-in-chess battles</div>" +
+            "<div style='text-align: center; margin-top: 30px; color: #c19a49;'>⚜ ⚜ ⚜</div>";
+
+        ui->label_67->setText(content);
+        ui->label_67->setTextFormat(Qt::RichText);
+        ui->label_67->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    }
+}
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent), ui(new Ui::MainWindow), freeMoveMode(false), cg(nullptr)
+{
+    try
+    {
+        // Set up the UI first
+        ui->setupUi(this);
+
+        // DEBUG: Check if piece images can be loaded
+        qDebug() << "Checking if piece images can be loaded:";
+        QStringList pieces = {"white_pawn", "white_knight", "white_bishop", "white_rook", "white_queen", "white_king",
+                              "black_pawn", "black_knight", "black_bishop", "black_rook", "black_queen", "black_king"};
+
+        bool imagesFound = true;
+        for (const QString &piece : pieces)
+        {
+            QString path = QString(":/img/%1.png").arg(piece);
+            QPixmap pixmap(path);
+            qDebug() << "  " << path << (pixmap.isNull() ? "NOT FOUND" : "FOUND") << pixmap.size();
+
+            if (pixmap.isNull())
+            {
+                imagesFound = false;
+                qDebug() << "WARNING: Missing piece image:" << path;
+            }
+        }
+
+        if (!imagesFound)
+        {
+            qDebug() << "WARNING: Some chess piece images are missing. The board may not display correctly.";
+        }
+
+        // First initialize the UI to create all the labels and board
+        initializeUI();
+
+        // Connect the free move button if it exists
+        if (ui->freeMoveButton)
+        {
+            connect(ui->freeMoveButton, &QPushButton::clicked, this, &MainWindow::toggleFreeMoveMode);
+        }
+
+        // After all UI is initialized, create the chess game
+        cg = new CustomSuperChessGame(this);
+        if (cg)
+        {
+            cg->NewGame();
+
+            // Now update the board with initial positions
+            QTimer::singleShot(100, this, [this]()
+                               {
+                if (this && cg) {  // Extra safety check
+                    updateBoardFromGame();
+                    
+                    // Force update of piece sizes after layout is resolved
+                    QTimer::singleShot(200, this, &MainWindow::forceUpdatePieceSizes);
+                    
+                    // Initialize the ability description with default text
+                    resetAbilityDescription();
+                } });
+        }
+        else
+        {
+            qDebug() << "ERROR: Failed to create chess game!";
+        }
+    }
+    catch (const std::exception &e)
+    {
+        qDebug() << "ERROR during initialization:" << e.what();
+    }
+    catch (...)
+    {
+        qDebug() << "UNKNOWN ERROR during initialization";
+    }
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+
+    // Clean up the chess game
+    if (cg)
+    {
+        delete cg;
+    }
+}
+
+void MainWindow::appendToLog(const QString &text)
+{
+    if (ui && ui->textEdit)
+    {
+        ui->textEdit->append(text);
+
+        // Ensure the newest text is visible
+        QTextCursor cursor = ui->textEdit->textCursor();
+        cursor.movePosition(QTextCursor::End);
+        ui->textEdit->setTextCursor(cursor);
     }
 }
