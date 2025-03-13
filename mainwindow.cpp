@@ -1361,6 +1361,45 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
                     label->setStyleSheet(QString("background-color: %1;").arg(squareColor));
                 }
             }
+
+            // Restore original margins if saved
+            QVariant originalMargins = label->property("originalMargins");
+            if (originalMargins.isValid())
+            {
+                QMargins margins = originalMargins.value<QMargins>();
+                label->setContentsMargins(margins);
+            }
+
+            // Reset any fixed size that might have been set
+            label->setFixedSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX); // Remove fixed size constraints
+            if (label->pixmap().isNull())
+            {
+                label->setMinimumSize(0, 0); // Reset minimum size
+                label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+                label->setAlignment(Qt::AlignCenter); // Reset to just center alignment
+            }
+
+            // Also restore parent square style
+            QFrame *parentSquare = qobject_cast<QFrame *>(label->parent());
+            if (parentSquare)
+            {
+                QVariant originalSquareStyle = parentSquare->property("originalStyle");
+                if (originalSquareStyle.isValid())
+                {
+                    parentSquare->setStyleSheet(originalSquareStyle.toString());
+                }
+                else
+                {
+                    // Restore default square color if no original style
+                    // Determine square color based on position
+                    int index = indexOf(allLabels, label);
+                    int row = index / 8;
+                    int col = index % 8;
+                    bool isDark = (row + col) % 2 != 0;
+                    QString squareColor = isDark ? "#B58863" : "#F0D9B5"; // Dark/light square colors
+                    parentSquare->setStyleSheet(QString("background-color: %1;").arg(squareColor));
+                }
+            }
         }
     }
 
@@ -1883,13 +1922,22 @@ void MainWindow::updateBoardFromGame()
             label->clear();
             label->setPixmap(QPixmap());
 
+            // Reset any fixed size that might have been set
+            label->setFixedSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX); // Remove fixed size constraints
+            label->setMinimumSize(0, 0);                           // Reset minimum size for empty squares
+            label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
             // Keep transparent background but don't change size
             QString baseStyle = QString("background-color: transparent;");
             label->setStyleSheet(baseStyle);
             label->setProperty("originalStyle", baseStyle);
 
-            // Don't reset margins for empty squares - keep them full size
-            // But do set alignment to center to ensure future pieces are centered
+            // Store default margins for empty squares (no margins)
+            QMargins defaultMargins(0, 0, 0, 0);
+            label->setContentsMargins(defaultMargins);
+            label->setProperty("originalMargins", QVariant::fromValue(defaultMargins));
+
+            // Set alignment to center to ensure future pieces are centered
             label->setAlignment(Qt::AlignCenter);
 
             // Disable dragging for empty squares
@@ -1974,10 +2022,13 @@ void MainWindow::updateBoardFromGame()
                 continue;
             }
 
-            // Set transparent background for the label - but keep covering the full square
+            // Set transparent background for the label
             QString baseStyle = QString("background-color: transparent;");
             label->setStyleSheet(baseStyle);
             label->setProperty("originalStyle", baseStyle);
+
+            // Reset any fixed size that might have been set
+            label->setFixedSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX); // Remove fixed size constraints
 
             // Safely set the pixmap for the piece
             try
@@ -1987,7 +2038,9 @@ void MainWindow::updateBoardFromGame()
 
                 // Add small margins for visual appearance, but keep label full size
                 int margin = qMax(2, squareSize / 16); // Small margin (min 2px)
-                label->setContentsMargins(margin, margin, margin, margin);
+                QMargins pieceMargins(margin, margin, margin, margin);
+                label->setContentsMargins(pieceMargins);
+                label->setProperty("originalMargins", QVariant::fromValue(pieceMargins));
 
                 // Ensure the label maintains its size policy
                 label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -2056,8 +2109,23 @@ void MainWindow::forceUpdatePieceSizes()
                 continue;
             }
 
+            // Always reset any fixed size constraints
+            label->setFixedSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+
+            // For empty squares
             if (label->pixmap().isNull())
+            {
+                // Reset minimum size and alignment for empty squares
+                label->setMinimumSize(0, 0);
+                label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+                label->setAlignment(Qt::AlignCenter);
+
+                // Set default margins for empty squares
+                QMargins defaultMargins(0, 0, 0, 0);
+                label->setContentsMargins(defaultMargins);
+                label->setProperty("originalMargins", QVariant::fromValue(defaultMargins));
                 continue;
+            }
 
             // Get the piece image
             QPixmap originalPixmap = label->pixmap();
@@ -2095,9 +2163,11 @@ void MainWindow::forceUpdatePieceSizes()
                     label->setPixmap(scaledPixmap);
                     label->setAlignment(Qt::AlignCenter);
 
-                    // Add small margins for visual appearance, but keep label full size
+                    // Add small margins for visual appearance
                     int margin = qMax(2, squareSize / 16); // Small margin (min 2px)
-                    label->setContentsMargins(margin, margin, margin, margin);
+                    QMargins pieceMargins(margin, margin, margin, margin);
+                    label->setContentsMargins(pieceMargins);
+                    label->setProperty("originalMargins", QVariant::fromValue(pieceMargins));
 
                     // Ensure the label maintains its size policy
                     label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -2112,6 +2182,14 @@ void MainWindow::forceUpdatePieceSizes()
                 {
                     qDebug() << "ERROR: Unknown exception while updating piece size";
                 }
+            }
+            else
+            {
+                // Even if the size is the same, ensure margins are consistent
+                int margin = qMax(2, squareSize / 16); // Small margin (min 2px)
+                QMargins pieceMargins(margin, margin, margin, margin);
+                label->setContentsMargins(pieceMargins);
+                label->setProperty("originalMargins", QVariant::fromValue(pieceMargins));
             }
         }
 

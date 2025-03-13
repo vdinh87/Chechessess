@@ -121,6 +121,17 @@ void DraggableLabel::mouseMoveEvent(QMouseEvent *event)
         // If the drop was cancelled, make sure we keep the original piece
         qDebug() << "Drop ignored, restoring original style";
         this->setStyleSheet(originalStyle);
+
+        // Also restore original margins if available
+        QVariant originalMargins = this->property("originalMargins");
+        if (originalMargins.isValid())
+        {
+            QMargins margins = originalMargins.value<QMargins>();
+            this->setContentsMargins(margins);
+        }
+
+        // Reset any fixed size that might have been set
+        this->setFixedSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     }
 }
 
