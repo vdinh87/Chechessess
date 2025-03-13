@@ -898,6 +898,7 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
 {
     if (draggableLabels.empty())
     {
+        qDebug() << "updateLabelsFromBitboard: Label vector is empty!";
         return;
     }
 
@@ -907,7 +908,10 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
     {
         DraggableLabel *label = draggableLabels[i];
         if (!label)
+        {
+            qDebug() << "updateLabelsFromBitboard: Null label at index" << i;
             continue;
+        }
 
         // Determine square color (dark or light)
         int row = i / 8;
@@ -920,10 +924,18 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
         {
             qDebug() << "Highlighting square at index" << i << "(" << col << "," << row << ")";
 
-            // Store the original style
+            // Find the parent frame (the actual square)
+            QFrame *parentSquare = qobject_cast<QFrame *>(label->parent());
+            if (!parentSquare)
+            {
+                qDebug() << "WARNING: Label has no parent square at index" << i;
+            }
+
+            // Store the original style if not already saved
             if (!label->property("originalStyle").isValid())
             {
                 label->setProperty("originalStyle", label->styleSheet());
+                qDebug() << "Stored original style for" << label->objectName() << ":" << label->styleSheet();
             }
 
             // Save the original pixmap if not already saved
@@ -932,27 +944,59 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
                 label->setProperty("originalPixmap", QVariant::fromValue(label->pixmap()));
             }
 
-            // Find the parent frame (the actual square)
-            QFrame *parentSquare = qobject_cast<QFrame *>(label->parent());
+            // Save the original margins if not already saved
+            if (!label->property("originalMargins").isValid())
+            {
+                QMargins margins = label->contentsMargins();
+                label->setProperty("originalMargins", QVariant::fromValue(margins));
+            }
 
-            // Highlight the square with green color
+            // Highlight the square with green color - use more saturated colors for better visibility
             // Use a slightly transparent green on top of the square color
             QString highlightStyle;
             if (isDark)
             {
-                // Slightly lighter green for dark squares
-                highlightStyle = "background-color: rgba(123, 175, 107, 0.8);"; // Semi-transparent green for dark squares
+                // Slightly lighter green for dark squares - more saturated
+                highlightStyle = "background-color: rgba(123, 195, 107, 0.95);"; // Brighter green for dark squares
             }
             else
             {
-                // Regular green for light squares
-                highlightStyle = "background-color: rgba(170, 215, 133, 0.8);"; // Semi-transparent green for light squares
+                // Regular green for light squares - more saturated
+                highlightStyle = "background-color: rgba(140, 215, 103, 0.95);"; // Brighter green for light squares
             }
 
             // Apply highlighting to both the label and its parent square
-            label->setStyleSheet(highlightStyle);
+            // For the label, different handling for squares with/without pieces
+            if (!label->pixmap().isNull())
+            {
+                // For squares WITH pieces: preserve the margins to maintain piece size
+                QMargins originalMargins = label->property("originalMargins").value<QMargins>();
+                label->setStyleSheet(highlightStyle);
+                // Keep the original margins to maintain the piece size
+                label->setContentsMargins(originalMargins);
+                qDebug() << "Applied highlight to piece square" << label->objectName();
+            }
+            else
+            {
+                // For squares WITHOUT pieces: no margins - make the entire square a drop target
+                label->setStyleSheet(highlightStyle + "border: none; padding: 0px;");
+                label->setContentsMargins(0, 0, 0, 0);
+                // Make sure the label fills the entire square
+                if (parentSquare)
+                {
+                    label->setMinimumSize(parentSquare->size());
+                    label->setFixedSize(parentSquare->size());
+                }
+                else
+                {
+                    label->setMinimumSize(40, 40);
+                    label->setFixedSize(75, 75);
+                }
+                label->setAlignment(Qt::AlignCenter | Qt::AlignVCenter | Qt::AlignHCenter | Qt::AlignJustify);
+                qDebug() << "Applied highlight to empty square" << label->objectName();
+            }
 
-            // Make sure the label covers the entire square
+            // Always highlight the parent square
             if (parentSquare)
             {
                 // Store original square style if needed
@@ -963,11 +1007,8 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
 
                 // Apply the highlight to the parent square
                 parentSquare->setStyleSheet(highlightStyle);
+                qDebug() << "Applied highlight to parent square for" << label->objectName();
             }
-
-            // Make sure the label itself is also fully highlighted
-            label->setContentsMargins(0, 0, 0, 0);
-            label->setMinimumSize(parentSquare ? parentSquare->size() : QSize(40, 40));
         }
         else if (label->styleSheet().contains("background-color"))
         {
@@ -978,7 +1019,24 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
                 label->setStyleSheet(originalStyle.toString());
             }
 
-            // Also restore the original style for the parent square
+            // Restore the original margins if saved
+            QVariant originalMargins = label->property("originalMargins");
+            if (originalMargins.isValid())
+            {
+                QMargins margins = originalMargins.value<QMargins>();
+                label->setContentsMargins(margins);
+            }
+
+            // Reset any fixed size that might have been set
+            label->setFixedSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX); // Remove fixed size constraints
+            if (label->pixmap().isNull())
+            {
+                label->setMinimumSize(0, 0); // Reset minimum size
+                label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+                label->setAlignment(Qt::AlignCenter); // Reset to just center alignment
+            }
+
+            // Also restore the parent square style
             QFrame *parentSquare = qobject_cast<QFrame *>(label->parent());
             if (parentSquare)
             {
@@ -990,10 +1048,104 @@ void updateLabelsFromBitboard(uint64_t bitboard, std::vector<DraggableLabel *> &
                 else
                 {
                     // Restore default square color if no original style
+                    // Determine square color based on position
+                    int index = indexOf(draggableLabels, label);
+                    int row = index / 8;
+                    int col = index % 8;
+                    bool isDark = (row + col) % 2 != 0;
+                    QString squareColor = isDark ? "#B58863" : "#F0D9B5"; // Dark/light square colors
                     parentSquare->setStyleSheet(QString("background-color: %1;").arg(squareColor));
                 }
             }
         }
+    }
+}
+
+// Constructor implementation
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent), ui(new Ui::MainWindow), freeMoveMode(false), cg(nullptr)
+{
+    try
+    {
+        // Set up the UI first
+        ui->setupUi(this);
+
+        // DEBUG: Check if piece images can be loaded
+        qDebug() << "Checking if piece images can be loaded:";
+        QStringList pieces = {"white_pawn", "white_knight", "white_bishop", "white_rook", "white_queen", "white_king",
+                              "black_pawn", "black_knight", "black_bishop", "black_rook", "black_queen", "black_king"};
+
+        bool imagesFound = true;
+        for (const QString &piece : pieces)
+        {
+            QString path = QString(":/img/%1.png").arg(piece);
+            QPixmap pixmap(path);
+            qDebug() << "  " << path << (pixmap.isNull() ? "NOT FOUND" : "FOUND") << pixmap.size();
+
+            if (pixmap.isNull())
+            {
+                imagesFound = false;
+                qDebug() << "WARNING: Missing piece image:" << path;
+            }
+        }
+
+        if (!imagesFound)
+        {
+            qDebug() << "WARNING: Some chess piece images are missing. The board may not display correctly.";
+        }
+
+        // First initialize the UI to create all the labels and board
+        initializeUI();
+
+        // Connect the free move button if it exists
+        if (ui->freeMoveButton)
+        {
+            connect(ui->freeMoveButton, &QPushButton::clicked, this, &MainWindow::toggleFreeMoveMode);
+        }
+
+        // After all UI is initialized, create the chess game
+        cg = new CustomSuperChessGame(this);
+        if (cg)
+        {
+            cg->NewGame();
+
+            // Now update the board with initial positions
+            QTimer::singleShot(100, this, [this]()
+                               {
+                if (this && cg) {  // Extra safety check
+                    updateBoardFromGame();
+                    
+                    // Force update of piece sizes after layout is resolved
+                    QTimer::singleShot(200, this, &MainWindow::forceUpdatePieceSizes);
+                    
+                    // Initialize the ability description with default text
+                    resetAbilityDescription();
+                } });
+        }
+        else
+        {
+            qDebug() << "ERROR: Failed to create chess game!";
+        }
+    }
+    catch (const std::exception &e)
+    {
+        qDebug() << "ERROR during initialization:" << e.what();
+    }
+    catch (...)
+    {
+        qDebug() << "UNKNOWN ERROR during initialization";
+    }
+}
+
+// Destructor implementation
+MainWindow::~MainWindow()
+{
+    delete ui;
+
+    // Clean up the chess game
+    if (cg)
+    {
+        delete cg;
     }
 }
 
@@ -1027,7 +1179,24 @@ void MainWindow::handleDragStarted(DraggableLabel *source)
                 label->setStyleSheet("background-color: transparent;");
             }
 
-            // Also restore the parent square style
+            // Restore original margins for the label
+            QVariant originalMargins = label->property("originalMargins");
+            if (originalMargins.isValid())
+            {
+                QMargins margins = originalMargins.value<QMargins>();
+                label->setContentsMargins(margins);
+            }
+
+            // Reset fixed size constraints
+            label->setFixedSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+            if (label->pixmap().isNull())
+            {
+                label->setMinimumSize(0, 0);
+                label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+                label->setAlignment(Qt::AlignCenter);
+            }
+
+            // Also restore parent square style
             QFrame *parentSquare = qobject_cast<QFrame *>(label->parent());
             if (parentSquare)
             {
@@ -1038,104 +1207,60 @@ void MainWindow::handleDragStarted(DraggableLabel *source)
                 }
                 else
                 {
-                    // Determine square color if original style not available
-                    int idx = indexOf(allLabels, label);
-                    if (idx >= 0 && idx < 64)
-                    {
-                        int row = idx / 8;
-                        int col = idx % 8;
-                        bool isDark = (row + col) % 2 != 0;
-                        QString squareColor = isDark ? "#B58863" : "#F0D9B5";
-                        parentSquare->setStyleSheet(QString("background-color: %1;").arg(squareColor));
-                    }
+                    // Restore default square color if no original style
+                    // Determine square color based on position
+                    int index = indexOf(allLabels, label);
+                    int row = index / 8;
+                    int col = index % 8;
+                    bool isDark = (row + col) % 2 != 0;
+                    QString squareColor = isDark ? "#B58863" : "#F0D9B5"; // Dark/light square colors
+                    parentSquare->setStyleSheet(QString("background-color: %1;").arg(squareColor));
                 }
             }
         }
     }
 
-    // Find the square the drag started from
+    // Find the index of the source label in the allLabels vector
     int index = indexOf(allLabels, source);
     if (index == -1)
     {
-        qDebug() << "Could not find source index in allLabels";
+        qDebug() << "ERROR: Source label not found in allLabels, aborting drag";
         return;
     }
 
+    // Calculate the chess square coordinates
     int row = index / 8;
     int col = index % 8;
-    qDebug() << "Drag source square: (" << col << "," << row << ")";
-
-    // Convert to chess notation
     char file = 'a' + col;
     char rank = '1' + row;
-    Square square = square_from_string(std::string(1, file) + std::string(1, rank));
 
-    // Store the dragging square
-    dragSourceSquare = square;
+    // Convert label index to a Square enum value
+    dragSourceSquare = square_from_string(std::string(1, file) + std::string(1, rank));
+    qDebug() << "Set dragSourceSquare to" << static_cast<int>(dragSourceSquare) << "(" << file << rank << ")";
 
-    // In free move mode, highlight all squares except the source
-    if (freeMoveMode)
+    // Check that we have a valid source
+    if (dragSourceSquare == invalid)
     {
-        qDebug() << "In free move mode, highlighting all valid squares";
-        for (int i = 0; i < allLabels.size(); i++)
-        {
-            // Skip the source square
-            if (i == index)
-                continue;
-
-            DraggableLabel *label = allLabels[i];
-            if (!label)
-                continue;
-
-            // Determine square color
-            int r = i / 8;
-            int c = i % 8;
-            bool isDark = (r + c) % 2 != 0;
-
-            // Find the parent square frame
-            QFrame *parentSquare = qobject_cast<QFrame *>(label->parent());
-            if (!parentSquare)
-                continue;
-
-            // Use appropriate highlighting color based on square color - semi-transparent for better appearance
-            QString highlightStyle;
-            if (isDark)
-            {
-                highlightStyle = "background-color: rgba(123, 175, 107, 0.8);"; // Semi-transparent green for dark squares
-            }
-            else
-            {
-                highlightStyle = "background-color: rgba(170, 215, 133, 0.8);"; // Semi-transparent green for light squares
-            }
-
-            // Store original styles if needed
-            if (!label->property("originalStyle").isValid())
-            {
-                label->setProperty("originalStyle", label->styleSheet());
-            }
-            if (!parentSquare->property("originalStyle").isValid())
-            {
-                parentSquare->setProperty("originalStyle", parentSquare->styleSheet());
-            }
-
-            // Apply highlight to both the label and parent square
-            label->setStyleSheet(highlightStyle);
-            parentSquare->setStyleSheet(highlightStyle);
-
-            // Make sure the label covers the entire square
-            label->setContentsMargins(0, 0, 0, 0);
-            label->setMinimumSize(parentSquare->size());
-        }
+        qDebug() << "ERROR: Invalid drag source square, aborting drag";
+        return;
     }
-    else
-    {
-        qDebug() << "In standard mode, getting valid moves for piece at square" << square;
-        // Standard mode: Get valid moves for the piece
-        uint64_t moves = cg->get_moves_bitboard(square);
-        qDebug() << "Valid moves bitboard:" << QString::number(moves, 16);
 
-        // Highlight valid moves
-        updateLabelsFromBitboard(moves, allLabels);
+    // Highlight valid moves for this piece
+    if (!freeMoveMode && cg)
+    {
+        // Get all valid moves for this piece from the chess engine
+        uint64_t validMoves = cg->get_moves_bitboard(dragSourceSquare);
+        qDebug() << "Valid moves bitboard:" << QString::number(validMoves, 16);
+
+        // Highlight all valid moves
+        updateLabelsFromBitboard(validMoves, allLabels);
+    }
+    else if (freeMoveMode)
+    {
+        // In free move mode, all squares are valid
+        // Highlight them all except the current square
+        uint64_t allSquares = ~(1ULL << dragSourceSquare) & 0xFFFFFFFFFFFFFFFFULL;
+        updateLabelsFromBitboard(allSquares, allLabels);
     }
 }
 
@@ -1314,80 +1439,20 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
             QSize originalSize = chessWidget->size();
             chessWidget->setProperty("originalSize", QVariant(originalSize));
 
-            // Raise the chess widget to the top of the stacking order
-            // This ensures it appears above all other UI elements when zoomed
-            chessWidget->raise();
+            // Start the sub-game
+            cg->StartSubGame(dragSourceSquare, targetSquare, attackerColor);
 
-            // Create blur effect
-            QGraphicsBlurEffect *blurEffect = new QGraphicsBlurEffect(this);
-            blurEffect->setBlurRadius(0);
-            chessWidget->setGraphicsEffect(blurEffect);
+            // Update the board to show the new sub-game state
+            updateBoardFromGame();
 
-            // Create animation for blur
-            QPropertyAnimation *blurAnimation = new QPropertyAnimation(blurEffect, "blurRadius");
-            blurAnimation->setDuration(500);
-            blurAnimation->setStartValue(0);
-            blurAnimation->setEndValue(10);
-            blurAnimation->setEasingCurve(QEasingCurve::InOutQuad);
+            // Add a delayed update here:
+            QTimer::singleShot(50, this, [this]()
+                               {
+                                   forceUpdatePieceSizes(); // Force the piece sizes to be consistent
+                               });
 
-            // Create animation for zoom
-            QPropertyAnimation *zoomAnimation = new QPropertyAnimation(chessWidget, "geometry");
-            zoomAnimation->setDuration(500);
-
-            QRect startGeometry = chessWidget->geometry();
-            QRect endGeometry = startGeometry;
-
-            // Calculate the zoom effect to cover the entire window
-            // Get the main window size
-            QSize windowSize = size();
-            int targetWidth = windowSize.width() * 1.5;   // 150% of window width
-            int targetHeight = windowSize.height() * 1.5; // 150% of window height
-
-            // Calculate the centered position (negative offsets to extend beyond window)
-            int leftOffset = (windowSize.width() - targetWidth) / 2;
-            int topOffset = (windowSize.height() - targetHeight) / 2;
-
-            // Set the ending geometry to cover more than the entire window
-            endGeometry.setLeft(leftOffset);
-            endGeometry.setTop(topOffset);
-            endGeometry.setWidth(targetWidth);
-            endGeometry.setHeight(targetHeight);
-
-            zoomAnimation->setStartValue(startGeometry);
-            zoomAnimation->setEndValue(endGeometry);
-            zoomAnimation->setEasingCurve(QEasingCurve::OutQuad);
-
-            // Create a container for animations
-            QParallelAnimationGroup *animGroup = new QParallelAnimationGroup(this);
-            animGroup->addAnimation(blurAnimation);
-            animGroup->addAnimation(zoomAnimation);
-
-            // Connect animation finished signal to start the sub-game
-            connect(animGroup, &QParallelAnimationGroup::finished, this, [this, fromSquare = dragSourceSquare, toSquare = targetSquare, attacker = attackerColor]()
-                    {
-                    // Start the sub-game
-                    cg->StartSubGame(fromSquare, toSquare, attacker);
-                    
-                    // Update the board to show the new sub-game state
-                    updateBoardFromGame();
-                    
-                    // Add a delayed update here:
-                    QTimer::singleShot(50, this, [this]() {
-                        forceUpdatePieceSizes(); // Force the piece sizes to be consistent
-                    });
-                    
-                    // Log the start of the sub-game
-                    ui->textEdit->append("Sub-game started for capture resolution");
-                    
-                    // Remove blur effect when sub-game begins
-                    QWidget* chessWidget = findChild<QWidget *>("chesswdg");
-                    if (chessWidget && chessWidget->graphicsEffect())
-                    {
-                        chessWidget->setGraphicsEffect(nullptr);
-                    } });
-
-            // Start the animation
-            animGroup->start(QAbstractAnimation::DeleteWhenStopped);
+            // Log the start of the sub-game
+            ui->textEdit->append("Sub-game started for capture resolution");
         }
     }
     else if (cg->IsInSubGame())
@@ -1413,235 +1478,25 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
             CustomSuperChessGame *activeGame = cg->GetActiveGame();
             if (activeGame)
             {
-                // More thorough check before declaring checkmate
-                bool whiteKingHasMoves = false;
-                bool blackKingHasMoves = false;
-
-                try
-                {
-                    // Check if white king has moves using our safe helper methods
-                    uint64_t whiteKingMoves = activeGame->GetWhiteKingMoves();
-                    whiteKingHasMoves = whiteKingMoves != 0;
-                    qDebug() << "White king at" << activeGame->GetWhiteKingPosition() << "has moves:" << whiteKingMoves;
-
-                    // Check if black king has moves
-                    uint64_t blackKingMoves = activeGame->GetBlackKingMoves();
-                    blackKingHasMoves = blackKingMoves != 0;
-                    qDebug() << "Black king at" << activeGame->GetBlackKingPosition() << "has moves:" << blackKingMoves;
-                }
-                catch (...)
-                {
-                    qDebug() << "Error checking king moves";
-                }
-
-                // Log more info about the checkmate state
+                // Check if a king is in checkmate
                 bool whiteInCheckmate = activeGame->IsWin(white);
                 bool blackInCheckmate = activeGame->IsWin(black);
 
-                qDebug() << "Checkmate detection: White in checkmate:" << whiteInCheckmate
-                         << "White king has moves:" << whiteKingHasMoves
-                         << "Black in checkmate:" << blackInCheckmate
-                         << "Black king has moves:" << blackKingHasMoves;
-
-                if (whiteInCheckmate && !blackKingHasMoves)
+                if (whiteInCheckmate)
                 {
                     ui->textEdit->append("White wins the sub-game!");
-
-                    // Create transition effect back to main game
-                    QWidget *chessWidget = findChild<QWidget *>("chesswdg");
-                    if (chessWidget)
-                    {
-                        // Raise the chess widget to ensure it's above text boxes
-                        chessWidget->raise();
-
-                        // Create blur effect
-                        QGraphicsBlurEffect *blurEffect = new QGraphicsBlurEffect(this);
-                        blurEffect->setBlurRadius(10);
-                        chessWidget->setGraphicsEffect(blurEffect);
-
-                        // Create animation for blur
-                        QPropertyAnimation *blurAnimation = new QPropertyAnimation(blurEffect, "blurRadius");
-                        blurAnimation->setDuration(500);
-                        blurAnimation->setStartValue(10);
-                        blurAnimation->setEndValue(0);
-                        blurAnimation->setEasingCurve(QEasingCurve::InOutQuad);
-
-                        // Create animation for zoom (return to original size)
-                        QPropertyAnimation *zoomAnimation = new QPropertyAnimation(chessWidget, "geometry");
-                        zoomAnimation->setDuration(500);
-
-                        // We're zoomed in to nearly the full window size, so our current geometry is large
-                        QRect currentGeometry = chessWidget->geometry();
-
-                        // Get the original size from property if available
-                        QRect originalGeometry;
-                        QVariant originalSizeVar = chessWidget->property("originalSize");
-                        if (originalSizeVar.isValid())
-                        {
-                            QSize originalSize = originalSizeVar.toSize();
-                            // Calculate position to center the original sized widget
-                            int centerX = currentGeometry.center().x() - (originalSize.width() / 2);
-                            int centerY = currentGeometry.center().y() - (originalSize.height() / 2);
-                            originalGeometry = QRect(centerX, centerY, originalSize.width(), originalSize.height());
-                        }
-                        else
-                        {
-                            // Fallback if no stored size - just shrink back to a more reasonable size
-                            // Use 1/3 of the current size to create a dramatic effect
-                            int width = currentGeometry.width() / 3;
-                            int height = currentGeometry.height() / 3;
-                            int left = currentGeometry.center().x() - (width / 2);
-                            int top = currentGeometry.center().y() - (height / 2);
-                            originalGeometry = QRect(left, top, width, height);
-                        }
-
-                        zoomAnimation->setStartValue(currentGeometry);
-                        zoomAnimation->setEndValue(originalGeometry);
-                        zoomAnimation->setEasingCurve(QEasingCurve::InQuad);
-
-                        // Create a container for animations
-                        QParallelAnimationGroup *animGroup = new QParallelAnimationGroup(this);
-                        animGroup->addAnimation(blurAnimation);
-                        animGroup->addAnimation(zoomAnimation);
-
-                        // Connect animation finished signal
-                        connect(animGroup, &QParallelAnimationGroup::finished, this, [this]()
-                                {
-                        // End the sub-game and return to main game
-                        cg->EndSubGame();
-                        
-                        // Update the board to show the main game state
-                        updateBoardFromGame();
-                        
-                        // Add a delayed update here:
-                        QTimer::singleShot(50, this, [this]() {
-                            forceUpdatePieceSizes(); // Force the piece sizes to be consistent
-                        });
-                        
-                        // Remove blur effect
-                        QWidget* chessWidget = findChild<QWidget *>("chesswdg");
-                        if (chessWidget && chessWidget->graphicsEffect())
-                        {
-                            chessWidget->setGraphicsEffect(nullptr);
-                        }
-                        
-                        // Log return to main game
-                        ui->textEdit->append("Returned to main game");
-                        
-                        // Check for checkmate in main game
-                        SuperChessGame* activeGame = cg->GetActiveGame();
-                        if (activeGame->IsWin(white))
-                        {
-                            showGameOver(true);  // White wins
-                        }
-                        else if (activeGame->IsWin(black))
-                        {
-                            showGameOver(false); // Black wins
-                        } });
-
-                        // Start the animation
-                        animGroup->start(QAbstractAnimation::DeleteWhenStopped);
-                    }
+                    // End the sub-game and return to main game
+                    cg->EndSubGame();
+                    updateBoardFromGame();
+                    ui->textEdit->append("Returned to main game");
                 }
-                else if (blackInCheckmate && !whiteKingHasMoves)
+                else if (blackInCheckmate)
                 {
                     ui->textEdit->append("Black wins the sub-game!");
-
-                    // Create transition effect back to main game
-                    QWidget *chessWidget = findChild<QWidget *>("chesswdg");
-                    if (chessWidget)
-                    {
-                        // Raise the chess widget to ensure it's above text boxes
-                        chessWidget->raise();
-
-                        // Create blur effect
-                        QGraphicsBlurEffect *blurEffect = new QGraphicsBlurEffect(this);
-                        blurEffect->setBlurRadius(10);
-                        chessWidget->setGraphicsEffect(blurEffect);
-
-                        // Create animation for blur
-                        QPropertyAnimation *blurAnimation = new QPropertyAnimation(blurEffect, "blurRadius");
-                        blurAnimation->setDuration(500);
-                        blurAnimation->setStartValue(10);
-                        blurAnimation->setEndValue(0);
-                        blurAnimation->setEasingCurve(QEasingCurve::InOutQuad);
-
-                        // Create animation for zoom (return to original size)
-                        QPropertyAnimation *zoomAnimation = new QPropertyAnimation(chessWidget, "geometry");
-                        zoomAnimation->setDuration(500);
-
-                        // We're zoomed in to nearly the full window size, so our current geometry is large
-                        QRect currentGeometry = chessWidget->geometry();
-
-                        // Get the original size from property if available
-                        QRect originalGeometry;
-                        QVariant originalSizeVar = chessWidget->property("originalSize");
-                        if (originalSizeVar.isValid())
-                        {
-                            QSize originalSize = originalSizeVar.toSize();
-                            // Calculate position to center the original sized widget
-                            int centerX = currentGeometry.center().x() - (originalSize.width() / 2);
-                            int centerY = currentGeometry.center().y() - (originalSize.height() / 2);
-                            originalGeometry = QRect(centerX, centerY, originalSize.width(), originalSize.height());
-                        }
-                        else
-                        {
-                            // Fallback if no stored size - just shrink back to a more reasonable size
-                            // Use 1/3 of the current size to create a dramatic effect
-                            int width = currentGeometry.width() / 3;
-                            int height = currentGeometry.height() / 3;
-                            int left = currentGeometry.center().x() - (width / 2);
-                            int top = currentGeometry.center().y() - (height / 2);
-                            originalGeometry = QRect(left, top, width, height);
-                        }
-
-                        zoomAnimation->setStartValue(currentGeometry);
-                        zoomAnimation->setEndValue(originalGeometry);
-                        zoomAnimation->setEasingCurve(QEasingCurve::InQuad);
-
-                        // Create a container for animations
-                        QParallelAnimationGroup *animGroup = new QParallelAnimationGroup(this);
-                        animGroup->addAnimation(blurAnimation);
-                        animGroup->addAnimation(zoomAnimation);
-
-                        // Connect animation finished signal
-                        connect(animGroup, &QParallelAnimationGroup::finished, this, [this]()
-                                {
-                        // End the sub-game and return to main game
-                        cg->EndSubGame();
-                        
-                        // Update the board to show the main game state
-                        updateBoardFromGame();
-                        
-                        // Add a delayed update here:
-                        QTimer::singleShot(50, this, [this]() {
-                            forceUpdatePieceSizes(); // Force the piece sizes to be consistent
-                        });
-                        
-                        // Remove blur effect
-                        QWidget* chessWidget = findChild<QWidget *>("chesswdg");
-                        if (chessWidget && chessWidget->graphicsEffect())
-                        {
-                            chessWidget->setGraphicsEffect(nullptr);
-                        }
-                        
-                        // Log return to main game
-                        ui->textEdit->append("Returned to main game");
-                        
-                        // Check for checkmate in main game
-                        SuperChessGame* activeGame = cg->GetActiveGame();
-                        if (activeGame->IsWin(white))
-                        {
-                            showGameOver(true);  // White wins
-                        }
-                        else if (activeGame->IsWin(black))
-                        {
-                            showGameOver(false); // Black wins
-                        } });
-
-                        // Start the animation
-                        animGroup->start(QAbstractAnimation::DeleteWhenStopped);
-                    }
+                    // End the sub-game and return to main game
+                    cg->EndSubGame();
+                    updateBoardFromGame();
+                    ui->textEdit->append("Returned to main game");
                 }
             }
         }
@@ -1653,7 +1508,7 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
     }
     else
     {
-        // Regular move (not a capture, or we're already in a sub-game, or in free move mode)
+        // Regular move (not a capture or in free move mode)
         try
         {
             if (freeMoveMode)
@@ -1693,160 +1548,18 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
                                });
 
             // Check for checkmate in the main game regardless of free move mode
-            if (activeGame)
+            if (activeGame && !freeMoveMode)
             {
-                // Only check for checkmate in normal mode, not in free move mode
-                if (!freeMoveMode)
+                bool whiteInCheckmate = activeGame->IsWin(white);
+                bool blackInCheckmate = activeGame->IsWin(black);
+
+                if (whiteInCheckmate)
                 {
-                    // More thorough check before declaring checkmate
-                    bool whiteInCheckmate = false;
-                    bool blackInCheckmate = false;
-                    bool whiteKingHasMoves = false;
-                    bool blackKingHasMoves = false;
-
-                    try
-                    {
-                        // Check if kings have any valid moves using our safe helper methods
-                        uint64_t whiteKingMoves = activeGame->GetWhiteKingMoves();
-                        whiteKingHasMoves = whiteKingMoves != 0;
-
-                        uint64_t blackKingMoves = activeGame->GetBlackKingMoves();
-                        blackKingHasMoves = blackKingMoves != 0;
-
-                        // Standard checkmate detection
-                        whiteInCheckmate = activeGame->IsWin(white);
-                        blackInCheckmate = activeGame->IsWin(black);
-
-                        // Enhanced debugging - show positions and attack information
-                        Square whiteKingPos = activeGame->GetWhiteKingPosition();
-                        Square blackKingPos = activeGame->GetBlackKingPosition();
-
-                        // Get checking pieces for each king
-                        uint64_t whiteKingCheckers = activeGame->GetCheckingPieces(white);
-                        uint64_t blackKingCheckers = activeGame->GetCheckingPieces(black);
-
-                        qDebug() << "Enhanced checkmate debugging:";
-                        qDebug() << "White king at" << QChar('a' + (whiteKingPos % 8)) << (whiteKingPos / 8 + 1)
-                                 << "has" << __builtin_popcountll(whiteKingMoves) << "moves";
-                        qDebug() << "Black king at" << QChar('a' + (blackKingPos % 8)) << (blackKingPos / 8 + 1)
-                                 << "has" << __builtin_popcountll(blackKingMoves) << "moves";
-
-                        // Visualize king's legal moves
-                        qDebug() << "White king's legal moves:" << activeGame->BitboardToString(whiteKingMoves);
-                        qDebug() << "Black king's legal moves:" << activeGame->BitboardToString(blackKingMoves);
-
-                        qDebug() << "White king has" << __builtin_popcountll(whiteKingCheckers) << "checking pieces";
-                        qDebug() << "Black king has" << __builtin_popcountll(blackKingCheckers) << "checking pieces";
-
-                        // For each checking piece, show its type and position
-                        uint64_t checkers = whiteKingCheckers;
-                        while (checkers)
-                        {
-                            int checkerIndex = get_ls1b_index(checkers);
-                            Square checkerSquare = static_cast<Square>(checkerIndex);
-                            Piece checkerType = activeGame->GetPieceAtSquare(checkerSquare);
-
-                            // Convert piece type to string manually
-                            QString pieceTypeStr;
-                            switch (checkerType)
-                            {
-                            case Pawn:
-                                pieceTypeStr = "Pawn";
-                                break;
-                            case Knight:
-                                pieceTypeStr = "Knight";
-                                break;
-                            case Bishop:
-                                pieceTypeStr = "Bishop";
-                                break;
-                            case Rook:
-                                pieceTypeStr = "Rook";
-                                break;
-                            case Queen:
-                                pieceTypeStr = "Queen";
-                                break;
-                            case King:
-                                pieceTypeStr = "King";
-                                break;
-                            default:
-                                pieceTypeStr = "Unknown";
-                                break;
-                            }
-
-                            qDebug() << "White king is checked by" << pieceTypeStr
-                                     << "at" << QChar('a' + (checkerSquare % 8)) << (checkerSquare / 8 + 1);
-                            checkers &= checkers - 1; // Remove the least significant bit
-                        }
-
-                        checkers = blackKingCheckers;
-                        while (checkers)
-                        {
-                            int checkerIndex = get_ls1b_index(checkers);
-                            Square checkerSquare = static_cast<Square>(checkerIndex);
-                            Piece checkerType = activeGame->GetPieceAtSquare(checkerSquare);
-
-                            // Convert piece type to string manually
-                            QString pieceTypeStr;
-                            switch (checkerType)
-                            {
-                            case Pawn:
-                                pieceTypeStr = "Pawn";
-                                break;
-                            case Knight:
-                                pieceTypeStr = "Knight";
-                                break;
-                            case Bishop:
-                                pieceTypeStr = "Bishop";
-                                break;
-                            case Rook:
-                                pieceTypeStr = "Rook";
-                                break;
-                            case Queen:
-                                pieceTypeStr = "Queen";
-                                break;
-                            case King:
-                                pieceTypeStr = "King";
-                                break;
-                            default:
-                                pieceTypeStr = "Unknown";
-                                break;
-                            }
-
-                            qDebug() << "Black king is checked by" << pieceTypeStr
-                                     << "at" << QChar('a' + (checkerSquare % 8)) << (checkerSquare / 8 + 1);
-                            checkers &= checkers - 1; // Remove the least significant bit
-                        }
-
-                        qDebug() << "Main game checkmate detection:"
-                                 << "White in checkmate:" << whiteInCheckmate
-                                 << "White king has moves:" << whiteKingHasMoves
-                                 << "Black in checkmate:" << blackInCheckmate
-                                 << "Black king has moves:" << blackKingHasMoves;
-
-                        // If a king is in check but has moves, log the moves for debugging
-                        if (__builtin_popcountll(whiteKingCheckers) > 0 && whiteKingHasMoves)
-                        {
-                            qDebug() << "White king is in check but has moves - possible bug in checkmate detection";
-                        }
-                        if (__builtin_popcountll(blackKingCheckers) > 0 && blackKingHasMoves)
-                        {
-                            qDebug() << "Black king is in check but has moves - possible bug in checkmate detection";
-                        }
-                    }
-                    catch (const std::exception &e)
-                    {
-                        qDebug() << "Error in checkmate detection:" << e.what();
-                    }
-
-                    // Only declare checkmate if IsWin returns true
-                    if (whiteInCheckmate)
-                    {
-                        showGameOver(true);
-                    }
-                    else if (blackInCheckmate)
-                    {
-                        showGameOver(false);
-                    }
+                    showGameOver(true);
+                }
+                else if (blackInCheckmate)
+                {
+                    showGameOver(false);
                 }
             }
         }
@@ -1859,6 +1572,145 @@ void MainWindow::handleDrop(DraggableLabel *source, DraggableLabel *target)
 
     // Reset the drag source
     dragSourceSquare = invalid;
+}
+
+void MainWindow::on_actionNew_Game_triggered()
+{
+    // Reset the chess game to its initial state
+    cg = new CustomSuperChessGame(this);
+    cg->NewGame();
+
+    // Clear any highlight and reset the drag source
+    dragSourceSquare = invalid;
+
+    // Reset the ability description
+    resetAbilityDescription();
+
+    // Update the board to show the new game state
+    updateBoardFromGame();
+
+    // Log the new game start
+    ui->textEdit->append("New game started");
+}
+
+void MainWindow::appendToLog(const QString &text)
+{
+    if (ui && ui->textEdit)
+    {
+        ui->textEdit->append(text);
+
+        // Ensure the newest text is visible
+        QTextCursor cursor = ui->textEdit->textCursor();
+        cursor.movePosition(QTextCursor::End);
+        ui->textEdit->setTextCursor(cursor);
+    }
+}
+
+void MainWindow::updateAbilityDescription(const QString &text, bool isHtml)
+{
+    if (ui && ui->label_67)
+    {
+        // Apply a stylish background with border radius and gradient
+        ui->label_67->setStyleSheet(
+            "QLabel {"
+            "  font-family: 'Book Antiqua', 'Palatino Linotype', serif;"
+            "  font-size: 11pt;"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2e2d2c, stop:1 #1f1e1d);"
+            "  color: #e8e6e3;"
+            "  border: 2px solid #3a3937;"
+            "  border-radius: 10px;"
+            "  padding: 14px;"
+            "  margin: 5px;"
+            "}"
+            "QLabel a { color: #c19a49; }" // Gold color for any links or special elements
+        );
+
+        // Create a custom styled HTML wrapper for the content
+        QString headerStyle = "display: block; text-align: center; font-family: 'Book Antiqua', 'Palatino Linotype', serif; "
+                              "font-size: 15pt; font-weight: bold; color: #c19a49; margin-bottom: 10px; "
+                              "border-bottom: 1px solid #c19a49; padding-bottom: 5px; letter-spacing: 1px;";
+
+        QString containerStyle = "padding: 8px; background-color: rgba(30, 30, 28, 0.7); border-radius: 5px;";
+
+        // Apply custom HTML styling to the content with medieval/fantasy styling
+        QString styledText = text;
+        if (isHtml)
+        {
+            // Create a decorated header
+            styledText = "<div style='" + headerStyle + "'>✧ ABILITIES ✧</div>" +
+                         "<div style='" + containerStyle + "'>";
+
+            // Replace the <b> tags with styled headers
+            QString processedText = text;
+            processedText.replace("<b>", "<div style='color: #c19a49; font-size: 13pt; font-weight: bold; margin-top: 10px; text-decoration: underline;'>");
+            processedText.replace("</b>", "</div>");
+
+            // Style the bullet points for abilities
+            processedText.replace("• ", "<div style='margin: 5px 0;'><span style='color: #c19a49; font-weight: bold;'>❖</span> <span style='color: #b8c8e0; font-weight: bold;'>");
+            processedText.replace("<br>•", "</span></div><div style='margin: 5px 0;'><span style='color: #c19a49; font-weight: bold;'>❖</span> <span style='color: #b8c8e0; font-weight: bold;'>");
+
+            // Close any unclosed spans or divs
+            if (processedText.count("<span") > processedText.count("</span>"))
+            {
+                processedText += "</span>";
+            }
+            if (processedText.count("<div") > processedText.count("</div>"))
+            {
+                processedText += "</div>";
+            }
+
+            styledText += processedText + "</div>";
+
+            // Add a decorative footer
+            styledText += "<div style='text-align: center; margin-top: 10px; color: #c19a49;'>⚜ ⚜ ⚜</div>";
+        }
+
+        ui->label_67->setText(styledText);
+        ui->label_67->setTextFormat(Qt::RichText); // Always use rich text for styled content
+        ui->label_67->setWordWrap(true);
+        ui->label_67->setMinimumHeight(350); // More height for the enhanced styling
+        ui->label_67->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    }
+}
+
+void MainWindow::resetAbilityDescription()
+{
+    if (ui && ui->label_67)
+    {
+        // Apply the same styled background but with a default message
+        ui->label_67->setStyleSheet(
+            "QLabel {"
+            "  font-family: 'Book Antiqua', 'Palatino Linotype', serif;"
+            "  font-size: 11pt;"
+            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2e2d2c, stop:1 #1f1e1d);"
+            "  color: #e8e6e3;"
+            "  border: 2px solid #3a3937;"
+            "  border-radius: 10px;"
+            "  padding: 14px;"
+            "  margin: 5px;"
+            "}");
+
+        // Create a decorative HTML layout for the default state
+        QString headerStyle = "display: block; text-align: center; font-family: 'Book Antiqua', 'Palatino Linotype', serif; "
+                              "font-size: 15pt; font-weight: bold; color: #c19a49; margin-bottom: 10px; "
+                              "border-bottom: 1px solid #c19a49; padding-bottom: 5px; letter-spacing: 1px;";
+
+        QString messageStyle = "display: block; text-align: center; color: #888888; font-style: italic; margin-top: 20px;";
+
+        QString decorStyle = "display: block; text-align: center; color: #c19a49; font-size: 20pt; margin: 30px 0;";
+
+        // Assemble the styled content
+        QString content =
+            "<div style='" + headerStyle + "'>✧ ABILITIES ✧</div>" +
+            "<div style='" + messageStyle + "'>Capture a piece to see special abilities</div>" +
+            "<div style='" + decorStyle + "'>⚔</div>" +
+            "<div style='" + messageStyle + "'>Each piece has unique powers in chess-in-chess battles</div>" +
+            "<div style='text-align: center; margin-top: 30px; color: #c19a49;'>⚜ ⚜ ⚜</div>";
+
+        ui->label_67->setText(content);
+        ui->label_67->setTextFormat(Qt::RichText);
+        ui->label_67->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    }
 }
 
 Piece MainWindow::getPromotionPiece(Color color)
@@ -1907,6 +1759,49 @@ Piece MainWindow::getPromotionPiece(Color color)
     return Queen; // Default if somehow nothing was selected
 }
 
+void MainWindow::showGameOver(bool isWhiteWinner)
+{
+    // Create a message box to display the winner
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Game Over");
+
+    // Set the text based on who won
+    if (isWhiteWinner)
+    {
+        msgBox.setText("White wins by checkmate!");
+    }
+    else
+    {
+        msgBox.setText("Black wins by checkmate!");
+    }
+
+    // Add stylesheets for better appearance
+    msgBox.setStyleSheet("QMessageBox { background-color: #f0f0f0; border: 1px solid #cccccc; }"
+                         "QMessageBox QLabel { font-size: 16px; font-weight: bold; color: #333333; }"
+                         "QPushButton { background-color: #4CAF50; color: white; "
+                         "border-radius: 5px; padding: 8px 16px; font-weight: bold; }"
+                         "QPushButton:hover { background-color: #45a049; }");
+
+    // Add buttons for starting a new game or quitting
+    msgBox.addButton("New Game", QMessageBox::AcceptRole);
+    QPushButton *quitButton = msgBox.addButton("Quit", QMessageBox::RejectRole);
+
+    // Show the message box and get the result
+    int result = msgBox.exec();
+
+    // Handle the button clicks
+    if (msgBox.clickedButton() == quitButton)
+    {
+        // Quit the application
+        QApplication::quit();
+    }
+    else
+    {
+        // Start a new game
+        on_actionNew_Game_triggered();
+    }
+}
+
 void MainWindow::updateBoardFromGame()
 {
     qDebug() << "updateBoardFromGame called, allLabels.size():" << allLabels.size();
@@ -1926,84 +1821,6 @@ void MainWindow::updateBoardFromGame()
     // Debug output to show the current board state
     qDebug() << "White pieces bitboard:" << activeGame->GetBoardOf(white);
     qDebug() << "Black pieces bitboard:" << activeGame->GetBoardOf(black);
-
-    // Print out an ASCII representation of the board for debugging
-    qDebug() << "Current board state:";
-    for (int row = 7; row >= 0; row--)
-    {
-        QString rowStr = QString::number(row + 1) + " ";
-        for (int col = 0; col < 8; col++)
-        {
-            Square sq = static_cast<Square>(row * 8 + col);
-            U64 squareBit = 1ULL << sq;
-
-            if ((activeGame->GetBoardOf(white) & squareBit) != 0)
-            {
-                // White piece
-                Piece p = activeGame->GetPieceType(squareBit);
-                switch (p)
-                {
-                case Pawn:
-                    rowStr += "P ";
-                    break;
-                case Knight:
-                    rowStr += "N ";
-                    break;
-                case Bishop:
-                    rowStr += "B ";
-                    break;
-                case Rook:
-                    rowStr += "R ";
-                    break;
-                case Queen:
-                    rowStr += "Q ";
-                    break;
-                case King:
-                    rowStr += "K ";
-                    break;
-                default:
-                    rowStr += "? ";
-                    break;
-                }
-            }
-            else if ((activeGame->GetBoardOf(black) & squareBit) != 0)
-            {
-                // Black piece
-                Piece p = activeGame->GetPieceType(squareBit);
-                switch (p)
-                {
-                case Pawn:
-                    rowStr += "p ";
-                    break;
-                case Knight:
-                    rowStr += "n ";
-                    break;
-                case Bishop:
-                    rowStr += "b ";
-                    break;
-                case Rook:
-                    rowStr += "r ";
-                    break;
-                case Queen:
-                    rowStr += "q ";
-                    break;
-                case King:
-                    rowStr += "k ";
-                    break;
-                default:
-                    rowStr += "? ";
-                    break;
-                }
-            }
-            else
-            {
-                // Empty square
-                rowStr += ". ";
-            }
-        }
-        qDebug() << rowStr;
-    }
-    qDebug() << "  a b c d e f g h";
 
     // Find the chessboard widget to get its size
     QWidget *chesswdg = findChild<QWidget *>("chesswdg");
@@ -2128,16 +1945,7 @@ void MainWindow::updateBoardFromGame()
             if (piecePixmap.isNull())
             {
                 qDebug() << "ERROR: Failed to load piece image:" << imagePath;
-                qDebug() << "Trying to load a blank piece placeholder";
-
-                // Try to load a blank image as fallback
-                piecePixmap = QPixmap(":/img/blank.png");
-
-                if (piecePixmap.isNull())
-                {
-                    qDebug() << "WARNING: Could not load any image, skipping this piece";
-                    continue;
-                }
+                continue;
             }
 
             qDebug() << "Setting piece at" << squareStr.c_str() << "to" << colorStr << pieceStr
@@ -2174,7 +1982,6 @@ void MainWindow::updateBoardFromGame()
             // Safely set the pixmap for the piece
             try
             {
-                // Set the pixmap but maintain the full square size for the label
                 label->setPixmap(scaledPixmap);
                 label->setAlignment(Qt::AlignCenter); // Keep the piece centered
 
@@ -2191,10 +1998,6 @@ void MainWindow::updateBoardFromGame()
                 continue;
             }
 
-            // Add margins to make pieces appear smaller within squares
-            int margin = squareSize / 12; // Smaller margin (1/12 of square size)
-            label->setContentsMargins(margin, margin, margin, margin);
-
             // Enable dragging for the piece
             label->setDraggable(true);
         }
@@ -2204,68 +2007,6 @@ void MainWindow::updateBoardFromGame()
     chesswdg->blockSignals(wasBlocked);
 
     qDebug() << "Board update completed";
-}
-
-void MainWindow::showGameOver(bool isWhiteWinner)
-{
-    // Create a message box to display the winner
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("Game Over");
-
-    // Set the text based on who won
-    if (isWhiteWinner)
-    {
-        msgBox.setText("White wins by checkmate!");
-    }
-    else
-    {
-        msgBox.setText("Black wins by checkmate!");
-    }
-
-    // Add stylesheets for better appearance
-    msgBox.setStyleSheet("QMessageBox { background-color: #f0f0f0; border: 1px solid #cccccc; }"
-                         "QMessageBox QLabel { font-size: 16px; font-weight: bold; color: #333333; }"
-                         "QPushButton { background-color: #4CAF50; color: white; "
-                         "border-radius: 5px; padding: 8px 16px; font-weight: bold; }"
-                         "QPushButton:hover { background-color: #45a049; }");
-
-    // Add buttons for starting a new game or quitting
-    msgBox.addButton("New Game", QMessageBox::AcceptRole);
-    QPushButton *quitButton = msgBox.addButton("Quit", QMessageBox::RejectRole);
-
-    // Show the message box and get the result
-    int result = msgBox.exec();
-
-    // Handle the button clicks
-    if (msgBox.clickedButton() == quitButton)
-    {
-        // Quit the application
-        QApplication::quit();
-    }
-    else
-    {
-        // Start a new game
-        on_actionNew_Game_triggered();
-    }
-}
-
-void MainWindow::on_actionNew_Game_triggered()
-{
-    // Reset the chess game to its initial state
-    cg = new CustomSuperChessGame(this);
-    cg->NewGame();
-
-    // Clear any highlight and reset the drag source
-    dragSourceSquare = invalid;
-
-    // Reset the ability description
-    resetAbilityDescription();
-
-    // Update the board to show the new game state
-    updateBoardFromGame();
-
-    // Log the new game start
-    ui->textEdit->append("New game started");
 }
 
 void MainWindow::forceUpdatePieceSizes()
@@ -2518,6 +2259,13 @@ void MainWindow::initializeUI()
                 connect(label, &DraggableLabel::dragStarted, this, &MainWindow::handleDragStarted);
                 connect(label, &DraggableLabel::dragEntered, this, &MainWindow::handleDragEntered);
                 connect(label, &DraggableLabel::dropOccurred, this, &MainWindow::handleDrop);
+
+                // Add debug statement to verify the connections
+                qDebug() << "Connected drag signals for" << label->objectName();
+
+                // Make sure label accepts drops and mouse events
+                label->setAcceptDrops(true);
+                label->setAttribute(Qt::WA_Hover, true);
             }
         }
 
@@ -2537,212 +2285,5 @@ void MainWindow::initializeUI()
     catch (...)
     {
         qDebug() << "UNKNOWN ERROR initializing UI";
-    }
-}
-
-// Enhanced styling for the ability description panel
-void MainWindow::updateAbilityDescription(const QString &text, bool isHtml)
-{
-    if (ui && ui->label_67)
-    {
-        // Apply a stylish background with border radius and gradient
-        ui->label_67->setStyleSheet(
-            "QLabel {"
-            "  font-family: 'Book Antiqua', 'Palatino Linotype', serif;"
-            "  font-size: 11pt;"
-            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2e2d2c, stop:1 #1f1e1d);"
-            "  color: #e8e6e3;"
-            "  border: 2px solid #3a3937;"
-            "  border-radius: 10px;"
-            "  padding: 14px;"
-            "  margin: 5px;"
-            "}"
-            "QLabel a { color: #c19a49; }" // Gold color for any links or special elements
-        );
-
-        // Create a custom styled HTML wrapper for the content
-        QString headerStyle = "display: block; text-align: center; font-family: 'Book Antiqua', 'Palatino Linotype', serif; "
-                              "font-size: 15pt; font-weight: bold; color: #c19a49; margin-bottom: 10px; "
-                              "border-bottom: 1px solid #c19a49; padding-bottom: 5px; letter-spacing: 1px;";
-
-        QString containerStyle = "padding: 8px; background-color: rgba(30, 30, 28, 0.7); border-radius: 5px;";
-
-        // Apply custom HTML styling to the content with medieval/fantasy styling
-        QString styledText = text;
-        if (isHtml)
-        {
-            // Create a decorated header
-            styledText = "<div style='" + headerStyle + "'>✧ ABILITIES ✧</div>" +
-                         "<div style='" + containerStyle + "'>";
-
-            // Replace the <b> tags with styled headers
-            QString processedText = text;
-            processedText.replace("<b>", "<div style='color: #c19a49; font-size: 13pt; font-weight: bold; margin-top: 10px; text-decoration: underline;'>");
-            processedText.replace("</b>", "</div>");
-
-            // Style the bullet points for abilities
-            processedText.replace("• ", "<div style='margin: 5px 0;'><span style='color: #c19a49; font-weight: bold;'>❖</span> <span style='color: #b8c8e0; font-weight: bold;'>");
-            processedText.replace("<br>•", "</span></div><div style='margin: 5px 0;'><span style='color: #c19a49; font-weight: bold;'>❖</span> <span style='color: #b8c8e0; font-weight: bold;'>");
-
-            // Close any unclosed spans or divs
-            if (processedText.count("<span") > processedText.count("</span>"))
-            {
-                processedText += "</span>";
-            }
-            if (processedText.count("<div") > processedText.count("</div>"))
-            {
-                processedText += "</div>";
-            }
-
-            styledText += processedText + "</div>";
-
-            // Add a decorative footer
-            styledText += "<div style='text-align: center; margin-top: 10px; color: #c19a49;'>⚜ ⚜ ⚜</div>";
-        }
-
-        ui->label_67->setText(styledText);
-        ui->label_67->setTextFormat(Qt::RichText); // Always use rich text for styled content
-        ui->label_67->setWordWrap(true);
-        ui->label_67->setMinimumHeight(350); // More height for the enhanced styling
-        ui->label_67->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-    }
-}
-
-void MainWindow::resetAbilityDescription()
-{
-    if (ui && ui->label_67)
-    {
-        // Apply the same styled background but with a default message
-        ui->label_67->setStyleSheet(
-            "QLabel {"
-            "  font-family: 'Book Antiqua', 'Palatino Linotype', serif;"
-            "  font-size: 11pt;"
-            "  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2e2d2c, stop:1 #1f1e1d);"
-            "  color: #e8e6e3;"
-            "  border: 2px solid #3a3937;"
-            "  border-radius: 10px;"
-            "  padding: 14px;"
-            "  margin: 5px;"
-            "}");
-
-        // Create a decorative HTML layout for the default state
-        QString headerStyle = "display: block; text-align: center; font-family: 'Book Antiqua', 'Palatino Linotype', serif; "
-                              "font-size: 15pt; font-weight: bold; color: #c19a49; margin-bottom: 10px; "
-                              "border-bottom: 1px solid #c19a49; padding-bottom: 5px; letter-spacing: 1px;";
-
-        QString messageStyle = "display: block; text-align: center; color: #888888; font-style: italic; margin-top: 20px;";
-
-        QString decorStyle = "display: block; text-align: center; color: #c19a49; font-size: 20pt; margin: 30px 0;";
-
-        // Assemble the styled content
-        QString content =
-            "<div style='" + headerStyle + "'>✧ ABILITIES ✧</div>" +
-            "<div style='" + messageStyle + "'>Capture a piece to see special abilities</div>" +
-            "<div style='" + decorStyle + "'>⚔</div>" +
-            "<div style='" + messageStyle + "'>Each piece has unique powers in chess-in-chess battles</div>" +
-            "<div style='text-align: center; margin-top: 30px; color: #c19a49;'>⚜ ⚜ ⚜</div>";
-
-        ui->label_67->setText(content);
-        ui->label_67->setTextFormat(Qt::RichText);
-        ui->label_67->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-    }
-}
-
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), freeMoveMode(false), cg(nullptr)
-{
-    try
-    {
-        // Set up the UI first
-        ui->setupUi(this);
-
-        // DEBUG: Check if piece images can be loaded
-        qDebug() << "Checking if piece images can be loaded:";
-        QStringList pieces = {"white_pawn", "white_knight", "white_bishop", "white_rook", "white_queen", "white_king",
-                              "black_pawn", "black_knight", "black_bishop", "black_rook", "black_queen", "black_king"};
-
-        bool imagesFound = true;
-        for (const QString &piece : pieces)
-        {
-            QString path = QString(":/img/%1.png").arg(piece);
-            QPixmap pixmap(path);
-            qDebug() << "  " << path << (pixmap.isNull() ? "NOT FOUND" : "FOUND") << pixmap.size();
-
-            if (pixmap.isNull())
-            {
-                imagesFound = false;
-                qDebug() << "WARNING: Missing piece image:" << path;
-            }
-        }
-
-        if (!imagesFound)
-        {
-            qDebug() << "WARNING: Some chess piece images are missing. The board may not display correctly.";
-        }
-
-        // First initialize the UI to create all the labels and board
-        initializeUI();
-
-        // Connect the free move button if it exists
-        if (ui->freeMoveButton)
-        {
-            connect(ui->freeMoveButton, &QPushButton::clicked, this, &MainWindow::toggleFreeMoveMode);
-        }
-
-        // After all UI is initialized, create the chess game
-        cg = new CustomSuperChessGame(this);
-        if (cg)
-        {
-            cg->NewGame();
-
-            // Now update the board with initial positions
-            QTimer::singleShot(100, this, [this]()
-                               {
-                if (this && cg) {  // Extra safety check
-                    updateBoardFromGame();
-                    
-                    // Force update of piece sizes after layout is resolved
-                    QTimer::singleShot(200, this, &MainWindow::forceUpdatePieceSizes);
-                    
-                    // Initialize the ability description with default text
-                    resetAbilityDescription();
-                } });
-        }
-        else
-        {
-            qDebug() << "ERROR: Failed to create chess game!";
-        }
-    }
-    catch (const std::exception &e)
-    {
-        qDebug() << "ERROR during initialization:" << e.what();
-    }
-    catch (...)
-    {
-        qDebug() << "UNKNOWN ERROR during initialization";
-    }
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
-
-    // Clean up the chess game
-    if (cg)
-    {
-        delete cg;
-    }
-}
-
-void MainWindow::appendToLog(const QString &text)
-{
-    if (ui && ui->textEdit)
-    {
-        ui->textEdit->append(text);
-
-        // Ensure the newest text is visible
-        QTextCursor cursor = ui->textEdit->textCursor();
-        cursor.movePosition(QTextCursor::End);
-        ui->textEdit->setTextCursor(cursor);
     }
 }
